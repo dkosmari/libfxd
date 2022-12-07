@@ -1,0 +1,21 @@
+syntax: glob
+
+*.a
+*.log
+*.o
+*.trs
+*~
+.deps
+aclocal.m4
+autom4te.cache
+build-aux
+compile_flags.txt
+config.h
+config.h.in
+config.status
+configure
+examples
+Makefile
+Makefile.in
+stamp-h1
+tests
