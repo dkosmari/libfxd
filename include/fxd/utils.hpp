@@ -9,6 +9,9 @@
 #include <type_traits>
 #include <utility>
 
+#include <iostream>
+#include <iomanip>
+
 
 namespace fxd::utils {
 
@@ -19,6 +22,28 @@ namespace fxd::utils {
     int type_width = std::numeric_limits<T>::digits +
         (std::numeric_limits<T>::is_signed ? 1 : 0);
 
+    template<typename I>
+    void
+    show(const char* name, I val)
+    {
+        constexpr int k = type_width<I>;
+        using U = std::make_unsigned_t<I>;
+
+        std::cout << std::setw(6) << name << " = ";
+
+        std::cout << std::hex << std::setfill('0');
+
+        std::cout <<  std::setw(k / 4)
+                  << static_cast<U>(val);
+
+        std::cout << std::dec
+                  << std::setfill(' ')
+                  << "  = " << val
+                  << std::endl;
+    }
+
+#define DUMP(x) \
+        show(#x, x)
 
 
     template<std::integral I>
@@ -30,11 +55,12 @@ namespace fxd::utils {
 
 
 
-    template<std::unsigned_integral U>
+    template<std::unsigned_integral U,
+             std::integral I>
     constexpr
-    std::pair<U, U>
-    add_pair(const std::pair<U, U>& a,
-             const std::pair<U, U>& b)
+    std::pair<U, I>
+    add(const std::pair<U, I>& a,
+        const std::pair<U, I>& b)
         noexcept;
 
 
@@ -134,8 +160,8 @@ namespace fxd::utils {
              std::integral I>
     constexpr
     std::pair<U, I>
-    shl(const std::pair<U, I>& a,
-        int b)
+    shlz(const std::pair<U, I>& a,
+         int b)
         noexcept
     {
         static_assert(sizeof(U) == sizeof(I));
@@ -172,20 +198,26 @@ namespace fxd::utils {
         static_assert(sizeof(U) == sizeof(I));
 
         if (b < 0)
-            return shl(a, -b);
+            return shlz(a, -b);
 
         constexpr int w = type_width<I>;
 
         if (a.second < 0) {
-
             U bias0 = shl<U>(1, b) - 1;
             I bias1 = shl<I>(1, b - w) - (b >= w ? 1 : 0);
+            // DUMP(bias0);
+            // DUMP(bias1);
 
-            auto [c0, c1] = add_pair<U>(a, {bias0, bias1});
+            // auto a0 = a.first;
+            // auto a1 = a.second;
+            // DUMP(a0);
+            // DUMP(a1);
+
+            auto [c0, c1] = add(a, {bias0, bias1});
 
             return {
                 shr(c0, b) | shl(c1, w - b),
-                shr<U>(c1, b)
+                shr(c1, b)
             };
 
         } else {
@@ -201,19 +233,21 @@ namespace fxd::utils {
 
 
 
-
-    template<std::unsigned_integral U>
+    template<std::unsigned_integral U,
+             std::integral I>
     constexpr
-    std::pair<U, U>
-    add_pair(const std::pair<U, U>& a,
-             const std::pair<U, U>& b)
+    std::pair<U, I>
+    add(const std::pair<U, I>& a,
+        const std::pair<U, I>& b)
         noexcept
     {
+        static_assert(sizeof(U) == sizeof(I));
         U c0;
-        U c1 = __builtin_add_overflow(a.first, b.first, &c0)
+        I c1 = __builtin_add_overflow(a.first, b.first, &c0)
             + a.second + b.second;
         return {c0, c1};
     }
+
 
 
 
@@ -231,24 +265,37 @@ namespace fxd::utils {
         using U = std::make_unsigned_t<I>;
         constexpr U mask = (U{1} << k) - 1;
 
-        const I a0 = a & mask;
-        const I a1 = a >> k; // note: may sign-extend
+        // DUMP(mask);
 
-        const I b0 = b & mask;
-        const I b1 = b >> k; // note: may sign-extend
+        const U a0 = a & mask;
+        // DUMP(a0);
+        const U a1 = a >> k; // note: may sign-extend before becoming unsigned
+        // DUMP(a1);
+
+        const U b0 = b & mask;
+        // DUMP(b0);
+        const U b1 = b >> k; // note: may sign-extend before becoming unsigned
+        // DUMP(b1);
 
         const I a0b1 = a0 * b1;
+        // DUMP(a0b1);
         const I a1b0 = a1 * b0;
+        // DUMP(a1b0);
 
-        U c01 = static_cast<U>(a0) * static_cast<U>(b0);
-        U c23 = a1 * b1 + (a0b1 >> k) + (a1b0 >> k)
+        U c01 = a0 * b0;
+        // DUMP(c01);
+
+        I c23 = a1 * b1
+            + (a0b1 >> k)
+            + (a1b0 >> k)
             + __builtin_add_overflow(c01,
                                      static_cast<U>(a0b1 & mask) << k,
                                      &c01)
             + __builtin_add_overflow(c01,
                                      static_cast<U>(a1b0 & mask) << k,
                                      &c01);
-
+        // DUMP(c01);
+        // DUMP(c23);
         return {c01, c23};
     }
 
@@ -274,7 +321,7 @@ namespace fxd::utils {
 
             if (carry || r >= b) {
                 r -= b;
-                q0 += U{1} << (k - i - 1);
+                q0 |= U{1} << (k - i - 1);
             }
         }
         return {q0, q1};
@@ -282,6 +329,9 @@ namespace fxd::utils {
 
 
 }
+
+
+#undef DUMP
 
 
 #endif

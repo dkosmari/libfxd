@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <limits>
 
 #include <fxd/fxd.hpp>
 
@@ -31,15 +32,15 @@ operator <<(std::ostream& out,
            const Hex<T>& x)
 {
     auto flags = out.flags();
-    auto fill = out.fill();
+    out << std::hex;
 
-    out << std::hex
-        << std::setfill('0')
-        << std::setw(sizeof(T)*2)
-        << x.value;
+    T mask = 0xf;
+    for (int i = sizeof(T) * 2 - 1; i >= 0; --i) {
+        unsigned y = (x.value >> (i*4)) & mask;
+        out << y;
+    }
 
     out.flags(flags);
-    out.fill(fill);
     return out;
 }
 
@@ -65,12 +66,10 @@ std::ostream&
 operator <<(std::ostream& out,
            const Bin<T>& x)
 {
-    using U = std::make_unsigned_t<T>;
+    constexpr int bits = 8 * sizeof(T);
 
-    constexpr int bits = 8 * sizeof(U);
-
-    for (U mask = U{1} << (bits - 1); mask; mask >>= 1)
-        out << (x.value & mask ? '1' : '0');
+    for (int i = bits - 1; i >= 0; --i)
+        out << ((x.value & (T{1} << i)) ? '1' : '0');
 
     return out;
 }
@@ -81,19 +80,21 @@ void
 print(const std::string& name,
       const F& f)
 {
-    std::cout << name
+    constexpr int p = 5 + std::numeric_limits<F>::max_digits10;
+    constexpr int w = std::ceil(std::log10(2) * F::int_bits)
+                  + p + 3;
+
+    std::cout << std::setw(4) << name
               << " = "
               << std::fixed
-              << std::setprecision(std::numeric_limits<F>::digits10)
-              << std::setw(std::ceil(std::log10(2) * F::int_bits)
-                           + std::numeric_limits<F>::digits10
-                           + 1)
+              << std::setprecision(p)
+              << std::setw(w)
               << f
               << "  "
               << hex(f.raw_value)
               << "  "
               << bin(f.raw_value)
-              << std::endl;
+              << '\n';
 }
 
 

@@ -1,7 +1,9 @@
 # tests/Makefile.am
 
 
-noinst_HEADERS = printer.hpp
+noinst_HEADERS = \
+	printer.hpp \
+	random.hpp
 
 
 SUBDIRS = catch2
@@ -19,7 +21,8 @@ AM_CXXFLAGS = \
 check_PROGRAMS = \
 	test-add \
 	test-div \
-	test-mul
+	test-mul \
+	test-sub
 
 
 AM_DEFAULT_SOURCE_EXT = .cpp
@@ -32,3 +35,9 @@ LDADD = \
 TESTS = $(check_PROGRAMS)
 
 
+.PHONY: company
+
+company: compile_flags.txt
+
+compile_flags.txt: Makefile
+	echo "$(AM_CPPFLAGS) $(CPPFLAGS) $(DEFS)" | xargs -n1 | sort -u > $(srcdir)/compile_flags.txt

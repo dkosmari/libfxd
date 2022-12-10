@@ -11,24 +11,29 @@
 
 TEST_CASE("basic", "[s16.16]")
 {
-    using F = fxd::fixed<16, 16>;
+    using Fxd = fxd::fixed<16, 16>;
 
-    F a1 = 1;
-    F a2 = 2;
-    F a3 = 3;
-    REQUIRE(a1 + a2 == a3);
+    {
+        Fxd a = 1;
+        Fxd b = 2;
+        Fxd c = -1;
+        REQUIRE(a - b == c);
+    }
+
+    {
+        Fxd a = 5;
+        Fxd b = 5;
+        Fxd c = 0;
+        REQUIRE(a - b == c);
+    }
 
 
-    F b1 = -1;
-    F b2 = -2;
-    F b3 = -3;
-    REQUIRE(b1 + b2 == b3);
-
-
-    F c1 = 0.5;
-    F c2 = 1.5;
-    F c3 = 2;
-    REQUIRE(c1 + c2 == c3);
+    {
+        Fxd a = 1.5;
+        Fxd b = 2.25;
+        Fxd c = -0.75;
+        REQUIRE(a - b == c);
+    }
 
 }
 
@@ -106,11 +111,11 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::sat::plus(a, b);
+        Fxd c = fxd::safe::sat::minus(a, b);
         // SHOW(a);
         // SHOW(b);
         // SHOW(c);
-        Flt d = static_cast<Flt>(a) + static_cast<Flt>(b);
+        Flt d = static_cast<Flt>(a) - static_cast<Flt>(b);
         if (d < flo)
             REQUIRE(c == lo);
         else if (d < fhi)

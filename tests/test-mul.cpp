@@ -1,12 +1,27 @@
-#include <cfenv>
+#include <cstdlib>
+#include <cxxabi.h>
+#include <string>
 #include <tuple>
-
-#include "catch2/catch_amalgamated.hpp"
 
 #include <fxd/fxd.hpp>
 
-#include "printer.hpp"
+#include "catch2/catch_amalgamated.hpp"
 
+#include "printer.hpp"
+#include "random.hpp"
+#include "setup.hpp"
+
+
+
+template<typename T>
+std::string
+type()
+{
+    char* s = abi::__cxa_demangle(typeid(T).name(), 0, 0, 0);
+    std::string result = s;
+    std::free(s);
+    return result;
+}
 
 
 TEST_CASE("basic_s16.16", "[s16.16]")
@@ -157,6 +172,55 @@ TEST_CASE("round_s32.32", "[s32.32]")
 }
 
 
+TEST_CASE("special1")
+{
+    using F = fxd::fixed<33, 20>;
+
+    F a = F::from_raw(0xfff99a67f370c65a);
+    F b = F::from_raw(0x0002bd0e4b41fb2d);
+    F c = fxd::safe::sat::multiplies(a, b);
+    F d = std::numeric_limits<F>::lowest();
+
+    // SHOW(a);
+    // SHOW(b);
+    // SHOW(c);
+    // SHOW(d);
+
+    REQUIRE(c == d);
+}
+
+
+TEST_CASE("special2")
+{
+    using std::cout;
+    using std::endl;
+
+    using I = std::int64_t;
+
+    I a = 0xfff99a67f370c65a;
+    I b = 0x0002bd0e4b41fb2d;
+    auto c = fxd::utils::full_mult(a, b);
+    REQUIRE(c.first == 0x814a34a018271bd2ULL);
+    REQUIRE(c.second == static_cast<I>(0xffffffee7b7335e1LL));
+}
+
+
+TEST_CASE("special3")
+{
+    using F = fxd::fixed<-1, 65>;
+
+    F a = F::from_raw(0x679d16dc561eef4d); // 0.202370371243032804
+    F b = F::from_raw(0xabafbb5b0dac6969); // -0.164674897322732484
+    F c = a * b;
+    // SHOW(a);
+    // SHOW(b);
+    // SHOW(c);
+    long double d = static_cast<long double>(a) * static_cast<long double>(b);
+    REQUIRE(c == F{d});
+}
+
+
+
 using std::tuple;
 
 using test_types = tuple<
@@ -176,7 +240,7 @@ using test_types = tuple<
     tuple<fxd::ufixed<24, 0>,  float>,
     tuple<fxd::ufixed<25, -1>, float>,
 
-    tuple<fxd::fixed<23, 20>,  double>,
+    tuple<fxd::fixed<33, 20>,  double>,
     tuple<fxd::fixed<52, 1>,   double>,
     tuple<fxd::fixed<53, 0>,   double>,
     tuple<fxd::fixed<54, -1>,  double>,
@@ -184,7 +248,7 @@ using test_types = tuple<
     tuple<fxd::fixed<0, 53>,   double>,
     tuple<fxd::fixed<-1, 54>,  double>,
 
-    tuple<fxd::ufixed<22, 20>, double>,
+    tuple<fxd::ufixed<20, 32>, double>,
     tuple<fxd::ufixed<51, 1>,  double>,
     tuple<fxd::ufixed<52, 0>,  double>,
     tuple<fxd::ufixed<53, -1>, double>,
@@ -210,9 +274,7 @@ using test_types = tuple<
     >;
 
 
-
-
-TEMPLATE_LIST_TEST_CASE("random",
+TEMPLATE_LIST_TEST_CASE("random-basic",
                         "",
                         test_types)
 {
@@ -225,29 +287,73 @@ TEMPLATE_LIST_TEST_CASE("random",
     constexpr Flt flo = static_cast<Flt>(lo);
     constexpr Flt fhi = static_cast<Flt>(hi);
 
-    auto g = GENERATE(take(100000,
-                           random(lo.raw_value,
-                                  hi.raw_value)));
+    RNG<Fxd> rng;
 
-    Fxd a = Fxd::from_raw(g);
-    Fxd b = Fxd::from_raw(g);
-    Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
-    if (flo <= d && d <= fhi) {
-        Fxd c = a * b;
-        REQUIRE(c == Fxd(d));
+    for (int i = 0; i < 10000; ++i) {
+
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+
+        Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
+        if (flo <= d && d <= fhi) {
+            Fxd c = a * b;
+            // std::cout << type<Fxd>() << '\n';
+            // SHOW(lo);
+            // SHOW(hi);
+            // SHOW(a);
+            // SHOW(b);
+            // SHOW(c);
+            // std::cout << "d = "
+            //           << std::fixed
+            //           << std::setprecision(17)
+            //           << d << '\n';
+
+            REQUIRE(c == Fxd{d});
+        }
+
     }
 }
 
 
+TEMPLATE_LIST_TEST_CASE("random-sat",
+                        "[saturation]",
+                        test_types)
+{
+    using Fxd = std::tuple_element_t<0, TestType>;
+    using Flt = std::tuple_element_t<1, TestType>;
 
-class SetRound : public Catch::EventListenerBase {
-public:
-    using Catch::EventListenerBase::EventListenerBase;
+    constexpr auto lo = std::numeric_limits<Fxd>::lowest();
+    constexpr auto hi = std::numeric_limits<Fxd>::max();
 
-    void testRunStarting(Catch::TestRunInfo const&) override
-    {
-        std::fesetround(FE_TOWARDZERO);
+    constexpr Flt flo = static_cast<Flt>(lo);
+    constexpr Flt fhi = static_cast<Flt>(hi);
+
+    RNG<Fxd> rng;
+
+    for (int i = 0; i < 10000; ++i) {
+
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        Fxd c = fxd::safe::sat::multiplies(a, b);
+        Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
+
+        // SHOW(lo);
+        // SHOW(hi);
+        // SHOW(a);
+        // SHOW(b);
+        // SHOW(c);
+        // std::cout << "d = "
+        //           << std::fixed
+        //           << std::setprecision(17)
+        //           << d << '\n';
+
+        if (d < flo)
+            REQUIRE(c == lo);
+        else if (d < fhi)
+            REQUIRE(c == Fxd{d});
+        else
+            REQUIRE(c == hi);
+
     }
-};
 
-CATCH_REGISTER_LISTENER(SetRound)
+}

@@ -31,7 +31,7 @@ namespace fxd {
     fixed<Int, Frac, T>::operator I()
         const noexcept
     {
-        return utils::shr(raw_value, frac_bits);
+        return utils::shrz(raw_value, frac_bits);
     }
 
 

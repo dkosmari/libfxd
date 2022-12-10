@@ -7,8 +7,6 @@
 #include <csignal>
 #include <ostream>
 
-#include <iostream>
-
 #include "fixed.hpp"
 
 #include "concepts.hpp"
@@ -105,21 +103,13 @@ namespace fxd {
 
         if constexpr (has_wider_v<R>) {
             using W = wider_t<R>;
-            //std::cout << "has wider" << std::endl;
             const W aa = a.raw_value;
             const W bb = b.raw_value;
             const W cc = aa * bb;
-            //std::cout << "aa = " << aa << std::endl;
-            //std::cout << "bb = " << bb << std::endl;
-            //std::cout << "cc = " << cc << std::endl;
             a.raw_value = utils::shrz<W>(cc, Fxd::frac_bits);
         } else {
-            // std::cout << "using full_mult()" << std::endl;
-            // std::cout << "a = " << a.raw_value << "\n"
-            //           << "b = " << b.raw_value << std::endl;
-            auto c = utils::full_mult(a.raw_value,
-                                      b.raw_value);
-            // std::cout << "c = " << c.first << " , " << c.second << std::endl;
+            const auto c = utils::full_mult(a.raw_value,
+                                            b.raw_value);
             a.raw_value = utils::shrz(c, Fxd::frac_bits).first;
         }
 
@@ -140,7 +130,7 @@ namespace fxd {
 
         if constexpr (has_wider_v<R>) {
             using W = wider_t<R>;
-            const W aa = utils::shl<W>(a.raw_value, Fxd::frac_bits);
+            const W aa = utils::shlz<W>(a.raw_value, Fxd::frac_bits);
             const W bb = b.raw_value;
             const W cc = aa / bb;
             a.raw_value = cc;

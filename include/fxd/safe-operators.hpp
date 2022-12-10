@@ -7,6 +7,12 @@
 #include <stdexcept>
 #include <utility> // in_range(), forward()
 
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <cstdlib>
+#include <cxxabi.h>
+
 #include "fixed.hpp"
 #include "concepts.hpp"
 #include "limits.hpp"
@@ -14,6 +20,17 @@
 
 
 namespace fxd::safe {
+
+
+    template<typename T>
+    std::string
+    type_name()
+    {
+        char* p = abi::__cxa_demangle(typeid(T).name(), 0, 0, 0);
+        std::string result = p;
+        std::free(p);
+        return result;
+    }
 
 
     enum class error {
@@ -61,8 +78,8 @@ namespace fxd::safe {
              error_handler H>
     constexpr
     Fxd
-    raw_clamped(T x,
-                H&& handler)
+    from_raw(T x,
+             H&& handler)
         noexcept(IS_NOEXCEPT)
     {
         using Lim = std::numeric_limits<Fxd>;
@@ -319,11 +336,16 @@ namespace fxd::safe {
          H&& handler)
         noexcept(IS_NOEXCEPT)
     {
-        typename Fxd::raw_type r;
-        if (__builtin_add_overflow(a.raw_value, b.raw_value, &r))
-            return handler(r < 0 ? error::overflow : error::underflow);
+        using R = typename Fxd::raw_type;
+        R r;
+        if (__builtin_add_overflow(a.raw_value, b.raw_value, &r)) {
+            if constexpr (std::numeric_limits<R>::is_signed)
+                return handler(r < 0 ? error::overflow : error::underflow);
+            else
+                return handler(error::overflow);
+        }
 
-        return raw_clamped<Fxd>(r, std::forward<H>(handler));
+        return from_raw<Fxd>(r, std::forward<H>(handler));
     }
 
 
@@ -336,13 +358,17 @@ namespace fxd::safe {
           H&& handler)
         noexcept(IS_NOEXCEPT)
     {
-        typename Fxd::raw_type r;
-        if (__builtin_sub_overflow(a.raw_value, b.raw_value, &r))
-            return handler(r < 0 ? error::overflow : error::underflow);
+        using R = typename Fxd::raw_type;
+        R r;
+        if (__builtin_sub_overflow(a.raw_value, b.raw_value, &r)) {
+            if constexpr (std::numeric_limits<R>::is_signed)
+                return handler(r < 0 ? error::overflow : error::underflow);
+            else
+                return handler(error::underflow);
+        }
 
-        return raw_clamped<Fxd>(r, std::forward<H>(handler));
+        return from_raw<Fxd>(r, std::forward<H>(handler));
     }
-
 
 
     template<fixed_point Fxd,
@@ -360,40 +386,57 @@ namespace fxd::safe {
             using W = wider_t<R>;
 
             const W aa = a.raw_value;
-            const W bb = Fxd{b}.raw_value;
+            const W bb = b.raw_value;
 
             const W cc = aa * bb;
-            const W dd = utils::shr<W>(cc, Fxd::frac_bits);
+            const W dd = utils::shrz<W>(cc, Fxd::frac_bits);
 
             if constexpr (Fxd::frac_bits < 0)
-                // dd could have lost significant bits
-                if (cc != utils::shl<W>(dd, Fxd::frac_bits))
+                /*
+                 * If frac_bits < 0, it was actually a left shift,
+                 * so significant high bits might have been lost.
+                 * Here we unshift dd to see if the value still matches.
+                 */
+                if (cc != utils::shlz<W>(dd, Fxd::frac_bits))
                     return handler(cc < 0 ? error::underflow : error::overflow);
 
-            return raw_clamped<Fxd>(dd, std::forward<H>(handler));
+            return from_raw<Fxd>(dd, std::forward<H>(handler));
 
         } else {
 
-            const auto c = utils::full_mult(a.raw_value, b.raw_value);
-            const auto d = utils::shr(c, Fxd::frac_bits);
+            const auto c = utils::full_mult(a.raw_value,
+                                            b.raw_value);
 
-            if constexpr (Fxd::frac_bits < 0) {
-                // will actually shift left
-                // check if shifting up lost significant bits
-                if (c != utils::shl(d, Fxd::frac_bits))
+            const auto d = utils::shrz(c, Fxd::frac_bits);
+
+            if constexpr (Fxd::frac_bits < 0)
+                /*
+                 * If frac_bits < 0, it was actually a left shift,
+                 * so significant high bits might have been lost.
+                 * Here we unshift d to see if the value still matches.
+                 */
+                if (c != utils::shlz(d, Fxd::frac_bits))
                     return handler(c.second < 0 ? error::underflow : error::overflow);
-            }
 
             const R dd = static_cast<R>(d.first);
 
-            if (d.second < 0) {
-                if (d.second != -1 || dd >= 0)
+            if constexpr (std::numeric_limits<R>::is_signed) {
+                // only valid values for d.second is 0 or -1
+                if (d.second < -1)
                     return handler(error::underflow);
-            } else {
-                if (d.second || dd < 0)
+                if (d.second > 0)
                     return handler(error::overflow);
+                // d.second is just a sign extension of the top bit of dd
+                // if they disagree in sign, there's underflow or overflow
+                if ((d.second < 0) != (dd < 0))
+                    return handler(d.second < 0 ? error::underflow : error::overflow);
+
+                return from_raw<Fxd>(dd, std::forward<H>(handler));
+            } else {
+                if (d.second)
+                    return handler(error::overflow);
+                return from_raw<Fxd>(d.first, std::forward<H>(handler));
             }
-            return raw_clamped<Fxd>(dd, std::forward<H>(handler));
 
         }
 
@@ -415,13 +458,14 @@ namespace fxd::safe {
             const W aa = utils::shl<W>(a.raw_value, Fxd::frac_bits);
             const W bb = b.raw_value;
 
-            if (std::numeric_limits<W>::is_signed
-                && aa == std::numeric_limits<W>::lowest()
-                && bb ==  -1)
-                return handler(error::overflow);
+            if constexpr (std::numeric_limits<W>::is_signed) {
+                if (aa == std::numeric_limits<W>::lowest()
+                    && bb ==  -1)
+                    return handler(error::overflow);
+            }
 
             const W cc = aa / bb;
-            return raw_clamped<Fxd>(cc, std::forward<H>(handler));
+            return from_raw<Fxd>(cc, std::forward<H>(handler));
         } else {
             const bool neg_a = a.raw_value < 0;
             const bool neg_b = b.raw_value < 0;
@@ -436,16 +480,21 @@ namespace fxd::safe {
             if (neg_b)
                 ub = -ub;
 
-            auto q = utils::full_div<U>(ua, ub, Fxd::frac_bits);
+            auto q = utils::full_div(ua, ub, Fxd::frac_bits);
+            auto r = utils::shrz(q, utils::type_width<U> - Fxd::frac_bits);
 
-            // TODO: this can overflow
-            // a.raw_value = utils::shl(q, Fxd::frac_bits).first;
-
-            // TODO: this can overflow
-            // if (a_neg != b_neg)
-            //     a.raw_value = -a.raw_value;
+            if (neg_a != neg_b) {
+                // must negate the result
+                if (r.second // high bits are nonzero
+                    || std::cmp_greater(r.first, std::numeric_limits<R>::max())) // too large
+                    return handler(error::underflow);
+                return from_raw<Fxd>(-static_cast<R>(r.first), std::forward<H>(handler));
+            } else {
+                if (r.second)
+                    return handler(error::overflow);
+                return from_raw<Fxd>(r.first, std::forward<H>(handler));
+            }
         }
-        return a;
     }
 
 
@@ -623,6 +672,18 @@ namespace fxd::safe {
         {
             return multiplies(a, b, saturate<Fxd>);
         }
+
+
+        template<fixed_point Fxd>
+        constexpr
+        Fxd
+        divides(const Fxd& a,
+                const Fxd& b)
+            noexcept
+        {
+            return divides(a, b, saturate<Fxd>);
+        }
+
 
 
     } // namespace sat

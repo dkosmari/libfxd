@@ -18,4 +18,8 @@ examples
 Makefile
 Makefile.in
 stamp-h1
-tests
+tests/test-add
+tests/test-div
+tests/test-mul
+tests/test-sub
+tests/*.py
