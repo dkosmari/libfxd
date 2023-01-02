@@ -14,7 +14,9 @@ config.h
 config.h.in
 config.status
 configure
-examples
+examples/basic
+examples/saturated
+examples/square-root
 Makefile
 Makefile.in
 stamp-h1
