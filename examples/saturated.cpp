@@ -46,22 +46,23 @@ show(const std::string& name,
 
 //using F = fxd::fixed<10, 54>;
 using F = fxd::fixed<10, 22>;
+using Sat = fxd::safe::saturate;
 
 int main()
 {
     F a = std::numeric_limits<F>::max();
     show("    a", a);
 
-    a = fxd::safe::sat::negate(a);
+    a = Sat::negate(a);
     show("neg a", a);
 
     F b = std::numeric_limits<F>::epsilon();
     show("    b", b);
 
-    F c = fxd::safe::sat::minus(a, b);
+    F c = Sat::minus(a, b);
     show("a - b", c);
 
-    c = fxd::safe::sat::negate(c);
+    c = Sat::negate(c);
     show("-(a-b)", c);
 
     cout << endl;
@@ -70,7 +71,7 @@ int main()
     show("    d", d);
     F e = 500;
     show("    e", e);
-    F f = fxd::safe::sat::multiplies(d, e);
+    F f = Sat::multiplies(d, e);
     show("d * e", f);
 
 }

@@ -16,7 +16,8 @@ AM_CPPFLAGS = \
 AM_CXXFLAGS = \
 	-Wall -Wextra \
 	-frounding-math \
-	-fsanitize=undefined
+	-fsanitize=undefined \
+	-fsanitize-undefined-trap-on-error
 
 check_PROGRAMS = \
 	test-add \

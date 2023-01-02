@@ -38,6 +38,31 @@ TEST_CASE("basic", "[s16.16]")
 }
 
 
+TEST_CASE("extremes", "[s16.16][saturation][exception]")
+{
+    using Fxd = fxd::fixed<16, 16>;
+    using sat = fxd::safe::saturate;
+    using exc = fxd::safe::except;
+
+    {
+        Fxd a = 0;
+        Fxd b = std::numeric_limits<Fxd>::lowest();
+        Fxd c = sat::minus(a, b);
+        REQUIRE(c == std::numeric_limits<Fxd>::max());
+        REQUIRE_THROWS_AS(exc::minus(a, b), std::overflow_error);
+    }
+
+    {
+        Fxd a = Fxd::from_raw(-1);
+        Fxd b = std::numeric_limits<Fxd>::lowest();
+        Fxd c = sat::minus(a, b);
+        REQUIRE(c == std::numeric_limits<Fxd>::max());
+        REQUIRE_NOTHROW(exc::minus(a, b));
+    }
+
+}
+
+
 
 using std::tuple;
 
@@ -107,11 +132,11 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
     RNG<Fxd> rng;
 
-    for (int i = 0; i < 10000; ++i) {
+    for (int i = 0; i < 100000; ++i) {
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::sat::minus(a, b);
+        Fxd c = fxd::safe::saturate::minus(a, b);
         // SHOW(a);
         // SHOW(b);
         // SHOW(c);

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <limits>
 #include <type_traits>
+#include <concepts>
 
 #include "types.hpp"
 #include "fixed.hpp"
@@ -59,6 +60,29 @@ namespace fxd {
     template<typename T>
     inline constexpr
     bool is_unsigned_fixed_point_v = is_unsigned_fixed_point<T>::value;
+
+
+
+}
+
+
+namespace std {
+
+
+    template<typename Fxd,
+             typename Other>
+    requires(fxd::is_fixed_point_v<Fxd> && is_arithmetic_v<Other>)
+    struct common_type<Fxd, Other> {
+        using type = Fxd;
+    };
+
+
+    template<typename Fxd,
+             typename Other>
+    requires(fxd::is_fixed_point_v<Fxd> && is_arithmetic_v<Other>)
+    struct common_type<Other, Fxd> {
+        using type = Fxd;
+    };
 
 
 

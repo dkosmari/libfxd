@@ -148,27 +148,15 @@ namespace fxd {
             if (neg_b)
                 ub = -ub;
 
-            auto q = utils::full_div(ua, ub, Fxd::frac_bits);
+            auto q = utils::full_div<Fxd::frac_bits>(ua, ub);
 
-            U r = utils::shrz(q, utils::type_width<U> - Fxd::frac_bits).first;
-
+            // how many extra bits the division will calculate
+            constexpr int extra = std::max(0, Fxd::frac_bits - utils::type_width<U>);
+            U r = utils::shrz(q, utils::type_width<U> - Fxd::frac_bits + extra).first;
             a.raw_value = neg_a == neg_b ? r : -r;
         }
         return a;
     }
-
-
-    // template<fixed_point Fxd,
-    //          std::convertible_to<Fxd> T>
-    // constexpr
-    // Fxd&
-    // operator %=(Fxd& a,
-    //             const T& b)
-    //     noexcept
-    // {
-    //     a.raw_value %= Fxd{b}.raw_value;
-    //     return a;
-    // }
 
 
 
@@ -249,81 +237,60 @@ namespace fxd {
     }
 
 
-    /*
-     * This defines 3 versions of a binary operator:
-     * - fixed op fixed
-     * - fixed op primitive
-     * - primitive op fixed
-     */
 
-#define BINOP(op)                               \
-    template<fixed_point Fxd>                   \
-    constexpr                                   \
-    Fxd                                         \
-    operator op(Fxd a,                          \
-                const Fxd& b)                   \
-        noexcept                                \
-    {                                           \
-        return a op ## = b;                     \
-    }                                           \
-                                                \
-    template<fixed_point Fxd,                   \
-             std::convertible_to<Fxd> T>        \
-    constexpr                                   \
-    Fxd                                         \
-    operator op(const Fxd& a,                   \
-                const T& b)                     \
-        noexcept                                \
-    {                                           \
-        return a op Fxd{b};                     \
-    }                                           \
-                                                \
-    template<fixed_point Fxd,                   \
-             std::convertible_to<Fxd> T>        \
-    constexpr                                   \
-    Fxd                                         \
-    operator op(const T& a,                     \
-                const Fxd& b)                   \
-        noexcept                                \
-    {                                           \
-        return Fxd{a} op b;                     \
+    template<typename A,
+             typename B>
+    requires(fixed_point<A> || fixed_point<B>)
+    constexpr
+    std::common_type_t<A, B>
+    operator +(A a, B b)
+        noexcept
+    {
+        using Fxd = std::common_type_t<A, B>;
+        Fxd fa{a};
+        return fa += b;
     }
 
 
-    BINOP(+)
-    BINOP(-)
-    BINOP(*)
-    BINOP(/)
-    BINOP(%)
-
-#undef BINOP
-
-
-
-    // ---------- //
-    // Comparison //
-    // ---------- //
-
-
-    template<fixed_point Fxd>
+    template<typename A,
+             typename B>
+    requires(fixed_point<A> || fixed_point<B>)
     constexpr
-    bool
-    operator ==(const Fxd& a,
-                const Fxd& b)
+    std::common_type_t<A, B>
+    operator -(A a, B b)
         noexcept
     {
-        return a.raw_value == b.raw_value;
+        using Fxd = std::common_type_t<A, B>;
+        Fxd fa{a};
+        return fa -= b;
     }
 
 
-    template<fixed_point Fxd>
+    template<typename A,
+             typename B>
+    requires(fixed_point<A> || fixed_point<B>)
     constexpr
-    std::strong_ordering
-    operator <=>(const Fxd& a,
-                 const Fxd& b)
+    std::common_type_t<A, B>
+    operator *(A a, B b)
         noexcept
     {
-        return a.raw_value <=> b.raw_value;
+        using Fxd = std::common_type_t<A, B>;
+        Fxd fa{a};
+        return fa *= b;
+    }
+
+
+    template<typename A,
+             typename B>
+    requires(fixed_point<A> || fixed_point<B>)
+    constexpr
+    std::common_type_t<A, B>
+    operator /(A a, B b)
+        noexcept
+    {
+        using Fxd = std::common_type_t<A, B>;
+        Fxd fa{a};
+        return fa /= b;
     }
 
 
@@ -338,11 +305,7 @@ namespace fxd {
     operator <<(std::ostream& out,
                 const Fxd& f)
     {
-        if constexpr (Fxd::bits <= std::numeric_limits<float>::digits)
-            return out << static_cast<float>(f);
-        if constexpr (Fxd::bits <= std::numeric_limits<double>::digits)
-            return out << static_cast<double>(f);
-        return out << static_cast<long double>(f);
+        return out << to_float(f);
     }
 
 

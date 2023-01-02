@@ -83,51 +83,54 @@ TEST_CASE("basic", "[s16.16]")
 }
 
 
-// TEST_CASE("special1")
-// {
-//     using Fxd = fxd::fixed<-1, 65>;
-//     using Flt = long double;
+#if 1
+TEST_CASE("special1")
+{
+    using Fxd = fxd::fixed<-1, 65>;
+    using Flt = long double;
 
-//     Fxd a = Fxd::from_raw(0x0db0a5a5d9d2167e);
-//     Fxd b = Fxd::from_raw(0x5f80ef4415b492ad);
-//     Fxd c = a / b;
-//     SHOW(a);
-//     SHOW(b);
-//     SHOW(c);
+    Fxd a = Fxd::from_raw(0x0db0a5a5d9d2167e);
+    Fxd b = Fxd::from_raw(0x5f80ef4415b492ad);
+    Fxd c = a / b;
+    SHOW(a);
+    SHOW(b);
+    SHOW(c);
 
-//     Flt fa = static_cast<Flt>(a);
-//     Flt fb = static_cast<Flt>(b);
-//     Flt fc = static_cast<Flt>(c);
-//     Flt fd = static_cast<__float128>(fa) / static_cast<__float128>(fb);
+    Flt fa = static_cast<Flt>(a);
+    Flt fb = static_cast<Flt>(b);
+    Flt fc = static_cast<Flt>(c);
+    Flt fd = fa / fb;
+    // Flt fd = static_cast<__float128>(fa) / static_cast<__float128>(fb);
 
-//     std::cout << std::setprecision(30)
-//               << std::fixed;
+    std::cout << std::setprecision(30)
+              << std::fixed;
 
-//     auto show = [](const char* name, Flt x)
-//     {
-//         std::cout << name
-//                   << " = "
-//                   << std::setw(30 + 5)
-//                   << x
-//                   << '\n';
-//     };
+    auto show = [](const char* name, Flt x)
+    {
+        std::cout << name
+                  << " = "
+                  << std::setw(30 + 5)
+                  << x
+                  << '\n';
+    };
 
-//     show("fa", fa);
-//     show("fb", fb);
-//     show("fc", fc);
-//     show("fd", fd);
+    show("fa", fa);
+    show("fb", fb);
+    show("fc", fc);
+    show("fd", fd);
 
-//     Fxd d = fd;
-//     SHOW(d);
+    Fxd d = fd;
+    SHOW(d);
 
-//     Fxd e = b * c;
-//     SHOW(a);
-//     SHOW(e);
-//     Fxd f = b * d;
-//     SHOW(f);
+    Fxd e = b * c;
+    SHOW(a);
+    SHOW(e);
+    Fxd f = b * d;
+    SHOW(f);
 
-//     REQUIRE(c == d);
-// }
+    REQUIRE(c == d);
+}
+#endif
 
 
 using std::tuple;
@@ -197,35 +200,14 @@ TEMPLATE_LIST_TEST_CASE("random-basic",
     for (int i = 0; i < 10000; ++i) {
         Fxd a = rng.get();
         Fxd b = rng.get();
-        // std::cout << "Fxd is " << type<Fxd>() << '\n';
-        // SHOW(a);
-        // SHOW(b);
 
         Flt fa = static_cast<Flt>(a);
         Flt fb = static_cast<Flt>(b);
         Flt fc = fa / fb;
         if (b && flo <= fc && fc <= fhi) {
             Fxd c = a / b;
-            // SHOW(c);
-
-            // std::cout << "fa = "
-            //           << std::fixed
-            //           << std::setprecision(25)
-            //           << fa
-            //           << "\n";
-            // std::cout << "fb = "
-            //           << std::fixed
-            //           << std::setprecision(25)
-            //           << fb
-            //           << "\n";
-            // std::cout << "fc = "
-            //           << std::fixed
-            //           << std::setprecision(25)
-            //           << fc
-            //           << '\n';
 
             Fxd cc{fc};
-            // SHOW(cc);
 
             REQUIRE(c == cc);
         }
@@ -253,34 +235,13 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
         Fxd b = rng.get();
         if (b) {
 
-            // std::cout << "Fxd is " << type<Fxd>() << '\n';
-
-            Fxd c = fxd::safe::sat::divides(a, b);
-            // SHOW(a);
-            // SHOW(b);
-            // SHOW(c);
+            Fxd c = fxd::safe::saturate::divides(a, b);
 
             Flt fa = static_cast<Flt>(a);
             Flt fb = static_cast<Flt>(b);
             Flt d = fa / fb;
             if (!std::isfinite(d))
                 std::cerr << "not-finite result: " << d << std::endl;
-
-            // std::cout << "fa = "
-            //           << std::fixed
-            //           << std::setprecision(20)
-            //           << fa
-            //           << "\n";
-            // std::cout << "fb = "
-            //           << std::fixed
-            //           << std::setprecision(20)
-            //           << fb
-            //           << "\n";
-            // std::cout << "d = "
-            //           << std::fixed
-            //           << std::setprecision(20)
-            //           << d
-            //           << std::endl;
 
             if (d < flo)
                 REQUIRE(c == lo);

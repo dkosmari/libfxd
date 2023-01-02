@@ -96,6 +96,8 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
     constexpr auto lo = std::numeric_limits<Fxd>::lowest();
     constexpr auto hi = std::numeric_limits<Fxd>::max();
+    // SHOW(lo);
+    // SHOW(hi);
 
     constexpr Flt flo = static_cast<Flt>(lo);
     constexpr Flt fhi = static_cast<Flt>(hi);
@@ -106,11 +108,13 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::sat::plus(a, b);
+        Fxd c = fxd::safe::saturate::plus(a, b);
+        Flt d = static_cast<Flt>(a) + static_cast<Flt>(b);
+
         // SHOW(a);
         // SHOW(b);
         // SHOW(c);
-        Flt d = static_cast<Flt>(a) + static_cast<Flt>(b);
+
         if (d < flo)
             REQUIRE(c == lo);
         else if (d < fhi)

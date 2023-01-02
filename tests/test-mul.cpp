@@ -178,7 +178,7 @@ TEST_CASE("special1")
 
     F a = F::from_raw(0xfff99a67f370c65a);
     F b = F::from_raw(0x0002bd0e4b41fb2d);
-    F c = fxd::safe::sat::multiplies(a, b);
+    F c = fxd::safe::saturate::multiplies(a, b);
     F d = std::numeric_limits<F>::lowest();
 
     // SHOW(a);
@@ -334,7 +334,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::sat::multiplies(a, b);
+        Fxd c = fxd::safe::saturate::multiplies(a, b);
         Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
 
         // SHOW(lo);

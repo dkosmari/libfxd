@@ -1,18 +1,22 @@
 # examples/Makefile.am
 
+noinst_HEADERS = printer.hpp
+
+
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include
 
 
 AM_CXXFLAGS = \
-	-Wall
+	-Wall -Wextra
 
 
 AM_DEFAULT_SOURCE_EXT = .cpp
 
 noinst_PROGRAMS = \
 	basic \
-	saturated
+	saturated \
+	square-root
 
 
 .PHONY: company

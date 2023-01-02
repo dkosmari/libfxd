@@ -25,6 +25,9 @@ namespace fxd {
         static_assert(raw_bits >= bits);
         static_assert(bits > 0);
 
+        // floating point type that can fully represent this floating point type
+        using float_type = select_float_t<bits>;
+
         /*
          * The actual value is stored as a bitfield.
          * By default, the bitfield has the full size of the underlying type,
@@ -63,6 +66,16 @@ namespace fxd {
 
         template<std::floating_point Flt>
         constexpr fixed& operator = (Flt f) noexcept;
+
+
+        // Comparison
+
+        constexpr
+        bool operator ==(const fixed& other)
+            const noexcept = default;
+        constexpr
+        std::strong_ordering operator <=>(const fixed& other)
+            const noexcept = default;
 
 
         // conversion

@@ -8,9 +8,26 @@
 #include <limits>
 #include <type_traits>
 #include <utility>
+#include <tuple>
 
 #include <iostream>
 #include <iomanip>
+
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
+
+#if defined(__GNUC__)                                                   \
+    || defined(__clang__)                                               \
+    || defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+// every non-MS compiler is compatible with GCC's builtins
+#define LIBFXD_GCC_BUILTINS
+#endif
+
+#if defined(_MSC_VER)
+#define LIBFXD_INTEL_BUILTINS
+#endif
 
 
 namespace fxd::utils {
@@ -46,23 +63,184 @@ namespace fxd::utils {
         show(#x, x)
 
 
+    template<typename Head,
+             typename... Tail>
+    constexpr
+    Head
+    head(const std::tuple<Head, Tail...>& t)
+        noexcept
+    {
+        return get<0>(t);
+    }
+
+
+    template<typename Head,
+             typename... Tail,
+             std::size_t... Idx>
+    constexpr
+    std::tuple<Tail...>
+    tail_helper(const std::tuple<Head, Tail...>& t,
+                std::index_sequence<Idx...>)
+        noexcept
+    {
+        return { get<1 + Idx>(t) ... };
+    }
+
+
+    template<typename Head,
+             typename... Tail>
+    constexpr
+    std::tuple<Tail...>
+    tail(const std::tuple<Head, Tail...>& t)
+        noexcept
+    {
+        using Idx = std::index_sequence_for<Tail...>;
+        return tail_helper(t, Idx{});
+    }
+
+
+
+    template<std::unsigned_integral U>
+    constexpr
+    std::pair<U, bool>
+    add_overflow(U a,
+                 U b,
+                 bool carry = false)
+        noexcept
+    {
+#if defined(LIBFXD_GCC_BUILTINS)
+        U ab;
+        U abc;
+        const bool o1 = __builtin_add_overflow(a, b, &ab);
+        const bool o2 = __builtin_add_overflow(ab, carry, &abc);
+        const bool overflow = o1 || o2;
+#elif defined (LIBFXD_INTEL_BUILTINS)
+        U abc;
+        bool overflow;
+        if constexpr (sizeof(U) == 1)
+            overflow = _addcarry_u8(carry, a, b, &abc);
+        else if constexpr (sizeof(U) == 2)
+            overflow = _addcarry_u16(carry, a, b, &abc);
+        else if constexpr (sizeof(U) == 4)
+            overflow = _addcarry_u32(carry, a, b, &abc);
+        else if constexpr (sizeof(U) == 8)
+            overflow = _addcarry_u64(carry, a, b, &abc);
+        else
+            static_assert(false, "No Intel intrinsic for this integer size.");
+#else
+#warning No builtin intrinsics to implement add_overflow(), this method is very slow.
+        const U ab = a + b;
+        const U abc = a + b + carry;
+        constexpr U max = std::numeric_limits<U>::max();
+        const bool overflow = (a > max - b) || (ab > max - carry);
+#endif
+        return {abc, overflow};
+    }
+
+
+    template<std::signed_integral I>
+    constexpr
+    std::pair<I, bool>
+    add_overflow(I a,
+                 I b,
+                 bool carry = false)
+        noexcept
+    {
+#if defined(LIBFXD_GCC_BUILTINS)
+        I ab;
+        I abc;
+        const bool o1 = __builtin_add_overflow(a, b, &ab);
+        const bool o2 = __builtin_add_overflow(ab, carry, &abc);
+        const bool overflow = o1 || o2;
+#elif defined (LIBFXD_INTEL_BUILTINS)
+#error Not implemented yet.
+#else
+#warning Not efficient.
+        constexpr I max = std::numeric_limits<I>::max();
+        constexpr I min = std::numeric_limits<I>::min();
+        using U = std::make_unsigned_t<I>;
+        const I ab  = static_cast<U>(a) + static_cast<U>(b);
+        const I abc = static_cast<U>(a) + static_cast<U>(b) + static_cast<U>(carry);
+        const bool overflow =
+            (b > 0 && a > max - b) // a + b > max
+            ||
+            (b < 0 && a < min - b) // a + b < min
+            ||
+            (c && ab > max - c); // a + b + c > max
+#endif
+        return {abc, overflow};
+    }
+
+
+    template<std::integral I>
+    constexpr
+    std::pair<I, bool>
+    sub_overflow(I a,
+                 I b,
+                 bool borrow = false)
+    {
+#if defined(LIBFXD_GCC_BUILTINS)
+        I ab;
+        I abb;
+        const bool o1 = __builtin_sub_overflow(a, b, &ab);
+        const bool o2 = __builtin_sub_overflow(ab, borrow, &abb);
+        const bool overflow = o1 || o2;
+#else
+#error Not implemented yet.
+#endif
+        return {abb, overflow};
+    }
+
+
+
+    template<std::integral I>
+    constexpr
+    std::tuple<I>
+    add(const std::tuple<I>& a,
+        const std::tuple<I>& b,
+        bool carry_in = false)
+        noexcept
+    {
+        auto [sum, overflow] = add_overflow(get<0>(a), get<0>(b), carry_in);
+        return std::tuple{sum};
+    }
+
+
+    template<std::integral Head,
+             std::integral NextHead,
+             std::integral... Tail>
+    constexpr
+    std::tuple<Head, NextHead, Tail...>
+    add(const std::tuple<Head, NextHead, Tail...>& a,
+        const std::tuple<Head, NextHead, Tail...>& b,
+        bool carry_in = false)
+        noexcept
+    {
+        auto [sum, overflow] = add_overflow(head(a), head(b), carry_in);
+        return std::tuple_cat(std::tuple{sum},
+                              add(tail(a), tail(b), overflow));
+    }
+
+
+    template<std::integral X,
+             std::integral Y>
+    constexpr
+    std::tuple<X, Y>
+    add(const std::pair<X, Y>& a,
+        const std::pair<X, Y>& b,
+        bool carry_in = false)
+    {
+        return add(std::tuple{a}, std::tuple{b}, carry_in);
+    }
+
+
+
     template<std::integral I>
     constexpr I shr(I a, int b) noexcept;
 
 
     template<std::integral I>
     constexpr I shrz(I a, int b) noexcept;
-
-
-
-    template<std::unsigned_integral U,
-             std::integral I>
-    constexpr
-    std::pair<U, I>
-    add(const std::pair<U, I>& a,
-        const std::pair<U, I>& b)
-        noexcept;
-
 
 
     template<std::integral I>
@@ -205,13 +383,6 @@ namespace fxd::utils {
         if (a.second < 0) {
             U bias0 = shl<U>(1, b) - 1;
             I bias1 = shl<I>(1, b - w) - (b >= w ? 1 : 0);
-            // DUMP(bias0);
-            // DUMP(bias1);
-
-            // auto a0 = a.first;
-            // auto a1 = a.second;
-            // DUMP(a0);
-            // DUMP(a1);
 
             auto [c0, c1] = add(a, {bias0, bias1});
 
@@ -231,22 +402,6 @@ namespace fxd::utils {
 
     }
 
-
-
-    template<std::unsigned_integral U,
-             std::integral I>
-    constexpr
-    std::pair<U, I>
-    add(const std::pair<U, I>& a,
-        const std::pair<U, I>& b)
-        noexcept
-    {
-        static_assert(sizeof(U) == sizeof(I));
-        U c0;
-        I c1 = __builtin_add_overflow(a.first, b.first, &c0)
-            + a.second + b.second;
-        return {c0, c1};
-    }
 
 
 
@@ -285,15 +440,15 @@ namespace fxd::utils {
         U c01 = a0 * b0;
         // DUMP(c01);
 
+        U carry1, carry2;
+        std::tie(c01, carry1) = add_overflow(c01, static_cast<U>(a0b1 & mask) << k);
+        std::tie(c01, carry2) = add_overflow(c01, static_cast<U>(a1b0 & mask) << k);
+
         I c23 = a1 * b1
             + (a0b1 >> k)
             + (a1b0 >> k)
-            + __builtin_add_overflow(c01,
-                                     static_cast<U>(a0b1 & mask) << k,
-                                     &c01)
-            + __builtin_add_overflow(c01,
-                                     static_cast<U>(a1b0 & mask) << k,
-                                     &c01);
+            + carry1 + carry2;
+
         // DUMP(c01);
         // DUMP(c23);
         return {c01, c23};
@@ -301,17 +456,17 @@ namespace fxd::utils {
 
 
 
-    template<std::unsigned_integral U>
+    template<int frac_bits,
+             std::unsigned_integral U>
     std::pair<U, U>
     full_div(U a,
-             U b,
-             int frac_bits)
+             U b)
         noexcept
     {
         constexpr int k = type_width<U>;
         constexpr U top_bit = U{1} << (k - 1);
         U q0 = 0;
-        const U q1 = a / b;
+        U q1 = a / b;
         U r = a % b;
         for (int i = 0; r && i < std::min(k, frac_bits); ++i) {
 
@@ -324,6 +479,26 @@ namespace fxd::utils {
                 q0 |= U{1} << (k - i - 1);
             }
         }
+
+
+        if (frac_bits > k) {
+            // calculate even more bits and shift both q0 and q1 up
+            // to accomodate them
+            const int extra = frac_bits - k;
+            U q00 = 0;
+            for (int i = 0; i < extra; ++i) {
+                bool carry = r & top_bit;
+                r <<= 1;
+
+                if (carry || r >= b) {
+                    r -= b;
+                    q00 |= U{1} << (k - i - 1);
+                }
+            }
+            q1 = (q1 << extra) | (q0 >> (k - extra));
+            q0 = (q0 << extra) | (q00 >> (k - extra));
+        }
+
         return {q0, q1};
     }
 

@@ -1,10 +1,13 @@
+/*
 #include <iostream>
 #include <iomanip>
 #include <numeric>
+*/
 
 #include <fxd/fxd.hpp>
 #include <fxd/limits.hpp>
 
+#if 0
 
 using std::cout;
 using std::endl;
@@ -76,62 +79,13 @@ operator <<(std::ostream& out,
     return out;
 }
 
-
+#endif
 
 
 
 int main()
 {
-#if 0
-    using F = fxd::fixed<16, 16>;
-
-    cout << std::hex
-         << std::setprecision(std::numeric_limits<F>::max_digits10)
-         << std::fixed;
-
-    F a = std::numeric_limits<F>::max();
-    cout << "a: " << a << "  " << unsigned(a.raw_value) << endl;
-
-    F b = std::numeric_limits<F>::epsilon();
-    cout << "b: " << b << "  " << unsigned(b.raw_value) << endl;
-
-
-    // auto e = std::numbers::e_v<fixed<16, 16>>;
-    // cout << "e: " << e << endl;
-
-
-    auto c = a * b;
-    cout << "c: " << c << "  " << unsigned(c.raw_value) << endl;
-
-
-    auto [d, e] = fxd::utils::full_mult(a.raw_value, b.raw_value);
-    cout << "d = " << d << endl;
-    cout << "e = " << e << endl;
-
-
-#endif
-
-#if 1
-    using std::uint16_t;
-
-    uint16_t x = 10;
-    uint16_t y = 5;
-
-    cout << " x = " << hex(x) << "  " << bin(x) << endl;
-    cout << " y = " << hex(y) << "  " << bin(y) << endl;
-
-    auto [z0, z1] = fxd::utils::full_div(uint16_t{0},
-                                         x,
-                                         y);
-    cout << "z1 = " << hex(z1) << "  " << bin(z1) << endl;
-    cout << "z0 = " << hex(z0) << "  " << bin(z0) << endl;
-
-    uint32_t xx = x << 16;
-    uint32_t yy = y;
-    uint32_t zz = xx / yy;
-    cout << "zz = " << hex(zz) << "  " << bin(zz) << endl;
-
-
-#endif
-
+    std::uint16_t x = ~0;
+    auto y = fxd::utils::shr(x, 20);
+    return y;
 }

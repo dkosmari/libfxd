@@ -9,6 +9,7 @@
 #include "constructors.hpp"
 #include "conversions.hpp"
 #include "limits.hpp"
+#include "math.hpp"
 #include "numbers.hpp"
 #include "operators.hpp"
 #include "safe-operators.hpp"

@@ -97,7 +97,7 @@ namespace std {
         round_error()
             noexcept
         {
-            return 1;
+            return epsilon();
         }
 
 

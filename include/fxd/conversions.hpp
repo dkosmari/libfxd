@@ -7,6 +7,7 @@
 #include "fixed.hpp"
 
 #include "utils.hpp"
+#include "concepts.hpp"
 
 
 namespace fxd {
@@ -47,6 +48,17 @@ namespace fxd {
         return ldexp(static_cast<Flt>(raw_value), -frac_bits);
     }
 
+
+    template<fixed_point Fxd>
+    constexpr
+    Fxd::float_type
+    to_float(Fxd f)
+        noexcept
+    {
+        using Flt = Fxd::float_type;
+        static_assert(!std::is_void_v<Flt>);
+        return static_cast<Flt>(f);
+    }
 
 }
 

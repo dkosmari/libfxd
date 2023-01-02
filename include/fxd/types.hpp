@@ -54,23 +54,6 @@ namespace fxd {
     struct select_uint<bits> { using type = std::uint64_t; };
 
 
-#ifdef __SIZEOF_INT128__
-
-    template<int bits>
-    requires (bits > 64 && bits <= 128
-              && std::numeric_limits<__int128>::is_specialized
-              && std::is_integral_v<__int128>)
-    struct select_int<bits> { using type = __int128; };
-
-    template<int bits>
-    requires (bits > 64 && bits <= 128
-              && std::numeric_limits<unsigned __int128>::is_specialized
-              && std::is_integral_v<__int128>)
-    struct select_uint<bits> { using type = unsigned __int128; };
-
-#endif
-
-
     // client is allowed to add wider specializations if they're available
 
 
@@ -98,6 +81,42 @@ namespace fxd {
 
 
 
+    // select floating point type by the mantissa bits
+
+
+    template<int>
+    struct select_float {
+        using type = void;
+    };
+        
+    
+    template<int bits>
+    requires(bits <= std::numeric_limits<float>::digits)
+    struct select_float<bits> {
+        using type = float;
+    };
+    
+
+    template<int bits>
+    requires(bits > std::numeric_limits<float>::digits &&
+             bits <= std::numeric_limits<double>::digits)
+    struct select_float<bits> {
+        using type = double;
+    };
+    
+
+    template<int bits>
+    requires(bits > std::numeric_limits<double>::digits &&
+             bits <= std::numeric_limits<long double>::digits)
+    struct select_float<bits>  {
+        using type = long double;
+    };
+
+
+    template<int bits>
+    using select_float_t = select_float<bits>::type;
+
+    
 }
 
 

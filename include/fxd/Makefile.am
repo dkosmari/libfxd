@@ -7,6 +7,7 @@ fxd_HEADERS = \
 	conversions.hpp \
 	fixed.hpp \
 	fxd.hpp \
+	math.hpp \
 	numbers.hpp \
 	operators.hpp \
 	safe-operators.hpp \
