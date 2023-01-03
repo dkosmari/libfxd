@@ -12,6 +12,7 @@
 #include "math.hpp"
 #include "numbers.hpp"
 #include "operators.hpp"
+#include "random.hpp"
 #include "safe-operators.hpp"
 #include "traits.hpp"
 

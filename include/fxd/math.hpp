@@ -27,10 +27,10 @@ namespace fxd {
     fdim(Fxd a, Fxd b)
         noexcept
     {
-        if (a >= b)
+        if (a > b)
             return a - b;
         else
-            return b - a;
+            return 0;
     }
 
 

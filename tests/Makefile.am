@@ -3,7 +3,7 @@
 
 noinst_HEADERS = \
 	printer.hpp \
-	random.hpp
+	rng.hpp
 
 
 SUBDIRS = catch2

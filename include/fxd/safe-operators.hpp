@@ -473,10 +473,10 @@ namespace fxd::safe {
         fdim(Fxd a, Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
-            if(a >= b)
+            if(a > b)
                 return minus(a, b);
             else
-                return minus(b, a);
+                return 0;
         }
 
 

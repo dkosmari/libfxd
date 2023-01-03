@@ -6,6 +6,7 @@
 #include <concepts>
 #include <csignal>
 #include <ostream>
+#include <istream>
 
 #include "fixed.hpp"
 
@@ -300,15 +301,29 @@ namespace fxd {
     // --- //
 
 
-    template<fixed_point Fxd>
-    std::ostream&
-    operator <<(std::ostream& out,
+    template<typename CharT,
+             typename Traits,
+             fixed_point Fxd>
+    std::basic_ostream<CharT, Traits>&
+    operator <<(std::basic_ostream<CharT, Traits>& out,
                 const Fxd& f)
     {
         return out << to_float(f);
     }
 
 
+    template<typename CharT,
+             typename Traits,
+             fixed_point Fxd>
+    std::basic_istream<CharT, Traits>&
+    operator >>(std::basic_istream<CharT, Traits>& in,
+                const Fxd& f)
+    {
+        typename Fxd::float_type ff;
+        if (in >> ff)
+            f = ff;
+        return in;
+    }
 
 
 

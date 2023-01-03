@@ -129,6 +129,7 @@ test(Fxd x)
     print(fdim(a, d));
     cout << '\n';
 
+    cout << endl;
 }
 
 
@@ -136,7 +137,7 @@ int main()
 {
     using F = fxd::fixed<32, 32>;
 
-    for (auto s : {0.0, 1.0, 9.0, 2.0, 1.5, 16.0, 20.0, 0.0625}){
+    for (auto s : {0.0, 1.0, 9.0, 2.0, 1.5, 16.0, 25.0, 0.0625, 100.0, 3.0}) {
         test<F>(s);
     }
 

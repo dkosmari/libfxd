@@ -10,6 +10,7 @@ fxd_HEADERS = \
 	math.hpp \
 	numbers.hpp \
 	operators.hpp \
+	random.hpp \
 	safe-operators.hpp \
 	traits.hpp \
 	types.hpp \

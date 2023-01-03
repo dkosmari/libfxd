@@ -15,6 +15,7 @@ AM_DEFAULT_SOURCE_EXT = .cpp
 
 noinst_PROGRAMS = \
 	basic \
+	closest-pair \
 	saturated \
 	square-root
 

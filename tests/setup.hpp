@@ -3,7 +3,7 @@
 
 #include <cfenv>
 
-#include "random.hpp"
+#include "rng.hpp"
 
 
 class Setup : public Catch::EventListenerBase {

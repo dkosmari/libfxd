@@ -5,7 +5,7 @@
 #include "catch2/catch_amalgamated.hpp"
 
 #include "printer.hpp"
-#include "random.hpp"
+#include "rng.hpp"
 #include "setup.hpp"
 
 

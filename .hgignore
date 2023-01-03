@@ -15,13 +15,14 @@ config.h.in
 config.status
 configure
 examples/basic
+examples/closest-pair
 examples/saturated
 examples/square-root
 Makefile
 Makefile.in
 stamp-h1
+tests/*.py
 tests/test-add
 tests/test-div
 tests/test-mul
 tests/test-sub
-tests/*.py
