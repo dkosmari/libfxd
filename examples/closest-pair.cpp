@@ -5,23 +5,43 @@
 #include <vector>
 #include <random>
 #include <iterator>
+#include <unordered_set>
+#include <bit>
 
 
 #include <fxd/fxd.hpp>
+
 
 using std::cout;
 using std::clog;
 using std::endl;
 
-using F = fxd::fixed<16, 16>;
+using F = fxd::fixed<24, 8>;
 //using F = double;
 
 
 
 struct Pt {
     F x, y;
+
+    constexpr bool operator ==(const Pt&) const noexcept = default;
 };
 
+
+namespace std {
+
+    template<>
+    struct hash<Pt> {
+        size_t
+        operator ()(const Pt& p)
+            const noexcept
+        {
+            using H = hash<F>;
+            return rotl(H{}(p.y), 3) ^ H{}(p.x);
+        }
+    };
+
+};
 
 
 F global_min;
@@ -72,9 +92,13 @@ closest_pair(R&& points)
     Pt p1, p2, p3, p4;
     p1 = p2 = p3 = p4 = *begin(points);
     for (const auto& p : points | std::views::drop(1)) {
+#if 0
         F d = p.x - center;
-        //d = d * d;
+        d = d * d;
+#else
+        F d = fxd::safe::except::minus(p.x, center);
         d = fxd::safe::except::multiplies(d, d);
+#endif
         if (d < global_min) {
             check(p, p1);
             check(p, p2);
@@ -122,19 +146,21 @@ solve_slow(const std::vector<Pt>& points)
 int main()
 {
     std::random_device dev;
-    std::default_random_engine eng{dev()};
-    std::uniform_int_distribution<F::raw_type> dist{
-        F{-50}.raw_value,
-        F{50}.raw_value
-    };
+    std::mt19937 eng{dev()};
+    fxd::uniform_real_distribution<F> dist{-100, 100};
 
 
     std::vector<Pt> points;
-    for (int i = 0; i < 1000; ++i) {
-        F x = F::from_raw(dist(eng));
-        F y = F::from_raw(dist(eng));
-        points.emplace_back(x, y);
+    std::unordered_set<Pt> filter;
+
+    for (int i = 0; i < 100; ++i) {
+        Pt p{dist(eng), dist(eng)};
+        if (filter.contains(p))
+            continue;
+        filter.insert(p);
+        points.push_back(p);
     }
+    filter.clear();
 
     cout << "generated " << points.size() << " points" << endl;
 
@@ -143,6 +169,10 @@ int main()
 
     cout << "recursive solution: " << a << endl;
     cout << "slow solution:      " << b << endl;
+    if (a != b) {
+        cout << "inconsistency found!" << endl;
+        return -1;
+    }
 
 
 }

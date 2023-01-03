@@ -10,7 +10,7 @@
 
 
 
-std::default_random_engine random_engine;
+std::mt19937 random_engine;
 
 
 template<fxd::fixed_point Fxd>
