@@ -4,14 +4,17 @@
 
 #include <algorithm>
 #include <bit>
+#include <cfenv>
 #include <concepts>
 #include <limits>
 #include <type_traits>
 #include <utility>
 #include <tuple>
 
+#if 0
 #include <iostream>
 #include <iomanip>
+#endif
 
 #ifdef _MSC_VER
 #include <intrin.h>
@@ -39,6 +42,9 @@ namespace fxd::utils {
     int type_width = std::numeric_limits<T>::digits +
         (std::numeric_limits<T>::is_signed ? 1 : 0);
 
+
+
+#if 0
     template<typename I>
     void
     show(const char* name, I val)
@@ -61,6 +67,8 @@ namespace fxd::utils {
 
 #define DUMP(x) \
         show(#x, x)
+#endif
+
 
 
     template<typename Head,
@@ -260,6 +268,7 @@ namespace fxd::utils {
     }
 
 
+
     template<std::integral I>
     constexpr
     I
@@ -455,7 +464,7 @@ namespace fxd::utils {
     }
 
 
-
+    // TODO: make this return a 3-array or triple
     template<int frac_bits,
              std::unsigned_integral U>
     std::pair<U, U>
@@ -481,7 +490,7 @@ namespace fxd::utils {
         }
 
 
-        if (frac_bits > k) {
+        if constexpr (frac_bits > k) {
             // calculate even more bits and shift both q0 and q1 up
             // to accomodate them
             const int extra = frac_bits - k;
@@ -502,6 +511,31 @@ namespace fxd::utils {
         return {q0, q1};
     }
 
+
+#if (defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__))
+#pragma STDC FENV_ACCESS ON
+#endif
+
+
+    struct rounder {
+
+        int mode;
+
+        rounder()
+        noexcept :
+            mode{std::fegetround()}
+        {
+            std::fesetround(FE_TOWARDZERO);
+        }
+
+        ~rounder()
+            noexcept
+        {
+            if (mode >= 0)
+                std::fesetround(mode);
+        }
+
+    };
 
 }
 

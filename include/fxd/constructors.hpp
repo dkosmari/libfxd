@@ -30,6 +30,8 @@ namespace fxd {
     fixed<Int, Frac, T>::fixed(Flt f)
         noexcept
     {
+        // note: no need to control rounding mode here, since
+        // conversion to int is always rounded to zero
         using std::ldexp;
         raw_value = static_cast<raw_type>(ldexp(f, frac_bits));
     }

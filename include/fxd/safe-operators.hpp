@@ -2,16 +2,9 @@
 #define LIBFXD_SAFE_OPERATORS_HPP
 
 #include <concepts>
-// #include <csignal>
 #include <cstdlib>
 #include <stdexcept>
 #include <utility> // in_range()
-
-// #include <iostream>
-// #include <iomanip>
-// #include <string>
-// #include <cstdlib>
-// #include <cxxabi.h>
 
 #include "fixed.hpp"
 #include "concepts.hpp"
@@ -22,16 +15,6 @@
 namespace fxd::safe {
 
 
-    // template<typename T>
-    // std::string
-    // type_name()
-    // {
-    //     char* p = abi::__cxa_demangle(typeid(T).name(), 0, 0, 0);
-    //     std::string result = p;
-    //     std::free(p);
-    //     return result;
-    // }
-
 
     enum class error {
         underflow,
@@ -41,9 +24,9 @@ namespace fxd::safe {
 
 
 
-
     template<typename Handler>
     struct safe_operators {
+
 
 
        template<fxd::fixed_point Fxd>
@@ -82,6 +65,7 @@ namespace fxd::safe {
         }
 
 
+
         template<fxd::fixed_point Fxd,
                  std::integral I>
         static constexpr
@@ -89,25 +73,44 @@ namespace fxd::safe {
         make_fixed(I val)
             noexcept(is_noexcept<Fxd>)
         {
-            using Lim = std::numeric_limits<Fxd>;
-            using Raw = typename Fxd::raw_type;
+            if constexpr (Fxd::frac_bits < 0) {
 
-            // TODO: fix these, they're not right
+                return from_raw<Fxd>(utils::shrz(val, -Fxd::frac_bits));
 
-            if (std::cmp_less(val, static_cast<Raw>(Lim::lowest())))
-                return handler<Fxd>(error::underflow);
+            } else {
 
-            if (std::cmp_greater(val, static_cast<Raw>(Lim::max())))
-                return handler<Fxd>(error::overflow);
+                using Raw = typename Fxd::raw_type;
+                using Lim = std::numeric_limits<Raw>;
+                constexpr int w = utils::type_width<Raw>;
 
-            return Fxd{val};
+                // ensure val can be represented as raw_type
+                if (std::cmp_less(val, Lim::min()))
+                    return handler<Fxd>(error::underflow);
+                if (std::cmp_greater(val, Lim::max()))
+                    return handler<Fxd>(error::overflow);
+
+                const Raw d = utils::shr<Raw>(val, w - Fxd::frac_bits);
+                const Raw rval = utils::shl<Raw>(val, Fxd::frac_bits);
+
+                if (d > 0)
+                    return handler<Fxd>(error::overflow);
+
+                if (std::cmp_less(d, -1))
+                    return handler<Fxd>(error::underflow);
+
+                if ((rval < 0) != (d < 0))
+                    return handler<Fxd>(d < 0 ? error::underflow : error::overflow);
+
+                return from_raw<Fxd>(rval);
+
+            }
         }
 
 
 
         template<fxd::fixed_point Fxd,
                  std::floating_point Flt>
-        static constexpr
+        static
         Fxd
         make_fixed(Flt val)
             noexcept(is_noexcept<Fxd>)
@@ -120,14 +123,10 @@ namespace fxd::safe {
                 return handler<Fxd>(val < 0 ? error::underflow : error::overflow);
             }
 
-
-            // TODO: check if rounding doesn't ruin the limit
-            // when Fxd has more bits than Flt's mantissa.
-
-            if (val < static_cast<Flt>(Lim::lowest()))
+            if (val < to_float(Lim::lowest()))
                 return handler<Fxd>(error::underflow);
 
-            if (val > static_cast<Flt>(Lim::max()))
+            if (val > to_float(Lim::max()))
                 return handler<Fxd>(error::overflow);
 
             return Fxd{val};
@@ -437,6 +436,7 @@ namespace fxd::safe {
 
                 auto q = utils::full_div<Fxd::frac_bits>(ua, ub);
                 auto r = utils::shrz(q, utils::type_width<U> - Fxd::frac_bits);
+                // TODO: handle extra bits like the unsafe version
 
                 if (neg_a != neg_b) {
                     // must negate the result

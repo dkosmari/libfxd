@@ -3,7 +3,8 @@
 
 noinst_HEADERS = \
 	printer.hpp \
-	rng.hpp
+	rng.hpp \
+	setup.hpp
 
 
 SUBDIRS = catch2
@@ -14,13 +15,14 @@ AM_CPPFLAGS = \
 
 
 AM_CXXFLAGS = \
-	-Wall -Wextra \
+	-Wall -Wextra -Werror \
 	-frounding-math \
 	-fsanitize=undefined \
 	-fsanitize-undefined-trap-on-error
 
 check_PROGRAMS = \
 	test-add \
+	test-conv \
 	test-div \
 	test-mul \
 	test-sub

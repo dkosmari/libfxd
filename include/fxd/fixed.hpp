@@ -24,8 +24,10 @@ namespace fxd {
 
         static_assert(raw_bits >= bits);
         static_assert(bits > 0);
+        static_assert(2 * raw_bits >= int_bits);
+        static_assert(2 * raw_bits >= frac_bits);
 
-        // floating point type that can fully represent this floating point type
+        // floating point type that can fully represent this fixed point type
         using float_type = select_float_t<bits>;
 
         /*
@@ -34,8 +36,6 @@ namespace fxd {
          * so it has no runtime cost. If the bits are limited, the compiler
          * will generate the appropriate shift and mask operations.
          */
-        // TODO: wrap this in a template that can be specialized
-        // for user-defined integral types.
         raw_type raw_value : bits;
 
 
@@ -88,7 +88,7 @@ namespace fxd {
         operator I() const noexcept;
 
         template<std::floating_point F>
-        explicit constexpr
+        explicit
         operator F() const noexcept;
 
 

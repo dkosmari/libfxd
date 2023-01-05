@@ -40,17 +40,16 @@ namespace fxd {
              int Frac,
              typename T>
     template<std::floating_point Flt>
-    constexpr
     fixed<Int, Frac, T>::operator Flt()
         const noexcept
     {
+        utils::rounder r;
         using std::ldexp;
         return ldexp(static_cast<Flt>(raw_value), -frac_bits);
     }
 
 
     template<fixed_point Fxd>
-    constexpr
     Fxd::float_type
     to_float(Fxd f)
         noexcept
