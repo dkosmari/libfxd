@@ -50,6 +50,7 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
+    requires(!std::is_void_v<typename Fxd::float_type>)
     Fxd::float_type
     to_float(Fxd f)
         noexcept

@@ -123,10 +123,10 @@ namespace fxd::safe {
                 return handler<Fxd>(val < 0 ? error::underflow : error::overflow);
             }
 
-            if (val < to_float(Lim::lowest()))
+            if (val < static_cast<Flt>(Lim::lowest()))
                 return handler<Fxd>(error::underflow);
 
-            if (val > to_float(Lim::max()))
+            if (val > static_cast<Flt>(Lim::max()))
                 return handler<Fxd>(error::overflow);
 
             return Fxd{val};

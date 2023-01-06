@@ -1,7 +1,9 @@
-#include <cstdint>
-#include <limits>
-#include <iostream>
+#include <cfenv>
 #include <cmath>
+#include <cstdint>
+#include <iomanip>
+#include <iostream>
+#include <limits>
 
 #include <fxd/fxd.hpp>
 
@@ -21,32 +23,32 @@ TEST_CASE("raw1", "[s8.4]")
     std::uint16_t u;
 
     s = 0b0000'00000001'0000;
-    REQUIRE(exc::from_raw<F>(s) == F{1});
+    CHECK(exc::from_raw<F>(s) == F{1});
 
     s = 0b0000'01111111'0000;
-    REQUIRE(exc::from_raw<F>(s) == F{127});
+    CHECK(exc::from_raw<F>(s) == F{127});
 
     s = 0b0000'10000000'0000;
-    REQUIRE_THROWS_AS(exc::from_raw<F>(s), std::overflow_error);
+    CHECK_THROWS_AS(exc::from_raw<F>(s), std::overflow_error);
 
     s = 0b1111'10000000'0000;
-    REQUIRE(exc::from_raw<F>(s) == F{-128});
+    CHECK(exc::from_raw<F>(s) == F{-128});
 
     --s;
-    REQUIRE_THROWS_AS(exc::from_raw<F>(s), std::underflow_error);
+    CHECK_THROWS_AS(exc::from_raw<F>(s), std::underflow_error);
 
     s = 0b1111'11111111'0000;
-    REQUIRE(exc::from_raw<F>(s) == F{-1});
+    CHECK(exc::from_raw<F>(s) == F{-1});
 
 
     u = 0b0000'01111111'0000;
-    REQUIRE(exc::from_raw<F>(u) == F{127});
+    CHECK(exc::from_raw<F>(u) == F{127});
 
     u = 0b0000'10000000'0000;
-    REQUIRE_THROWS_AS(exc::from_raw<F>(u), std::overflow_error);
+    CHECK_THROWS_AS(exc::from_raw<F>(u), std::overflow_error);
 
     u = 0b1111'11111111'1111;
-    REQUIRE_THROWS_AS(exc::from_raw<F>(u), std::overflow_error);
+    CHECK_THROWS_AS(exc::from_raw<F>(u), std::overflow_error);
 }
 
 
@@ -59,32 +61,32 @@ TEST_CASE("raw2", "[u8.4]")
     std::uint16_t u;
 
     s = 0b0000'00000001'0000;
-    REQUIRE(exc::from_raw<F>(s) == F{1});
+    CHECK(exc::from_raw<F>(s) == F{1});
 
     s = 0b0000'01111111'0000;
-    REQUIRE(exc::from_raw<F>(s) == F{127});
+    CHECK(exc::from_raw<F>(s) == F{127});
 
     s = 0b0000'10000000'0000;
-    REQUIRE(exc::from_raw<F>(s) == F{128});
+    CHECK(exc::from_raw<F>(s) == F{128});
 
     s = 0b1111'10000000'0000;
-    REQUIRE_THROWS_AS(exc::from_raw<F>(s), std::underflow_error);
+    CHECK_THROWS_AS(exc::from_raw<F>(s), std::underflow_error);
 
     s = 0b1111'10000000'0000;
-    REQUIRE_THROWS_AS(exc::from_raw<F>(s), std::underflow_error);
+    CHECK_THROWS_AS(exc::from_raw<F>(s), std::underflow_error);
 
 
     u = 0b0000'01111111'0000;
-    REQUIRE(exc::from_raw<F>(u) == F{127});
+    CHECK(exc::from_raw<F>(u) == F{127});
 
     u = 0b0000'10000000'0000;
-    REQUIRE(exc::from_raw<F>(u) == F{128});
+    CHECK(exc::from_raw<F>(u) == F{128});
 
     u = 0b0000'11111111'0000;
-    REQUIRE(exc::from_raw<F>(u) == F{255});
+    CHECK(exc::from_raw<F>(u) == F{255});
 
     u = 0b1111'11111111'1111;
-    REQUIRE_THROWS_AS(exc::from_raw<F>(u), std::overflow_error);
+    CHECK_THROWS_AS(exc::from_raw<F>(u), std::overflow_error);
 }
 
 
@@ -97,20 +99,20 @@ TEST_CASE("raw3", "[s8.4]")
     for (int i = -512; i <= 512; ++i) {
 
         if (i < Lim::lowest().raw_value)
-            REQUIRE_THROWS_AS(exc::from_raw<F>(i), std::underflow_error);
+            CHECK_THROWS_AS(exc::from_raw<F>(i), std::underflow_error);
         else if (i <= Lim::max().raw_value)
-            REQUIRE_NOTHROW(exc::from_raw<F>(i));
+            CHECK_NOTHROW(exc::from_raw<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
 
     }
 
     for (unsigned i = 0; i <= 1024; ++i) {
 
         if (i <= unsigned(Lim::max().raw_value))
-            REQUIRE_NOTHROW(exc::from_raw<F>(i));
+            CHECK_NOTHROW(exc::from_raw<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
 
     }
 }
@@ -125,20 +127,20 @@ TEST_CASE("raw4", "[u8.4]")
     for (int i = -512; i <= 512; ++i) {
 
         if (i < Lim::lowest().raw_value)
-            REQUIRE_THROWS_AS(exc::from_raw<F>(i), std::underflow_error);
+            CHECK_THROWS_AS(exc::from_raw<F>(i), std::underflow_error);
         else if (i <= Lim::max().raw_value)
-            REQUIRE_NOTHROW(exc::from_raw<F>(i));
+            CHECK_NOTHROW(exc::from_raw<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
 
     }
 
     for (unsigned i = 0; i <= 1024; ++i) {
 
         if (i <= Lim::max().raw_value)
-            REQUIRE_NOTHROW(exc::from_raw<F>(i));
+            CHECK_NOTHROW(exc::from_raw<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::from_raw<F>(i), std::overflow_error);
 
     }
 }
@@ -155,18 +157,18 @@ TEST_CASE("make1", "[s8.4]")
 
     for (int i = -512; i <= 512; ++i) {
         if (i < (min.raw_value >> 4))
-            REQUIRE_THROWS_AS(exc::make_fixed<F>(i), std::underflow_error);
+            CHECK_THROWS_AS(exc::make_fixed<F>(i), std::underflow_error);
         else if (i <= (max.raw_value >> 4))
-            REQUIRE_NOTHROW(exc::make_fixed<F>(i));
+            CHECK_NOTHROW(exc::make_fixed<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
     }
 
     for (unsigned i = 0; i <= 1024; ++i) {
         if (i <= unsigned(max.raw_value >> 4))
-            REQUIRE_NOTHROW(exc::make_fixed<F>(i));
+            CHECK_NOTHROW(exc::make_fixed<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
     }
 }
 
@@ -182,18 +184,18 @@ TEST_CASE("make2", "[u8.4]")
 
     for (int i = -512; i <= 512; ++i) {
         if (i < int(min.raw_value >> 4))
-            REQUIRE_THROWS_AS(exc::make_fixed<F>(i), std::underflow_error);
+            CHECK_THROWS_AS(exc::make_fixed<F>(i), std::underflow_error);
         else if (i <= int(max.raw_value >> 4))
-            REQUIRE_NOTHROW(exc::make_fixed<F>(i));
+            CHECK_NOTHROW(exc::make_fixed<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
     }
 
     for (unsigned i = 0; i <= 1024; ++i) {
         if (i <= max.raw_value >> 4)
-            REQUIRE_NOTHROW(exc::make_fixed<F>(i));
+            CHECK_NOTHROW(exc::make_fixed<F>(i));
         else
-            REQUIRE_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
+            CHECK_THROWS_AS(exc::make_fixed<F>(i), std::overflow_error);
     }
 }
 
@@ -208,41 +210,41 @@ TEST_CASE("make3", "[s1.31]")
     using over = std::overflow_error;
     using under = std::underflow_error;
 
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(0));
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(0.0f));
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(0.0));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(0));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(0.0f));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(0.0));
 
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(1), over);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(1.0f), over);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(1.0), over);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(1.0L), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(1), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(1.0f), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(1.0), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(1.0L), over);
 
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(-1));
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(-1.0f));
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(-1.0));
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(-1.0L));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(-1));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(-1.0f));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(-1.0));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(-1.0L));
 
     {
         const Flt a = nextafter(1.0f, 0.0f);
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(a));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
         const long double b = a;
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(b));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
 
         // ensure the extra mantissa bits are not being discarded
         long double c = to_float(std::numeric_limits<Fxd>::max());
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(c));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
         c = nextafter(c, 2.0L);
-        REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(c), over);
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), over);
 
         c = to_float(std::numeric_limits<Fxd>::lowest());
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(c));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
         c = nextafter(c, -2.0L);
-        REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(c), under);
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), under);
     }
 
     {
         const long double a = nextafter(-1.0L, -2.0L);
-        REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(a), under);
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(a), under);
     }
 
 }
@@ -258,36 +260,70 @@ TEST_CASE("make4", "[u1.31]")
     using over = std::overflow_error;
     using under = std::underflow_error;
 
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(0));
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(0.0f));
-    REQUIRE_NOTHROW(exc::make_fixed<Fxd>(0.0));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(0));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(0.0f));
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(0.0));
 
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(2), over);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(2.0f), over);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(2.0), over);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(2.0L), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(2), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(2.0f), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(2.0), over);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(2.0L), over);
 
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(-1), under);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(-1.0f), under);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(-1.0), under);
-    REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(-1.0L), under);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(-1), under);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(-1.0f), under);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(-1.0), under);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(-1.0L), under);
 
     {
         const Flt a = nextafter(2.0f, 0.0f);
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(a));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
         const long double b = a;
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(b));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
 
         // ensure the extra mantissa bits are not being discarded
         long double c = to_float(std::numeric_limits<Fxd>::max());
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(c));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
         c = nextafter(c, 2.0L);
-        REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(c), over);
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), over);
 
         c = to_float(std::numeric_limits<Fxd>::lowest());
-        REQUIRE_NOTHROW(exc::make_fixed<Fxd>(c));
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
         c = nextafter(c, -2.0L);
-        REQUIRE_THROWS_AS(exc::make_fixed<Fxd>(c), under);
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), under);
     }
 
+}
+
+
+TEST_CASE("make5", "[u25.0]")
+{
+    using Fxd = fxd::ufixed<25, 0>;
+    using exc = fxd::safe::except;
+
+    REQUIRE(std::fesetround(FE_TOWARDZERO) == 0);
+
+    unsigned a = (1 << 25) - 1;
+    CAPTURE(a);
+    float b = a;
+    CAPTURE(b);
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
+    unsigned bb = b;
+    CHECK(bb < a);
+}
+
+
+TEST_CASE("make6", "[u25.0]")
+{
+    using Fxd = fxd::ufixed<25, 0>;
+    using exc = fxd::safe::except;
+
+    REQUIRE(std::fesetround(FE_TONEAREST) == 0);
+
+    unsigned a = (1 << 25) - 1;
+    CAPTURE(a);
+    float b = a;
+    CAPTURE(b);
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(b), std::overflow_error);
+    unsigned bb = b;
+    CHECK(bb > a);
 }
