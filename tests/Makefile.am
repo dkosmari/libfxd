@@ -4,7 +4,8 @@
 noinst_HEADERS = \
 	printer.hpp \
 	rng.hpp \
-	setup.hpp
+	setup.hpp \
+	test-types.hpp
 
 
 SUBDIRS = catch2

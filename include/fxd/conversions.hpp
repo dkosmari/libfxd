@@ -45,7 +45,7 @@ namespace fxd {
     {
         utils::rounder r;
         using std::ldexp;
-        return ldexp(static_cast<Flt>(raw_value), -frac_bits);
+        return ldexp(static_cast<Flt>(utils::opacify(raw_value)), -frac_bits);
     }
 
 

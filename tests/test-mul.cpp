@@ -1,7 +1,5 @@
 #include <cstdlib>
-#include <cxxabi.h>
 #include <string>
-#include <tuple>
 
 #include <fxd/fxd.hpp>
 
@@ -10,18 +8,8 @@
 #include "printer.hpp"
 #include "rng.hpp"
 #include "setup.hpp"
+#include "test-types.hpp"
 
-
-
-template<typename T>
-std::string
-type()
-{
-    char* s = abi::__cxa_demangle(typeid(T).name(), 0, 0, 0);
-    std::string result = s;
-    std::free(s);
-    return result;
-}
 
 
 TEST_CASE("basic_s16.16", "[s16.16]")
@@ -221,59 +209,6 @@ TEST_CASE("special3")
 
 
 
-using std::tuple;
-
-using test_types = tuple<
-    fxd::fixed<13, 12>,
-    fxd::fixed<1, 24>,
-    fxd::fixed<0, 25>,
-    fxd::fixed<-1, 26>,
-    fxd::fixed<24, 1>,
-    fxd::fixed<25, 0>,
-    fxd::fixed<26, -1>,
-
-    fxd::ufixed<12, 12>,
-    fxd::ufixed<1, 23>,
-    fxd::ufixed<0, 24>,
-    fxd::ufixed<-1, 25>,
-    fxd::ufixed<23, 1>,
-    fxd::ufixed<24, 0>,
-    fxd::ufixed<25, -1>,
-
-    fxd::fixed<33, 20>,
-    fxd::fixed<52, 1>,
-    fxd::fixed<53, 0>,
-    fxd::fixed<54, -1>,
-    fxd::fixed<1, 52>,
-    fxd::fixed<0, 53>,
-    fxd::fixed<-1, 54>,
-
-    fxd::ufixed<20, 32>,
-    fxd::ufixed<51, 1>,
-    fxd::ufixed<52, 0>,
-    fxd::ufixed<53, -1>,
-    fxd::ufixed<1, 51>,
-    fxd::ufixed<0, 52>,
-    fxd::ufixed<-1, 53>,
-
-    fxd::fixed<32, 32>,
-    fxd::fixed<63, 1>,
-    fxd::fixed<64, 0>,
-    fxd::fixed<65, -1>,
-    fxd::fixed<1, 63>,
-    fxd::fixed<0, 64>,
-    fxd::fixed<-1, 65>,
-
-    fxd::ufixed<32, 32>,
-    fxd::ufixed<63, 1>,
-    fxd::ufixed<64, 0>,
-    fxd::ufixed<65, -1>,
-    fxd::ufixed<1, 63>,
-    fxd::ufixed<0, 64>,
-    fxd::ufixed<-1, 65>
-    >;
-
-
 TEMPLATE_LIST_TEST_CASE("random-basic",
                         "",
                         test_types)
@@ -297,7 +232,6 @@ TEMPLATE_LIST_TEST_CASE("random-basic",
         Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
         if (flo <= d && d <= fhi) {
             Fxd c = a * b;
-            // std::cout << type<Fxd>() << '\n';
             // SHOW(lo);
             // SHOW(hi);
             // SHOW(a);

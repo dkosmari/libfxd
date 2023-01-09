@@ -300,30 +300,21 @@ TEST_CASE("make5", "[u25.0]")
     using Fxd = fxd::ufixed<25, 0>;
     using exc = fxd::safe::except;
 
-    REQUIRE(std::fesetround(FE_TOWARDZERO) == 0);
-
-    unsigned a = (1 << 25) - 1;
-    CAPTURE(a);
-    float b = a;
-    CAPTURE(b);
-    CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
-    unsigned bb = b;
-    CHECK(bb < a);
+    const float a = 0x02000000p0f;
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(a), std::overflow_error);
 }
 
 
-TEST_CASE("make6", "[u25.0]")
+
+TEST_CASE("make6", "[s26.0]")
 {
-    using Fxd = fxd::ufixed<25, 0>;
+    using Fxd = fxd::fixed<26, 0>;
     using exc = fxd::safe::except;
 
-    REQUIRE(std::fesetround(FE_TONEAREST) == 0);
+    const float a = 0x02000000p0f;
+    CHECK_THROWS_AS(exc::make_fixed<Fxd>(a), std::overflow_error);
 
-    unsigned a = (1 << 25) - 1;
-    CAPTURE(a);
-    float b = a;
-    CAPTURE(b);
-    CHECK_THROWS_AS(exc::make_fixed<Fxd>(b), std::overflow_error);
-    unsigned bb = b;
-    CHECK(bb > a);
+    const float b = -0x02000000p0f;
+    CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
+
 }
