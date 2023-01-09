@@ -29,16 +29,15 @@ namespace std {
         static constexpr bool is_iec559 = false;
         static constexpr bool is_bounded = true;
         static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
-        static constexpr int digits = fxd::fixed<Int, Frac, T>::bits - is_signed;
-        // TODO: check if these are correct
-        static constexpr int digits10 = (digits - 1) * log10(numeric_limits<T>::radix);
-        static constexpr int max_digits10 = ceil(digits * log10(numeric_limits<T>::radix) + 1);
-
         static constexpr int radix = numeric_limits<T>::radix;
-        static constexpr int min_exponent = 0;
-        static constexpr int min_exponent10 = 0;
-        static constexpr int max_exponent = 0;
-        static constexpr int max_exponent10 = 0;
+        static constexpr int digits = fxd::fixed<Int, Frac, T>::bits - is_signed;
+        static constexpr int digits10 = (Frac - 1) * log10(numeric_limits<T>::radix);
+        static constexpr int max_digits10 = max<int>(ceil(Frac * log10(radix) + 1), 0);
+
+        static constexpr int min_exponent = 1 - Frac;
+        static constexpr int min_exponent10 = floor(log10(radix) * min_exponent);
+        static constexpr int max_exponent = Int - is_signed;
+        static constexpr int max_exponent10 = floor(log10(radix) * max_exponent);
         static constexpr bool traps = numeric_limits<T>::traps;
         static constexpr bool tinyness_before = false;
 

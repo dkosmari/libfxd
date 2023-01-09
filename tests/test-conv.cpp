@@ -300,8 +300,22 @@ TEST_CASE("make5", "[u25.0]")
     using Fxd = fxd::ufixed<25, 0>;
     using exc = fxd::safe::except;
 
-    const float a = 0x02000000p0f;
-    CHECK_THROWS_AS(exc::make_fixed<Fxd>(a), std::overflow_error);
+    const float a = 0x01fffffep0f;
+    {
+        CAPTURE(a);
+        CAPTURE(std::numeric_limits<Fxd>::max());
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
+    }
+
+    const float b = std::nextafter(a, 2 * a);
+    {
+        CAPTURE(b);
+        CAPTURE(std::numeric_limits<Fxd>::max());
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(b), std::overflow_error);
+    }
+
+    const float c = static_cast<float>(std::numeric_limits<Fxd>::max());
+    CHECK(c == a);
 }
 
 
@@ -310,11 +324,33 @@ TEST_CASE("make6", "[s26.0]")
 {
     using Fxd = fxd::fixed<26, 0>;
     using exc = fxd::safe::except;
+    using std::nextafter;
 
-    const float a = 0x02000000p0f;
-    CHECK_THROWS_AS(exc::make_fixed<Fxd>(a), std::overflow_error);
+    const float a = 0x01fffffep0f;
+    {
+        CAPTURE(a);
+        CAPTURE(std::numeric_limits<Fxd>::max());
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
+    }
 
-    const float b = -0x02000000p0f;
-    CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
+    const float b = nextafter(a, 2 * a);
+    {
+        CAPTURE(b);
+        CAPTURE(std::numeric_limits<Fxd>::max());
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(b), std::overflow_error);
+    }
 
+    const float c = -0x02000000p0f;
+    {
+        CAPTURE(c);
+        CAPTURE(std::numeric_limits<Fxd>::lowest());
+        CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
+    }
+
+    const float d = nextafter(c, 2 * c);
+    {
+        CAPTURE(d);
+        CAPTURE(std::numeric_limits<Fxd>::lowest());
+        CHECK_THROWS_AS(exc::make_fixed<Fxd>(d), std::underflow_error);
+    }
 }
