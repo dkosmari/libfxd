@@ -7,11 +7,12 @@
 
 
 using std::cout;
+using std::cerr;
 using std::clog;
 using std::endl;
 
 
-const unsigned max_iterations = 30;
+using F = fxd::fixed<32, 32>;
 
 
 // Since integers don't have a square root function, fixed<> types don't have it either.
@@ -22,6 +23,7 @@ const unsigned max_iterations = 30;
 template<fxd::fixed_point Fxd>
 Fxd
 sqrt_std(Fxd s)
+    noexcept
 {
     return std::sqrt(to_float(s));
 }
@@ -31,20 +33,34 @@ sqrt_std(Fxd s)
 
 template<fxd::fixed_point Fxd>
 Fxd
-sqrt_nwt(Fxd s)
+sqrt_nwt(Fxd x,
+         int max_iterations = Fxd::bits)
+    noexcept
 {
-    unsigned i = 0;
-    Fxd next_x = s;
-    Fxd x;
+    if (!x)
+        return x;
+
+    int i = 0;
+    Fxd a = x;
+    Fxd old_a;
     do {
-        x = next_x;
-        if (!x)
-            return x;
-        next_x = (x + (s / x)) / 2;
-    } while (next_x != x && ++i < max_iterations);
-    if (i >= max_iterations)
-        clog << "max iterations reached" << endl;
-    return x;
+        if (++i > max_iterations)
+            return a;
+
+        Fxd b = x / a;
+
+        if (a > b)
+            std::swap(a, b); // a is always the lower bound
+
+        old_a = a;
+
+        a = (a + b) / 2;
+
+        if (!a)
+            return a;
+
+    } while (old_a != a);
+    return a;
 }
 
 
@@ -52,9 +68,10 @@ sqrt_nwt(Fxd s)
 
 template<fxd::fixed_point Fxd>
 Fxd
-sqrt_bak(Fxd s)
+sqrt_bak(Fxd s,
+         int max_iterations = Fxd::bits)
 {
-    unsigned i = 0;
+    int i = 0;
     Fxd x = s;
     Fxd old_x;
     do {
@@ -69,7 +86,7 @@ sqrt_bak(Fxd s)
             //(x + a) - ((a * a) / (2 * (x + a)));
     } while (old_x != x && ++i < 20);
     if (i >= max_iterations)
-        clog << "max iterations reached" << endl;
+        cerr << "max iterations reached" << endl;
     return x;
 }
 
@@ -78,22 +95,25 @@ sqrt_bak(Fxd s)
 
 template<fxd::fixed_point Fxd>
 Fxd
-sqrt_rec(Fxd s)
+sqrt_rec(Fxd s,
+         int max_iterations = Fxd::bits)
 {
     if (!s)
         return s;
-    unsigned i = 0;
-    Fxd x = 1 / s;
+    int i = 0;
+    Fxd x = 1 / sqrt_nwt(s, 2);
     Fxd old_x;
     do {
         old_x = x;
-        x = x * (3 - s * x * x) / 2;
+        Fxd x2 = x * x;
+        x = x * (3 - s * x2) / 2;
+        if (x <= 0)
+            return s * old_x;
     } while (old_x != x && ++i < max_iterations);
     if (i >= max_iterations)
-        clog << "max iterations reached" << endl;
-    return 1 / x;
+        cerr << "max iterations reached" << endl;
+    return s * x;
 }
-
 
 
 
@@ -111,22 +131,19 @@ test(Fxd x)
     auto b = sqrt_nwt(x);
     cout << "    sqrt_nwt = ";
     print(b);
-    cout << "\n        diff = ";
-    print(fdim(a, b));
+    cout << "\n        diff = " << static_cast<long double>(b - a);
     cout << '\n';
 
     auto c = sqrt_bak(x);
     cout << "    sqrt_bak = ";
     print(c);
-    cout << "\n        diff = ";
-    print(fdim(a, c));
+    cout << "\n        diff = " << static_cast<long double>(c - a);
     cout << '\n';
 
     auto d = sqrt_rec(x);
     cout << "    sqrt_rec = ";
     print(d);
-    cout << "\n        diff = ";
-    print(fdim(a, d));
+    cout << "\n        diff = " << static_cast<long double>(d - a);
     cout << '\n';
 
     cout << endl;
@@ -135,11 +152,13 @@ test(Fxd x)
 
 int main()
 {
-    using F = fxd::fixed<32, 32>;
-
-    for (auto s : {0.0, 1.0, 9.0, 2.0, 1.5, 16.0, 25.0, 0.0625, 100.0, 3.0}) {
+    for (auto s : {0.0, 1.0, 0.5, 0.25, 0.0625,
+                   9.0, 2.0, 1.5, 16.0, 25.0, 100.0, 3.0}) {
         test<F>(s);
     }
+
+    // auto r = sqrt_rec(F{0.25});
+    // cout << r << endl;
 
 
 }

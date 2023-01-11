@@ -11,7 +11,9 @@
 #include "fixed.hpp"
 
 #include "concepts.hpp"
-#include "utils.hpp"
+#include "utils-div.hpp"
+#include "utils-mul.hpp"
+#include "utils-shift.hpp"
 
 
 /*
@@ -45,7 +47,7 @@ namespace fxd {
     fixed<Int, Frac, T>::operator =(I i)
         noexcept
     {
-        raw_value = utils::shl<T>(i, frac_bits);
+        raw_value = utils::shift::shl<T>(i, frac_bits);
         return *this;
     }
 
@@ -107,11 +109,13 @@ namespace fxd {
             const W aa = a.raw_value;
             const W bb = b.raw_value;
             const W cc = aa * bb;
-            a.raw_value = utils::shrz<W>(cc, Fxd::frac_bits);
+            const W dd = utils::shift::shrz<W>(cc, Fxd::frac_bits);
+            a.raw_value = dd;
         } else {
-            const auto c = utils::full_mult(a.raw_value,
-                                            b.raw_value);
-            a.raw_value = utils::shrz(c, Fxd::frac_bits).first;
+            const auto c = utils::mul::mul(a.raw_value,
+                                           b.raw_value);
+            const auto d = utils::shift::shrz(c, Fxd::frac_bits);
+            a.raw_value = utils::tuple::first(d);
         }
 
         return a;
@@ -130,12 +134,15 @@ namespace fxd {
         using R = typename Fxd::raw_type;
 
         if constexpr (has_wider_v<R>) {
+
             using W = wider_t<R>;
-            const W aa = utils::shlz<W>(a.raw_value, Fxd::frac_bits);
+            const W aa = utils::shift::shlz<W>(a.raw_value, Fxd::frac_bits);
             const W bb = b.raw_value;
             const W cc = aa / bb;
             a.raw_value = cc;
+
         } else {
+
             const bool neg_a = a.raw_value < 0;
             const bool neg_b = b.raw_value < 0;
 
@@ -149,13 +156,14 @@ namespace fxd {
             if (neg_b)
                 ub = -ub;
 
-            auto q = utils::full_div<Fxd::frac_bits>(ua, ub);
+            auto q = utils::div::div<Fxd::frac_bits>(ua, ub);
 
-            // how many extra bits the division will calculate
-            constexpr int extra = std::max(0, Fxd::frac_bits - utils::type_width<U>);
-            U r = utils::shrz(q, utils::type_width<U> - Fxd::frac_bits + extra).first;
-            a.raw_value = neg_a == neg_b ? r : -r;
+            constexpr int w = type_width<U>;
+            auto [lo, mi, hi] = utils::shift::shrz(q, 2 * w - Fxd::frac_bits);
+            a.raw_value = neg_a == neg_b ? lo : -lo;
+
         }
+
         return a;
     }
 

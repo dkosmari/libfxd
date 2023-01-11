@@ -8,6 +8,12 @@
 
 namespace fxd {
 
+    
+    template<typename T>
+    requires(std::numeric_limits<T>::is_specialized)
+    constexpr inline
+    int type_width = std::numeric_limits<T>::digits +
+                     (std::numeric_limits<T>::is_signed ? 1 : 0);
 
 
     template<int>
@@ -58,11 +64,11 @@ namespace fxd {
 
 
     template<int bits>
-    using select_int_t = select_int<bits>::type;
+    using select_int_t = typename select_int<bits>::type;
 
 
     template<int bits>
-    using select_uint_t = select_uint<bits>::type;
+    using select_uint_t = typename select_uint<bits>::type;
 
 
 
@@ -114,7 +120,7 @@ namespace fxd {
 
 
     template<int bits>
-    using select_float_t = select_float<bits>::type;
+    using select_float_t = typename select_float<bits>::type;
 
     
 }

@@ -32,7 +32,7 @@ show(const std::string& name,
     cout << "\t[ "
          << std::hex
          << std::setfill('0')
-         << std::setw(fxd::utils::type_width<typename Fxd::raw_type> / 4)
+         << std::setw(fxd::type_width<typename Fxd::raw_type> / 4)
          << f.raw_value
          << " ]";
 

@@ -86,6 +86,6 @@ operator <<(std::ostream& out,
 int main()
 {
     std::uint16_t x = ~0;
-    auto y = fxd::utils::shr(x, 20);
+    auto y = fxd::utils::shift::shr(x, 20);
     return y;
 }

@@ -174,7 +174,7 @@ TEST_CASE("special1")
     // SHOW(c);
     // SHOW(d);
 
-    REQUIRE(c == d);
+    CHECK(c == d);
 }
 
 
@@ -187,9 +187,9 @@ TEST_CASE("special2")
 
     I a = 0xfff99a67f370c65a;
     I b = 0x0002bd0e4b41fb2d;
-    auto c = fxd::utils::full_mult(a, b);
-    REQUIRE(c.first == 0x814a34a018271bd2ULL);
-    REQUIRE(c.second == static_cast<I>(0xffffffee7b7335e1LL));
+    auto c = fxd::utils::mul::mul(a, b);
+    CHECK(get<0>(c) == 0x814a34a018271bd2ULL);
+    CHECK(get<1>(c) == static_cast<I>(0xffffffee7b7335e1LL));
 }
 
 
@@ -204,7 +204,7 @@ TEST_CASE("special3")
     // SHOW(b);
     // SHOW(c);
     long double d = static_cast<long double>(a) * static_cast<long double>(b);
-    REQUIRE(c == F{d});
+    CHECK(c == F{d});
 }
 
 
@@ -232,15 +232,6 @@ TEMPLATE_LIST_TEST_CASE("random-basic",
         Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
         if (flo <= d && d <= fhi) {
             Fxd c = a * b;
-            // SHOW(lo);
-            // SHOW(hi);
-            // SHOW(a);
-            // SHOW(b);
-            // SHOW(c);
-            // std::cout << "d = "
-            //           << std::fixed
-            //           << std::setprecision(17)
-            //           << d << '\n';
 
             REQUIRE(c == Fxd{d});
         }
@@ -259,8 +250,14 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
     constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
     constexpr Fxd hi = std::numeric_limits<Fxd>::max();
 
+    CAPTURE(lo);
+    CAPTURE(hi);
+
     const Flt flo = static_cast<Flt>(lo);
     const Flt fhi = static_cast<Flt>(hi);
+
+    CAPTURE(flo);
+    CAPTURE(fhi);
 
     RNG<Fxd> rng;
 
@@ -271,15 +268,10 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
         Fxd c = fxd::safe::saturate::multiplies(a, b);
         Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
 
-        // SHOW(lo);
-        // SHOW(hi);
-        // SHOW(a);
-        // SHOW(b);
-        // SHOW(c);
-        // std::cout << "d = "
-        //           << std::fixed
-        //           << std::setprecision(17)
-        //           << d << '\n';
+        CAPTURE(a);
+        CAPTURE(b);
+        CAPTURE(c);
+        CAPTURE(d);
 
         if (d < flo)
             REQUIRE(c == lo);

@@ -15,7 +15,14 @@ fxd_HEADERS = \
 	safe-operators.hpp \
 	traits.hpp \
 	types.hpp \
-	utils.hpp
+	utils.hpp \
+	utils-add.hpp \
+	utils-div.hpp \
+	utils-mul.hpp \
+	utils-overflow.hpp \
+	utils-shift.hpp \
+	utils-sqrt.hpp \
+	utils-tuple.hpp
 
 
 .PHONY: company

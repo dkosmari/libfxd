@@ -5,7 +5,7 @@
 
 #include "fixed.hpp"
 
-#include "utils.hpp"
+#include "utils-shift.hpp"
 
 
 namespace fxd {
@@ -18,7 +18,7 @@ namespace fxd {
     constexpr
     fixed<Int, Frac, T>::fixed(I i)
         noexcept :
-        raw_value(utils::shl<raw_type>(i, frac_bits))
+        raw_value(utils::shift::shl<raw_type>(i, frac_bits))
     {}
 
 

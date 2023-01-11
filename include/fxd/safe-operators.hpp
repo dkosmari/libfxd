@@ -7,9 +7,14 @@
 #include <utility> // in_range()
 
 #include "fixed.hpp"
+
 #include "concepts.hpp"
 #include "limits.hpp"
 #include "traits.hpp"
+#include "utils-div.hpp"
+#include "utils-mul.hpp"
+#include "utils-overflow.hpp"
+#include "utils-shift.hpp"
 
 
 namespace fxd::safe {
@@ -75,13 +80,13 @@ namespace fxd::safe {
         {
             if constexpr (Fxd::frac_bits < 0) {
 
-                return from_raw<Fxd>(utils::shrz(val, -Fxd::frac_bits));
+                return from_raw<Fxd>(utils::shift::shrz(val, -Fxd::frac_bits));
 
             } else {
 
                 using Raw = typename Fxd::raw_type;
                 using Lim = std::numeric_limits<Raw>;
-                constexpr int w = utils::type_width<Raw>;
+                constexpr int w = type_width<Raw>;
 
                 // ensure val can be represented as raw_type
                 if (std::cmp_less(val, Lim::min()))
@@ -89,8 +94,8 @@ namespace fxd::safe {
                 if (std::cmp_greater(val, Lim::max()))
                     return handler<Fxd>(error::overflow);
 
-                const Raw d = utils::shr<Raw>(val, w - Fxd::frac_bits);
-                const Raw rval = utils::shl<Raw>(val, Fxd::frac_bits);
+                const Raw d = utils::shift::shr<Raw>(val, w - Fxd::frac_bits);
+                const Raw rval = utils::shift::shl<Raw>(val, Fxd::frac_bits);
 
                 if (d > 0)
                     return handler<Fxd>(error::overflow);
@@ -189,7 +194,7 @@ namespace fxd::safe {
             if constexpr (Fxd::frac_bits < 0)
                 return f;
 
-            auto [result, carry] = utils::add_overflow(f.raw_value, Fxd::one.raw_value);
+            auto [result, carry] = utils::overflow::add(f.raw_value, Fxd::one.raw_value);
             if (carry)
                 return f = handler<Fxd>(error::overflow);
 
@@ -233,7 +238,7 @@ namespace fxd::safe {
             using Raw = Fxd::raw_type;
             constexpr Raw one = Fxd::one.raw_value;
 
-            auto [result, overflow] = utils::sub_overflow(f.raw_value, one);
+            auto [result, overflow] = utils::overflow::sub(f.raw_value, one);
             if (overflow)
                 return f = handler<Fxd>(error::underflow);
 
@@ -286,7 +291,7 @@ namespace fxd::safe {
              Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
-            auto [result, overflow] = utils::add_overflow(a.raw_value, b.raw_value);
+            auto [result, overflow] = utils::overflow::add(a.raw_value, b.raw_value);
             if (overflow) {
                 if constexpr (std::numeric_limits<Fxd>::is_signed)
                     return handler<Fxd>(a.raw_value < 0 ? error::underflow : error::overflow);
@@ -306,7 +311,7 @@ namespace fxd::safe {
               Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
-            auto [result, overflow] = utils::sub_overflow(a.raw_value, b.raw_value);
+            auto [result, overflow] = utils::overflow::sub(a.raw_value, b.raw_value);
             if (overflow) {
                 if constexpr (std::numeric_limits<Fxd>::is_signed)
                     return handler<Fxd>(a.raw_value < 0 ? error::underflow : error::overflow);
@@ -337,7 +342,7 @@ namespace fxd::safe {
                 const W bb = b.raw_value;
 
                 const W cc = aa * bb;
-                const W dd = utils::shrz<W>(cc, Fxd::frac_bits);
+                const W dd = utils::shift::shrz<W>(cc, Fxd::frac_bits);
 
                 if constexpr (Fxd::frac_bits < 0)
                     /*
@@ -345,17 +350,17 @@ namespace fxd::safe {
                      * so significant high bits might have been lost.
                      * Here we unshift dd to see if the value still matches.
                      */
-                    if (cc != utils::shlz<W>(dd, Fxd::frac_bits))
+                    if (cc != utils::shift::shlz<W>(dd, Fxd::frac_bits))
                         return handler<Fxd>(cc < 0 ? error::underflow : error::overflow);
 
                 return from_raw<Fxd>(dd);
 
             } else {
 
-                const auto c = utils::full_mult(a.raw_value,
-                                                b.raw_value);
+                const auto c = utils::mul::mul(a.raw_value,
+                                               b.raw_value);
 
-                const auto d = utils::shrz(c, Fxd::frac_bits);
+                const auto d = utils::shift::shrz(c, Fxd::frac_bits);
 
                 if constexpr (Fxd::frac_bits < 0)
                     /*
@@ -363,10 +368,10 @@ namespace fxd::safe {
                      * so significant high bits might have been lost.
                      * Here we unshift d to see if the value still matches.
                      */
-                    if (c != utils::shlz(d, Fxd::frac_bits))
+                    if (c != utils::shift::shlz(d, Fxd::frac_bits))
                         return handler<Fxd>(c.second < 0 ? error::underflow : error::overflow);
 
-                const R dd = static_cast<R>(d.first);
+                const R dd = static_cast<R>(utils::tuple::first(d));
 
                 if constexpr (std::numeric_limits<R>::is_signed) {
                     // only valid values for d.second is 0 or -1
@@ -380,10 +385,13 @@ namespace fxd::safe {
                         return handler<Fxd>(d.second < 0 ? error::underflow : error::overflow);
 
                     return from_raw<Fxd>(dd);
+
                 } else {
+
                     if (d.second)
                         return handler<Fxd>(error::overflow);
                     return from_raw<Fxd>(d.first);
+
                 }
 
             }
@@ -409,7 +417,7 @@ namespace fxd::safe {
 
             if constexpr (has_wider_v<R>) {
                 using W = wider_t<R>;
-                const W aa = utils::shl<W>(a.raw_value, Fxd::frac_bits);
+                const W aa = utils::shift::shl<W>(a.raw_value, Fxd::frac_bits);
                 const W bb = b.raw_value;
 
                 if constexpr (std::numeric_limits<W>::is_signed) {
@@ -434,20 +442,20 @@ namespace fxd::safe {
                 if (neg_b)
                     ub = -ub;
 
-                auto q = utils::full_div<Fxd::frac_bits>(ua, ub);
-                auto r = utils::shrz(q, utils::type_width<U> - Fxd::frac_bits);
-                // TODO: handle extra bits like the unsafe version
+                auto q = utils::div::div<Fxd::frac_bits>(ua, ub);
+                constexpr int w = type_width<U>;
+                auto [lo, mi, hi] = utils::shift::shrz(q, 2 * w - Fxd::frac_bits);
 
                 if (neg_a != neg_b) {
                     // must negate the result
-                    if (r.second // high bits are nonzero
-                        || std::cmp_greater(r.first, std::numeric_limits<R>::max())) // too large
+                    if (mi || hi // high bits are nonzero
+                        || std::cmp_greater(lo, std::numeric_limits<R>::max())) // too large
                         return handler<Fxd>(error::underflow);
-                    return from_raw<Fxd>(-static_cast<R>(r.first));
+                    return from_raw<Fxd>(-static_cast<R>(lo));
                 } else {
-                    if (r.second)
+                    if (mi || hi)
                         return handler<Fxd>(error::overflow);
-                    return from_raw<Fxd>(r.first);
+                    return from_raw<Fxd>(lo);
                 }
             }
         }

@@ -17,7 +17,7 @@ namespace fxd {
     struct fixed {
 
         using raw_type = T;
-        static constexpr int raw_bits = utils::type_width<raw_type>;
+        static constexpr int raw_bits = type_width<raw_type>;
         static constexpr int int_bits = Int;
         static constexpr int frac_bits = Frac;
         static constexpr int bits = int_bits + frac_bits;

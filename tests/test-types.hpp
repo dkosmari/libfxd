@@ -1,13 +1,13 @@
 #ifndef TEST_TYPES_HPP
 #define TEST_TYPES_HPP
 
-#include <climits>
+#include <cfloat>
 #include <tuple>
 
 
 using test_types = std::tuple<
 
-#if FLT_MANT_DIG == 24
+#if FLT_MANT_DIG >= 24
 
     fxd::fixed<13, 12>,
     fxd::fixed<1, 24>,
@@ -27,7 +27,7 @@ using test_types = std::tuple<
 
 #endif
 
-#if DBL_MANT_DIG == 53
+#if DBL_MANT_DIG >= 53
 
     fxd::fixed<34, 20>,
     fxd::fixed<53, 1>,
@@ -47,7 +47,7 @@ using test_types = std::tuple<
 
 #endif
 
-#if LDBL_MANT_DIG == 64
+#if LDBL_MANT_DIG >= 64
 
     fxd::fixed<32, 32>,
     fxd::fixed<63, 1>,
@@ -66,7 +66,7 @@ using test_types = std::tuple<
     fxd::ufixed<-1, 65>
 
 #else
-
+#warning "'long double' doesnt have 64 bits of mantissa."
     fxd::fixed<8, 8>
 
 #endif

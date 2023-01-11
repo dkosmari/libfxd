@@ -6,7 +6,7 @@
 
 #include "fixed.hpp"
 
-#include "utils.hpp"
+#include "utils-shift.hpp"
 #include "concepts.hpp"
 
 
@@ -32,7 +32,7 @@ namespace fxd {
     fixed<Int, Frac, T>::operator I()
         const noexcept
     {
-        return utils::shrz(raw_value, frac_bits);
+        return utils::shift::shrz(raw_value, frac_bits);
     }
 
 

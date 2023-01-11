@@ -6,8 +6,7 @@
 #include "fixed.hpp"
 
 #include "concepts.hpp"
-
-#include "utils.hpp"
+#include "utils-shift.hpp"
 
 
 namespace fxd {
@@ -22,8 +21,8 @@ namespace fxd {
     fixed_cast(const Src& src)
         noexcept
     {
-        T raw = utils::shl(T(src.raw_value),
-                           Frac - Src::fractional_bits);
+        T raw = utils::shift::shl(T(src.raw_value),
+                                  Frac - Src::fractional_bits);
         return fixed<Int, Frac, T>::from_raw(raw);
     }
 
