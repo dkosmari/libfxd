@@ -11,9 +11,14 @@
 #include "fixed.hpp"
 
 #include "concepts.hpp"
+#include "round-add.hpp"
+#include "round-div.hpp"
+#include "round-mul.hpp"
+#include "round-sub.hpp"
 #include "utils-div.hpp"
 #include "utils-mul.hpp"
 #include "utils-shift.hpp"
+#include "utils.hpp"
 
 
 /*
@@ -42,6 +47,7 @@ namespace fxd {
              int Frac,
              typename T>
     template<std::integral I>
+    ALWAYS_INLINE
     constexpr
     fixed<Int, Frac, T>&
     fixed<Int, Frac, T>::operator =(I i)
@@ -69,102 +75,53 @@ namespace fxd {
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
+    ALWAYS_INLINE
     constexpr
     Fxd&
     operator +=(Fxd& a,
                 const T& b)
         noexcept
     {
-        a.raw_value += Fxd{b}.raw_value;
-        return a;
+        return a = round::add<Fxd>(a, b);
     }
 
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
+    ALWAYS_INLINE
     constexpr
     Fxd&
     operator -=(Fxd& a,
                 const T& b)
         noexcept
     {
-        a.raw_value -= Fxd{b}.raw_value;
-        return a;
+        return a = round::sub<Fxd>(a, b);
     }
 
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
+    ALWAYS_INLINE
     constexpr
     Fxd&
     operator *=(Fxd& a,
-                const T& b_)
+                const T& b)
         noexcept
     {
-        const Fxd b{b_};
-        using R = typename Fxd::raw_type;
-
-        if constexpr (has_wider_v<R>) {
-            using W = wider_t<R>;
-            const W aa = a.raw_value;
-            const W bb = b.raw_value;
-            const W cc = aa * bb;
-            const W dd = utils::shift::shrz<W>(cc, Fxd::frac_bits);
-            a.raw_value = dd;
-        } else {
-            const auto c = utils::mul::mul(a.raw_value,
-                                           b.raw_value);
-            const auto d = utils::shift::shrz(c, Fxd::frac_bits);
-            a.raw_value = utils::tuple::first(d);
-        }
-
-        return a;
+        return a = round::zero::mul<Fxd>(a, b);
     }
 
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
+    ALWAYS_INLINE
     constexpr
     Fxd&
     operator /=(Fxd& a,
-                const T& b_)
+                const T& b)
         noexcept
     {
-        const Fxd b{b_};
-        using R = typename Fxd::raw_type;
-
-        if constexpr (has_wider_v<R>) {
-
-            using W = wider_t<R>;
-            const W aa = utils::shift::shlz<W>(a.raw_value, Fxd::frac_bits);
-            const W bb = b.raw_value;
-            const W cc = aa / bb;
-            a.raw_value = cc;
-
-        } else {
-
-            const bool neg_a = a.raw_value < 0;
-            const bool neg_b = b.raw_value < 0;
-
-            using U = std::make_unsigned_t<R>;
-            U ua = a.raw_value;
-            U ub = b.raw_value;
-
-            if (neg_a)
-                ua = -ua;
-
-            if (neg_b)
-                ub = -ub;
-
-            auto q = utils::div::div<Fxd::frac_bits>(ua, ub);
-
-            constexpr int w = type_width<U>;
-            auto [lo, mi, hi] = utils::shift::shrz(q, 2 * w - Fxd::frac_bits);
-            a.raw_value = neg_a == neg_b ? lo : -lo;
-
-        }
-
-        return a;
+        return a = round::zero::div<Fxd>(a, b);
     }
 
 
@@ -175,6 +132,7 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
+    ALWAYS_INLINE
     constexpr
     Fxd&
     operator ++(Fxd& a)
@@ -186,6 +144,7 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
+    ALWAYS_INLINE
     constexpr
     Fxd&
     operator --(Fxd& a)
@@ -197,6 +156,7 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
+    ALWAYS_INLINE
     constexpr
     Fxd
     operator ++(Fxd& a, int)
@@ -209,6 +169,7 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
+    ALWAYS_INLINE
     constexpr
     Fxd
     operator --(Fxd& a, int)
@@ -227,6 +188,7 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
+    ALWAYS_INLINE
     constexpr
     const Fxd&
     operator +(const Fxd& a)
@@ -237,6 +199,7 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
+    ALWAYS_INLINE
     constexpr
     Fxd
     operator -(const Fxd& a)
@@ -250,56 +213,56 @@ namespace fxd {
     template<typename A,
              typename B>
     requires(fixed_point<A> || fixed_point<B>)
+    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator +(A a, B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        Fxd fa{a};
-        return fa += b;
+        return round::add<Fxd>(a, b);
     }
 
 
     template<typename A,
              typename B>
     requires(fixed_point<A> || fixed_point<B>)
+    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator -(A a, B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        Fxd fa{a};
-        return fa -= b;
+        return round::sub<Fxd>(a, b);
     }
 
 
     template<typename A,
              typename B>
     requires(fixed_point<A> || fixed_point<B>)
+    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator *(A a, B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        Fxd fa{a};
-        return fa *= b;
+        return round::zero::mul<Fxd>(a, b);
     }
 
 
     template<typename A,
              typename B>
     requires(fixed_point<A> || fixed_point<B>)
+    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator /(A a, B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        Fxd fa{a};
-        return fa /= b;
+        return round::zero::div<Fxd>(a, b);
     }
 
 
@@ -325,7 +288,7 @@ namespace fxd {
              fixed_point Fxd>
     std::basic_istream<CharT, Traits>&
     operator >>(std::basic_istream<CharT, Traits>& in,
-                const Fxd& f)
+                Fxd& f)
     {
         typename Fxd::float_type ff;
         if (in >> ff)

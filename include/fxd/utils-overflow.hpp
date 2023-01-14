@@ -53,7 +53,7 @@ namespace fxd::utils::overflow {
     }
 
 
-    template<std::integral I>
+    template<std::integral I1>
     constexpr
     std::pair<I, bool>
     sub(I a, I b, bool borrow = false)

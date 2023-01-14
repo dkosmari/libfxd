@@ -64,9 +64,43 @@ namespace Catch {
         convert(Fxd value)
         {
             const int precision = std::numeric_limits<Fxd>::max_digits10;
-            return fpToString(value, precision) + "_fix";
+            auto r = fpToString(to_float(value), precision);
+            if constexpr (std::unsigned_integral<typename Fxd::raw_type>)
+                r += "_ufix<";
+            else
+                r += "_fix<";
+            return r
+                + std::to_string(Fxd::int_bits)
+                + ","
+                + std::to_string(Fxd::frac_bits)
+                + ">  [ "
+                + StringMaker<typename Fxd::raw_type>::convert(value.raw_value) + " ]";
         }
     };
+
+
+    template<typename... T>
+    struct StringMaker<std::tuple<T...>> {
+
+        template<std::size_t... Idx>
+        static
+        std::string
+        conv_helper(const std::tuple<T...>& tup,
+                    std::index_sequence<Idx...>)
+        {
+            return ((StringMaker<T>::convert(get<Idx>(tup)) + " , ") + ... + "");
+        }
+
+
+        static
+        std::string
+        convert(const std::tuple<T...>& tup)
+        {
+            using Seq = std::index_sequence_for<T...>;
+            return "[ " + conv_helper(tup, Seq{}) + " ]";
+        }
+    };
+
 }
 
 

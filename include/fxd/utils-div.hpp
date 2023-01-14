@@ -12,6 +12,22 @@
 namespace fxd::utils::div {
 
 
+    template<std::integral I>
+    requires (has_wider_v<I>)
+    ALWAYS_INLINE
+    constexpr
+    wider_t<I>
+    div(I a,
+        I b)
+    {
+        constexpr int w = type_width<I>;
+        using W = wider_t<I>;
+        const W aa = a;
+        const W bb = b;
+        return (aa << w) / bb;
+    }
+
+
     template<std::unsigned_integral U>
     constexpr
     std::pair<U, bool>
@@ -28,6 +44,7 @@ namespace fxd::utils::div {
 
     template<int frac_bits,
              std::unsigned_integral U>
+    requires (!has_wider_v<U>)
     std::tuple<U, U, U>
     div(U a,
         U b)
@@ -65,6 +82,7 @@ namespace fxd::utils::div {
 
         return { q_lo, q_mi, q_hi };
     }
+
 
 }
 

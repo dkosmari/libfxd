@@ -2,21 +2,17 @@
 #define LIBFXD_UTILS_HPP
 
 
-#include <algorithm>
-#include <bit>
 #include <cfenv>
-#include <concepts>
-#include <limits>
-#include <type_traits>
-#include <utility>
-#include <tuple>
+
+
+#if defined(__GNUC__) || defined(__clang__)
+#define ALWAYS_INLINE __attribute__((always_inline))
+#else
+#define ALWAYS_INLINE inline
+#endif
 
 
 namespace fxd::utils {
-
-
-
-
 
 
     // helper function to kill constant propagation optimizations
@@ -37,9 +33,7 @@ namespace fxd::utils {
 
 
 
-
-
-#if (defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__))
+#if defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__)
 #pragma STDC FENV_ACCESS ON
 #endif
 
@@ -66,8 +60,6 @@ namespace fxd::utils {
 
 }
 
-
-#undef DUMP
 
 
 #endif

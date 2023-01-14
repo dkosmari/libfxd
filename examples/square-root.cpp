@@ -10,9 +10,10 @@ using std::cout;
 using std::cerr;
 using std::clog;
 using std::endl;
+using std::cin;
 
 
-using F = fxd::fixed<32, 32>;
+using F = fxd::fixed<20, 44>;
 
 
 // Since integers don't have a square root function, fixed<> types don't have it either.
@@ -57,7 +58,7 @@ sqrt_nwt(Fxd x,
         a = (a + b) / 2;
 
         if (!a)
-            return a;
+            break;
 
     } while (old_a != a);
     return a;
@@ -101,7 +102,7 @@ sqrt_rec(Fxd s,
     if (!s)
         return s;
     int i = 0;
-    Fxd x = 1 / sqrt_nwt(s, 2);
+    Fxd x = 1 / sqrt_nwt(s, 4);
     Fxd old_x;
     do {
         old_x = x;
@@ -152,13 +153,25 @@ test(Fxd x)
 
 int main()
 {
+    /*
     for (auto s : {0.0, 1.0, 0.5, 0.25, 0.0625,
-                   9.0, 2.0, 1.5, 16.0, 25.0, 100.0, 3.0}) {
+                   1.5, 2.0, 3.0,
+                   9.0, 16.0, 25.0, 100.0, 121.0}) {
         test<F>(s);
     }
+    */
 
     // auto r = sqrt_rec(F{0.25});
     // cout << r << endl;
+    F val;
+    while ((cout << "Input a number: ") && (cin >> val))
+        test(val);
 
 
 }
+
+
+
+// Local Variables:
+// rmsbolt-command: "g++ -std=c++20 -I ~/src/libfxd/include -O2 -march=native"
+// End:

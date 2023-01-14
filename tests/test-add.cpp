@@ -15,19 +15,19 @@ TEST_CASE("basic", "[s16.16]")
     F a1 = 1;
     F a2 = 2;
     F a3 = 3;
-    REQUIRE(a1 + a2 == a3);
+    CHECK(a1 + a2 == a3);
 
 
     F b1 = -1;
     F b2 = -2;
     F b3 = -3;
-    REQUIRE(b1 + b2 == b3);
+    CHECK(b1 + b2 == b3);
 
 
     F c1 = 0.5;
     F c2 = 1.5;
     F c3 = 2;
-    REQUIRE(c1 + c2 == c3);
+    CHECK(c1 + c2 == c3);
 
 }
 
@@ -57,7 +57,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::saturate::plus(a, b);
+        Fxd c = fxd::safe::saturate::add(a, b);
         Flt d = static_cast<Flt>(a) + static_cast<Flt>(b);
 
         CAPTURE(a);

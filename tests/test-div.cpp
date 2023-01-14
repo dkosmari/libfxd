@@ -153,7 +153,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
         CAPTURE(a);
         CAPTURE(b);
 
-        Fxd c = fxd::safe::saturate::divides(a, b);
+        Fxd c = fxd::safe::saturate::div(a, b);
 
         Flt fa = static_cast<Flt>(a);
         Flt fb = static_cast<Flt>(b);

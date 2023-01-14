@@ -12,17 +12,20 @@ fxd_HEADERS = \
 	numbers.hpp \
 	operators.hpp \
 	random.hpp \
+	round-add.hpp \
+	round-div.hpp \
+	round-mul.hpp \
+	round-sub.hpp \
 	safe-operators.hpp \
 	traits.hpp \
 	types.hpp \
-	utils.hpp \
 	utils-add.hpp \
 	utils-div.hpp \
 	utils-mul.hpp \
 	utils-overflow.hpp \
 	utils-shift.hpp \
-	utils-sqrt.hpp \
-	utils-tuple.hpp
+	utils-tuple.hpp \
+	utils.hpp
 
 
 .PHONY: company

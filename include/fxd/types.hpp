@@ -75,17 +75,31 @@ namespace fxd {
 
 
     // select integer that has twice as many bits
+    
     template<typename I>
-    using wider_t =
-        std::conditional_t<std::numeric_limits<I>::is_signed,
-                           select_int_t<2 * (std::numeric_limits<I>::digits + 1)>,
-                           select_uint_t<2 * std::numeric_limits<I>::digits>>;
+    using wider_t = std::conditional_t<std::numeric_limits<I>::is_signed,
+                                       select_int_t<2 * type_width<I>>,
+                                       select_uint_t<2 * type_width<I>>>;
 
     template<typename I>
     inline constexpr
     bool has_wider_v = !std::is_void_v<wider_t<I>>;
 
 
+    
+    // select integer that has half as many bits
+    
+    template<typename I>
+    using narrower_t = std::conditional_t<std::numeric_limits<I>::is_signed,
+                                          select_int_t<type_width<I> / 2>,
+                                          select_uint_t<type_width<I> / 2>>;
+
+    // template<typename I>
+    // inline constexpr
+    // bool has_narrower_v = !std::is_void_v<narrower_t<I>>; 
+
+
+    
 
     // select floating point type by the mantissa bits
 

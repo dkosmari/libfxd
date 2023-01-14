@@ -16,14 +16,14 @@ TEST_CASE("basic", "[s16.16]")
         Fxd a = 1;
         Fxd b = 2;
         Fxd c = -1;
-        REQUIRE(a - b == c);
+        CHECK(a - b == c);
     }
 
     {
         Fxd a = 5;
         Fxd b = 5;
         Fxd c = 0;
-        REQUIRE(a - b == c);
+        CHECK(a - b == c);
     }
 
 
@@ -31,7 +31,7 @@ TEST_CASE("basic", "[s16.16]")
         Fxd a = 1.5;
         Fxd b = 2.25;
         Fxd c = -0.75;
-        REQUIRE(a - b == c);
+        CHECK(a - b == c);
     }
 
 }
@@ -46,17 +46,17 @@ TEST_CASE("extremes", "[s16.16][saturation][exception]")
     {
         Fxd a = 0;
         Fxd b = std::numeric_limits<Fxd>::lowest();
-        Fxd c = sat::minus(a, b);
-        REQUIRE(c == std::numeric_limits<Fxd>::max());
-        REQUIRE_THROWS_AS(exc::minus(a, b), std::overflow_error);
+        Fxd c = sat::sub(a, b);
+        CHECK(c == std::numeric_limits<Fxd>::max());
+        CHECK_THROWS_AS(exc::sub(a, b), std::overflow_error);
     }
 
     {
         Fxd a = Fxd::from_raw(-1);
         Fxd b = std::numeric_limits<Fxd>::lowest();
-        Fxd c = sat::minus(a, b);
-        REQUIRE(c == std::numeric_limits<Fxd>::max());
-        REQUIRE_NOTHROW(exc::minus(a, b));
+        Fxd c = sat::sub(a, b);
+        CHECK(c == std::numeric_limits<Fxd>::max());
+        CHECK_NOTHROW(exc::sub(a, b));
     }
 
 }
@@ -87,7 +87,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::saturate::minus(a, b);
+        Fxd c = fxd::safe::saturate::sub(a, b);
         Flt d = static_cast<Flt>(a) - static_cast<Flt>(b);
 
         CAPTURE(a);

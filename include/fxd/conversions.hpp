@@ -6,8 +6,8 @@
 
 #include "fixed.hpp"
 
-#include "utils-shift.hpp"
 #include "concepts.hpp"
+#include "utils-shift.hpp"
 
 
 namespace fxd {
@@ -32,7 +32,15 @@ namespace fxd {
     fixed<Int, Frac, T>::operator I()
         const noexcept
     {
-        return utils::shift::shrz(raw_value, frac_bits);
+        if constexpr (frac_bits < 0) {
+            return utils::shift::shl_real(raw_value, -frac_bits);
+        } else {
+            raw_type v = raw_value;
+            if (v < 0)
+                v += utils::shift::make_bias_for(frac_bits, v);
+
+            return utils::shift::shr_real(v, frac_bits);
+        }
     }
 
 

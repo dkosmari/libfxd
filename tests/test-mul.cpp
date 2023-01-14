@@ -164,17 +164,19 @@ TEST_CASE("special1")
 {
     using F = fxd::fixed<33, 20>;
 
-    F a = F::from_raw(0xfff99a67f370c65a);
-    F b = F::from_raw(0x0002bd0e4b41fb2d);
-    F c = fxd::safe::saturate::multiplies(a, b);
-    F d = std::numeric_limits<F>::lowest();
+    std::int64_t ra = 0xfff99a67f370c65aLL;
+    std::int64_t rb = 0x0002bd0e4b41fb2dLL;
 
-    // SHOW(a);
-    // SHOW(b);
-    // SHOW(c);
-    // SHOW(d);
+    F a = F::from_raw(ra);
+    CAPTURE(a);
 
-    CHECK(c == d);
+    F b = F::from_raw(rb);
+    CAPTURE(b);
+
+    F ab = fxd::safe::saturate::mul(a, b);
+    F lo = std::numeric_limits<F>::lowest();
+
+    CHECK(ab == lo);
 }
 
 
@@ -240,8 +242,8 @@ TEMPLATE_LIST_TEST_CASE("random-basic",
 }
 
 
-TEMPLATE_LIST_TEST_CASE("random-sat",
-                        "[saturation]",
+TEMPLATE_LIST_TEST_CASE("random-safe",
+                        "[safe]",
                         test_types)
 {
     using Fxd = TestType;
@@ -265,7 +267,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::saturate::multiplies(a, b);
+        Fxd c = fxd::safe::saturate::mul(a, b);
         Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
 
         CAPTURE(a);
@@ -273,12 +275,15 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
         CAPTURE(c);
         CAPTURE(d);
 
-        if (d < flo)
+        if (d < flo) {
             REQUIRE(c == lo);
-        else if (d < fhi)
+            REQUIRE_THROWS_AS(fxd::safe::except::mul(a, b), std::underflow_error);
+        } else if (d <= fhi) {
             REQUIRE(c == Fxd{d});
-        else
+        } else {
             REQUIRE(c == hi);
+            REQUIRE_THROWS_AS(fxd::safe::except::mul(a, b), std::overflow_error);
+        }
 
     }
 

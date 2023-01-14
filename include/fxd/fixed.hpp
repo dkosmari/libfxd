@@ -1,6 +1,7 @@
 #ifndef LIBFXD_FIXED_HPP
 #define LIBFXD_FIXED_HPP
 
+#include <compare>
 #include <concepts>
 #include <limits>
 
@@ -108,8 +109,8 @@ namespace fxd {
 
     // deduction guides
 
-    template<std::integral I>
-    fixed(I i) -> fixed<8 * sizeof(I), 0, I>;
+    // template<std::integral I>
+    // fixed(I i) -> fixed<8 * sizeof(I), 0, I>;
 
 }
 

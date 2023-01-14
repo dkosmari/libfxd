@@ -2,20 +2,37 @@
 #define LIBFXD_UTILS_MUL_HPP
 
 #include <concepts>
-#include <tuple> // tie()
+#include <tuple>
 
 #include "types.hpp"
 #include "utils-overflow.hpp"
+#include "utils.hpp"
 
 
 namespace fxd::utils::mul {
 
 
+    template<std::integral I>
+    requires (has_wider_v<I>)
+    ALWAYS_INLINE
+    constexpr
+    wider_t<I>
+    mul(I a,
+        I b)
+        noexcept
+    {
+        using W = wider_t<I>;
+        return static_cast<W>(a) * static_cast<W>(b);
+    }
+
+
     // returns low, high parts of the full multiplication a * b
     // without using larger arithmetic than I
     template<std::integral I>
+    requires (!has_wider_v<I>)
+    ALWAYS_INLINE
     constexpr
-    std::pair<std::make_unsigned_t<I>, I>
+    std::tuple<std::make_unsigned_t<I>, I>
     mul(I a,
         I b)
         noexcept
@@ -44,7 +61,7 @@ namespace fxd::utils::mul {
             + (a1b0 >> k)
             + carry1 + carry2;
 
-        return {c01, c23};
+        return { c01, c23 };
     }
 
 }

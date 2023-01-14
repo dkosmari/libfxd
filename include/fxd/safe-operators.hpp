@@ -15,6 +15,7 @@
 #include "utils-mul.hpp"
 #include "utils-overflow.hpp"
 #include "utils-shift.hpp"
+#include "utils-tuple.hpp"
 
 
 namespace fxd::safe {
@@ -70,6 +71,41 @@ namespace fxd::safe {
         }
 
 
+        template<fxd::fixed_point Fxd,
+                 utils::tuple::tuple_like Tup>
+        static constexpr
+        Fxd
+        from_raw(const Tup& t)
+            noexcept(is_noexcept<Fxd>)
+        {
+            using utils::tuple::first;
+            using utils::tuple::last;
+            using utils::tuple::is_negative;
+            using F = utils::tuple::first_element_t<Tup>;
+            using L = utils::tuple::last_element_t<Tup>;
+
+            static_assert(std::unsigned_integral<F>,
+                          "only the top tuple element can be signed");
+
+            const L x = static_cast<L>(first(t));
+
+            if constexpr (std::signed_integral<L>) {
+                if (is_negative(t)) {
+                    if (last(t) != -1 || x >= 0)
+                        return handler<Fxd>(error::underflow);
+                } else {
+                    if (last(t) != 0 || x < 0)
+                        return handler<Fxd>(error::overflow);
+                }
+            } else {
+                if (last(t) != 0)
+                    return handler<Fxd>(error::overflow);
+            }
+            return from_raw<Fxd>(x);
+        }
+
+
+
 
         template<fxd::fixed_point Fxd,
                  std::integral I>
@@ -80,7 +116,10 @@ namespace fxd::safe {
         {
             if constexpr (Fxd::frac_bits < 0) {
 
-                return from_raw<Fxd>(utils::shift::shrz(val, -Fxd::frac_bits));
+                if (val < 0)
+                    val += utils::shift::make_bias_for(Fxd::frac_bits, val);
+
+                return from_raw<Fxd>(utils::shift::shr_real(val, -Fxd::frac_bits));
 
             } else {
 
@@ -287,8 +326,8 @@ namespace fxd::safe {
         template<fixed_point Fxd>
         static constexpr
         Fxd
-        plus(Fxd a,
-             Fxd b)
+        add(Fxd a,
+            Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
             auto [result, overflow] = utils::overflow::add(a.raw_value, b.raw_value);
@@ -307,7 +346,7 @@ namespace fxd::safe {
         template<fixed_point Fxd>
         static constexpr
         Fxd
-        minus(Fxd a,
+        sub(Fxd a,
               Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
@@ -328,70 +367,48 @@ namespace fxd::safe {
         template<fixed_point Fxd>
         static constexpr
         Fxd
-        multiplies(Fxd a,
-                   Fxd b)
+        mul(Fxd fa,
+            Fxd fb)
             noexcept(is_noexcept<Fxd>)
         {
-            using R = typename Fxd::raw_type;
+            using utils::tuple::first;
+            using utils::tuple::last;
+            using utils::tuple::is_negative;
+            using utils::shift::shr_real;
+            using utils::shift::shl_real;
+            using utils::tuple::tuple_like;
 
-            if constexpr (has_wider_v<R>) {
+            // Offset used for shifting.
+            constexpr int offset = Fxd::frac_bits;
 
-                using W = wider_t<R>;
+            const auto c = utils::mul::mul(fa.raw_value, fb.raw_value);
 
-                const W aa = a.raw_value;
-                const W bb = b.raw_value;
+            if constexpr (offset < 0) {
 
-                const W cc = aa * bb;
-                const W dd = utils::shift::shrz<W>(cc, Fxd::frac_bits);
+                // it's a left-shift
+                const auto d = shl_real(c, -offset);
+                /*
+                 * Significant high bits might have been lost.
+                 * Here we unshift d to see if the value still matches.
+                 */
+                if (c != shr_real(d, -offset))
+                    return handler<Fxd>(is_negative(c) ? error::underflow : error::overflow);
 
-                if constexpr (Fxd::frac_bits < 0)
-                    /*
-                     * If frac_bits < 0, it was actually a left shift,
-                     * so significant high bits might have been lost.
-                     * Here we unshift dd to see if the value still matches.
-                     */
-                    if (cc != utils::shift::shlz<W>(dd, Fxd::frac_bits))
-                        return handler<Fxd>(cc < 0 ? error::underflow : error::overflow);
-
-                return from_raw<Fxd>(dd);
+                return from_raw<Fxd>(d);
 
             } else {
 
-                const auto c = utils::mul::mul(a.raw_value,
-                                               b.raw_value);
-
-                const auto d = utils::shift::shrz(c, Fxd::frac_bits);
-
-                if constexpr (Fxd::frac_bits < 0)
-                    /*
-                     * If frac_bits < 0, it was actually a left shift,
-                     * so significant high bits might have been lost.
-                     * Here we unshift d to see if the value still matches.
-                     */
-                    if (c != utils::shift::shlz(d, Fxd::frac_bits))
-                        return handler<Fxd>(c.second < 0 ? error::underflow : error::overflow);
-
-                const R dd = static_cast<R>(utils::tuple::first(d));
-
-                if constexpr (std::numeric_limits<R>::is_signed) {
-                    // only valid values for d.second is 0 or -1
-                    if (d.second < -1)
-                        return handler<Fxd>(error::underflow);
-                    if (d.second > 0)
-                        return handler<Fxd>(error::overflow);
-                    // d.second is just a sign extension of the top bit of dd
-                    // if they disagree in sign, there's underflow or overflow
-                    if ((d.second < 0) != (dd < 0))
-                        return handler<Fxd>(d.second < 0 ? error::underflow : error::overflow);
-
-                    return from_raw<Fxd>(dd);
-
+                // it's a right-shift
+                if (is_negative(c)) {
+                    // negative numbers need a bias to zero when shifting
+                    const auto bias = utils::shift::make_bias_for(offset, c);
+                    const auto biased_c = utils::add::add(c, bias);
+                    const auto d = shr_real(biased_c, offset);
+                    return from_raw<Fxd>(d);
                 } else {
-
-                    if (d.second)
-                        return handler<Fxd>(error::overflow);
-                    return from_raw<Fxd>(d.first);
-
+                    // c is positive
+                    const auto d = shr_real(c, offset);
+                    return from_raw<Fxd>(d);
                 }
 
             }
@@ -403,8 +420,8 @@ namespace fxd::safe {
         template<fixed_point Fxd>
         static constexpr
         Fxd
-        divides(Fxd a,
-                Fxd b)
+        div(Fxd a,
+            Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
             using R = typename Fxd::raw_type;
@@ -444,7 +461,7 @@ namespace fxd::safe {
 
                 auto q = utils::div::div<Fxd::frac_bits>(ua, ub);
                 constexpr int w = type_width<U>;
-                auto [lo, mi, hi] = utils::shift::shrz(q, 2 * w - Fxd::frac_bits);
+                auto [lo, mi, hi] = utils::shift::shr(q, 2 * w - Fxd::frac_bits);
 
                 if (neg_a != neg_b) {
                     // must negate the result

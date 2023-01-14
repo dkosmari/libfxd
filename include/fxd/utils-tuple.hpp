@@ -44,6 +44,18 @@ namespace fxd::utils::tuple {
     }
 
 
+    // treat it as a tuple, but unsigned
+    template<std::integral I>
+    constexpr
+    std::make_unsigned_t<narrower_t<I>>
+    first(I i)
+        noexcept
+    {
+        using U = std::make_unsigned_t<narrower_t<I>>;
+        return static_cast<U>(i);
+    }
+
+
     template<tuple_like Tup>
     constexpr
     last_element_t<Tup>
@@ -53,6 +65,18 @@ namespace fxd::utils::tuple {
         return get<std::tuple_size_v<Tup> - 1>(t);
     }
 
+
+    // treat it as a tuple
+    template<std::integral I>
+    constexpr
+    narrower_t<I>
+    last(I i)
+        noexcept
+    {
+        using N = narrower_t<I>;
+        constexpr int h = type_width<I> / 2;
+        return static_cast<N>(i >> h);
+    }
 
 
     template<template<typename...> typename Tuple,
@@ -81,6 +105,27 @@ namespace fxd::utils::tuple {
     {
         using Idx = std::index_sequence_for<Tail...>;
         return tail_helper(t, Idx{});
+    }
+
+
+
+    template<tuple_like Tup>
+    constexpr
+    bool
+    is_negative(const Tup& t)
+        noexcept
+    {
+        return last(t) < 0;
+    }
+
+
+    template<std::integral I>
+    constexpr
+    bool
+    is_negative(I i)
+        noexcept
+    {
+        return i < 0;
     }
 
 

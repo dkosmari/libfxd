@@ -3,7 +3,6 @@
 
 #include <concepts>
 #include <tuple>
-#include <utility>
 
 #include "utils-overflow.hpp"
 #include "utils-tuple.hpp"
@@ -25,24 +24,23 @@ namespace fxd::utils::add {
                                         carry_in);
         if constexpr (std::tuple_size_v<Tup> > 1)
             return std::tuple_cat(std::tuple{sum},
-                                  add(tuple::tail(a), tuple::tail(b), ovf));
+                                  add(tuple::tail(a),
+                                      tuple::tail(b),
+                                      ovf));
         else
             return { sum };
     }
 
-    /*
-    template<std::integral X,
-             std::integral Y>
+
+    template<std::integral I>
     constexpr
-    std::tuple<X, Y>
-    add(const std::pair<X, Y>& a,
-        const std::pair<X, Y>& b,
+    I
+    add(I a,
+        I b,
         bool carry_in = false)
-        noexcept
     {
-        return add(std::tuple{a}, std::tuple{b}, carry_in);
+        return a + b + carry_in;
     }
-    */
 
 }
 
