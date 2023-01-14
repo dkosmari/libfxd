@@ -72,38 +72,14 @@ namespace fxd::safe {
 
 
         template<fxd::fixed_point Fxd,
-                 utils::tuple::tuple_like Tup>
+                 typename Tup>
         static constexpr
         Fxd
-        from_raw(const Tup& t)
+        from_raw_tuple(const Tup& t)
             noexcept(is_noexcept<Fxd>)
         {
-            using utils::tuple::first;
-            using utils::tuple::last;
-            using utils::tuple::is_negative;
-            using F = utils::tuple::first_element_t<Tup>;
-            using L = utils::tuple::last_element_t<Tup>;
-
-            static_assert(std::unsigned_integral<F>,
-                          "only the top tuple element can be signed");
-
-            const L x = static_cast<L>(first(t));
-
-            if constexpr (std::signed_integral<L>) {
-                if (is_negative(t)) {
-                    if (last(t) != -1 || x >= 0)
-                        return handler<Fxd>(error::underflow);
-                } else {
-                    if (last(t) != 0 || x < 0)
-                        return handler<Fxd>(error::overflow);
-                }
-            } else {
-                if (last(t) != 0)
-                    return handler<Fxd>(error::overflow);
-            }
-            return from_raw<Fxd>(x);
+            return from_raw<Fxd>(utils::tuple::last(t));
         }
-
 
 
 
@@ -367,48 +343,60 @@ namespace fxd::safe {
         template<fixed_point Fxd>
         static constexpr
         Fxd
-        mul(Fxd fa,
-            Fxd fb)
+        mul(Fxd a,
+            Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
             using utils::tuple::first;
             using utils::tuple::last;
             using utils::tuple::is_negative;
-            using utils::shift::shr_real;
-            using utils::shift::shl_real;
+            using utils::shift::shr;
+            using utils::shift::shl;
             using utils::tuple::tuple_like;
 
-            // Offset used for shifting.
-            constexpr int offset = Fxd::frac_bits;
+            // offset used for shifting left.
+            constexpr int w = type_width<typename Fxd::raw_type>;
 
-            const auto c = utils::mul::mul(fa.raw_value, fb.raw_value);
+            constexpr int offset = w - Fxd::frac_bits;
 
-            if constexpr (offset < 0) {
+            const auto c = utils::mul::mul(a.raw_value, b.raw_value);
 
-                // it's a left-shift
-                const auto d = shl_real(c, -offset);
-                /*
-                 * Significant high bits might have been lost.
-                 * Here we unshift d to see if the value still matches.
-                 */
-                if (c != shr_real(d, -offset))
+            if constexpr (Fxd::frac_bits <= 0) {
+
+                // no lower bits will be discarded, so no rounding needed
+                const auto d = shl(c, offset);
+
+                // unshift, check that the value matches
+                if (offset > 0 && c != shr(d, offset))
                     return handler<Fxd>(is_negative(c) ? error::underflow : error::overflow);
 
-                return from_raw<Fxd>(d);
+                return from_raw_tuple<Fxd>(d);
 
             } else {
 
-                // it's a right-shift
                 if (is_negative(c)) {
+
                     // negative numbers need a bias to zero when shifting
-                    const auto bias = utils::shift::make_bias_for(offset, c);
+                    const auto bias = utils::shift::make_bias_for(Fxd::frac_bits, c);
                     const auto biased_c = utils::add::add(c, bias);
-                    const auto d = shr_real(biased_c, offset);
-                    return from_raw<Fxd>(d);
+                    const auto d = shl(biased_c, offset);
+
+                    // unshift, check that the value matches
+                    if (offset > 0 && biased_c != shr(d, offset))
+                        return handler<Fxd>(error::underflow);
+
+                    return from_raw_tuple<Fxd>(d);
+
                 } else {
-                    // c is positive
-                    const auto d = shr_real(c, offset);
-                    return from_raw<Fxd>(d);
+
+                    // c is positive, no need for bias when rounding
+                    const auto d = shl(c, offset);
+
+                    // unshift, check that the value matches
+                    if (offset > 0 && c != shr(d, offset))
+                        return handler<Fxd>(error::overflow);
+
+                    return from_raw_tuple<Fxd>(d);
                 }
 
             }

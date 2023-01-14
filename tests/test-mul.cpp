@@ -205,24 +205,37 @@ TEST_CASE("special3")
     // SHOW(a);
     // SHOW(b);
     // SHOW(c);
-    long double d = static_cast<long double>(a) * static_cast<long double>(b);
+    long double d = to_float(a) * to_float(b);
     CHECK(c == F{d});
+}
+
+
+TEST_CASE("special4")
+{
+    using F = fxd::fixed<-1, 65>;
+
+    F a = F::from_raw(893234026250213348LL);
+    F b = F::from_raw(-5616900536081592863LL);
+    F c = a * b;
+    F d = F::from_raw(-135991659580774104LL);
+    CHECK(c == d);
+    F e = fxd::safe::saturate::mul(a, b);
+    CHECK(e == d);
 }
 
 
 
 TEMPLATE_LIST_TEST_CASE("random-basic",
-                        "",
+                        "[unsafe]",
                         test_types)
 {
     using Fxd = TestType;
-    using Flt = Fxd::float_type;
 
     constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
     constexpr Fxd hi = std::numeric_limits<Fxd>::max();
 
-    const Flt flo = static_cast<Flt>(lo);
-    const Flt fhi = static_cast<Flt>(hi);
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
 
     RNG<Fxd> rng;
 
@@ -230,12 +243,18 @@ TEMPLATE_LIST_TEST_CASE("random-basic",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
 
-        Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
-        if (flo <= d && d <= fhi) {
+        auto ab = to_float(a) * to_float(b);
+        if (flo <= ab && ab <= fhi) {
             Fxd c = a * b;
+            REQUIRE(c == Fxd{ab});
 
-            REQUIRE(c == Fxd{d});
+            Fxd sat_c = fxd::safe::saturate::mul(a, b);
+            REQUIRE(sat_c == Fxd{ab});
+
+            REQUIRE_NOTHROW(fxd::safe::except::mul(a, b));
         }
 
     }
@@ -247,7 +266,6 @@ TEMPLATE_LIST_TEST_CASE("random-safe",
                         test_types)
 {
     using Fxd = TestType;
-    using Flt = Fxd::float_type;
 
     constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
     constexpr Fxd hi = std::numeric_limits<Fxd>::max();
@@ -255,8 +273,8 @@ TEMPLATE_LIST_TEST_CASE("random-safe",
     CAPTURE(lo);
     CAPTURE(hi);
 
-    const Flt flo = static_cast<Flt>(lo);
-    const Flt fhi = static_cast<Flt>(hi);
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
 
     CAPTURE(flo);
     CAPTURE(fhi);
@@ -268,21 +286,27 @@ TEMPLATE_LIST_TEST_CASE("random-safe",
         Fxd a = rng.get();
         Fxd b = rng.get();
         Fxd c = fxd::safe::saturate::mul(a, b);
-        Flt d = static_cast<Flt>(a) * static_cast<Flt>(b);
+        auto ab = to_float(a) * to_float(b);
 
         CAPTURE(a);
         CAPTURE(b);
         CAPTURE(c);
-        CAPTURE(d);
+        CAPTURE(ab);
 
-        if (d < flo) {
+        if (ab < flo) {
+
             REQUIRE(c == lo);
             REQUIRE_THROWS_AS(fxd::safe::except::mul(a, b), std::underflow_error);
-        } else if (d <= fhi) {
-            REQUIRE(c == Fxd{d});
+
+        } else if (ab <= fhi) {
+
+            REQUIRE(c == Fxd{ab});
+
         } else {
+
             REQUIRE(c == hi);
             REQUIRE_THROWS_AS(fxd::safe::except::mul(a, b), std::overflow_error);
+
         }
 
     }
