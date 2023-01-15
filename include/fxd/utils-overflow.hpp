@@ -210,6 +210,23 @@ namespace fxd::utils::overflow {
 
 #endif // LIBFXD_NO_BUILTINS
 
-}
+
+
+
+    template<std::unsigned_integral U>
+    constexpr
+    std::pair<U, bool>
+    shl_real(U a,
+             unsigned b)
+        noexcept
+    {
+        constexpr int w = type_width<U>;
+        const bool ovf = a >> (w - b);
+        const U result = a << b;
+        return { result, ovf };
+    }
+
+
+} // namespace fxd::utils::overflow
 
 #endif

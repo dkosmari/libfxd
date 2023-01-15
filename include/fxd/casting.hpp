@@ -14,30 +14,30 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T = select_int_t<Int + Frac>,
+             typename Raw = select_int_t<Int + Frac>,
              fixed_point Src>
     constexpr
-    fixed<Int, Frac, T>
+    fixed<Int, Frac, Raw>
     fixed_cast(const Src& src)
         noexcept
     {
-        T raw = utils::shift::shl(T(src.raw_value),
+        Raw raw = utils::shift::shl(Raw(src.raw_value),
                                   Frac - Src::fractional_bits);
-        return fixed<Int, Frac, T>::from_raw(raw);
+        return fixed<Int, Frac, Raw>::from_raw(raw);
     }
 
 
 
     template<int Int,
              int Frac,
-             typename T = select_uint_t<Int + Frac>,
+             typename Raw = select_uint_t<Int + Frac>,
              fixed_point Src>
     constexpr
-    fixed<Int, Frac, T>
+    fixed<Int, Frac, Raw>
     ufixed_cast(const Src& src)
         noexcept
     {
-        return fixed_cast<Int, Frac, T>(src);
+        return fixed_cast<Int, Frac, Raw>(src);
     }
 
 

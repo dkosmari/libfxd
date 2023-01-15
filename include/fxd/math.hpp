@@ -76,7 +76,8 @@ namespace fxd {
 
             old_a = a;
 
-            a = (a + b) / 2;
+            a = (a + b);
+            a.raw_value /= 2;
 
             if (!a)
                 return a;

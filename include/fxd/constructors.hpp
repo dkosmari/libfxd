@@ -13,10 +13,10 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     template<std::integral I>
     constexpr
-    fixed<Int, Frac, T>::fixed(I i)
+    fixed<Int, Frac, Raw>::fixed(I i)
         noexcept :
         raw_value(utils::shift::shl<raw_type>(i, frac_bits))
     {}
@@ -24,10 +24,10 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     template<std::floating_point Flt>
     constexpr
-    fixed<Int, Frac, T>::fixed(Flt f)
+    fixed<Int, Frac, Raw>::fixed(Flt f)
         noexcept
     {
         // note: no need to control rounding mode here, since
@@ -39,10 +39,10 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     constexpr
-    fixed<Int, Frac, T>
-    fixed<Int, Frac, T>::from_raw(T val)
+    fixed<Int, Frac, Raw>
+    fixed<Int, Frac, Raw>::from_raw(Raw val)
         noexcept
     {
         fixed result;

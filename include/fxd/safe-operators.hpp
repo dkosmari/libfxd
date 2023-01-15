@@ -17,6 +17,8 @@
 #include "utils-shift.hpp"
 #include "utils-tuple.hpp"
 
+#include "round-div.hpp"
+
 
 namespace fxd::safe {
 
@@ -412,7 +414,6 @@ namespace fxd::safe {
             Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
-            using R = typename Fxd::raw_type;
 
             if (!b) {
                 if (!a)
@@ -420,49 +421,43 @@ namespace fxd::safe {
                 return handler<Fxd>(a < 0 ? error::underflow : error::overflow);
             }
 
-            if constexpr (has_wider_v<R>) {
-                using W = wider_t<R>;
-                const W aa = utils::shift::shl<W>(a.raw_value, Fxd::frac_bits);
-                const W bb = b.raw_value;
+            using R = typename Fxd::raw_type;
+            using U = std::make_unsigned_t<R>;
 
-                if constexpr (std::numeric_limits<W>::is_signed) {
-                    if (aa == std::numeric_limits<W>::lowest()
-                        && bb ==  -1)
-                        return handler<Fxd>(error::overflow);
-                }
+            const bool neg_a = a.raw_value < 0;
+            const bool neg_b = b.raw_value < 0;
+            const bool neg_c = neg_a != neg_b;
 
-                const W cc = aa / bb;
-                return from_raw<Fxd>(cc);
-            } else {
-                const bool neg_a = a.raw_value < 0;
-                const bool neg_b = b.raw_value < 0;
+            U ua = a.raw_value;
+            U ub = b.raw_value;
 
-                using U = std::make_unsigned_t<R>;
-                U ua = a.raw_value;
-                U ub = b.raw_value;
+            if (neg_a)
+                ua = -ua;
 
-                if (neg_a)
-                    ua = -ua;
+            if (neg_b)
+                ub = -ub;
 
-                if (neg_b)
-                    ub = -ub;
+            auto result = utils::div::overflow::div<Fxd::frac_bits>(ua, ub);
+            if (!result)
+                return handler<Fxd>(neg_c ? error::underflow : error::overflow);
 
-                auto q = utils::div::div<Fxd::frac_bits>(ua, ub);
-                constexpr int w = type_width<U>;
-                auto [lo, mi, hi] = utils::shift::shr(q, 2 * w - Fxd::frac_bits);
+            auto [uc, expo] = *result;
 
-                if (neg_a != neg_b) {
-                    // must negate the result
-                    if (mi || hi // high bits are nonzero
-                        || std::cmp_greater(lo, std::numeric_limits<R>::max())) // too large
-                        return handler<Fxd>(error::underflow);
-                    return from_raw<Fxd>(-static_cast<R>(lo));
-                } else {
-                    if (mi || hi)
-                        return handler<Fxd>(error::overflow);
-                    return from_raw<Fxd>(lo);
-                }
-            }
+            const int offset = expo + Fxd::frac_bits;
+            U ud = utils::shift::shl(uc, offset);
+
+            // unshift to ensure the value wasn't destroyed
+            if (offset > 0 && uc != utils::shift::shr(ud, offset))
+                return handler<Fxd>(neg_c ? error::underflow : error::overflow);
+
+            if (neg_c) {
+                R d = ud;
+                if (d < 0)
+                    return handler<Fxd>(error::underflow);
+                return from_raw<Fxd>(-d);
+            } else
+                return from_raw<Fxd>(ud);
+
         }
 
 
@@ -475,7 +470,7 @@ namespace fxd::safe {
         {
             if (f.raw_value == std::numeric_limits<typename Fxd::raw_type>::min())
                 return handle<Fxd>(error::overflow);
-            return from_raw(std::abs(f.raw_value));
+            return from_raw<Fxd>(std::abs(f.raw_value));
         }
 
 
@@ -487,7 +482,7 @@ namespace fxd::safe {
             noexcept(is_noexcept<Fxd>)
         {
             if(a > b)
-                return minus(a, b);
+                return sub(a, b);
             else
                 return 0;
         }
@@ -502,9 +497,9 @@ namespace fxd::safe {
         {
             constexpr Fxd e = std::numeric_limits<Fxd>::epsilon();
             if (from < to)
-                return plus(from, e);
+                return add(from, e);
             if (from > to)
-                return minus(from, e);
+                return sub(from, e);
             return to;
         }
 

@@ -15,9 +15,9 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     constexpr
-    fixed<Int, Frac, T>::operator bool()
+    fixed<Int, Frac, Raw>::operator bool()
         const noexcept
     {
         return raw_value;
@@ -26,10 +26,10 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     template<std::integral I>
     constexpr
-    fixed<Int, Frac, T>::operator I()
+    fixed<Int, Frac, Raw>::operator I()
         const noexcept
     {
         if constexpr (frac_bits < 0) {
@@ -46,9 +46,9 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     template<std::floating_point Flt>
-    fixed<Int, Frac, T>::operator Flt()
+    fixed<Int, Frac, Raw>::operator Flt()
         const noexcept
     {
         utils::rounder r;

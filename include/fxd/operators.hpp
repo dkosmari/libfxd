@@ -45,26 +45,26 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     template<std::integral I>
     ALWAYS_INLINE
     constexpr
-    fixed<Int, Frac, T>&
-    fixed<Int, Frac, T>::operator =(I i)
+    fixed<Int, Frac, Raw>&
+    fixed<Int, Frac, Raw>::operator =(I i)
         noexcept
     {
-        raw_value = utils::shift::shl<T>(i, frac_bits);
+        raw_value = utils::shift::shl<Raw>(i, frac_bits);
         return *this;
     }
 
 
     template<int Int,
              int Frac,
-             typename T>
+             typename Raw>
     template<std::floating_point F>
     constexpr
-    fixed<Int, Frac, T>&
-    fixed<Int, Frac, T>::operator =(F f)
+    fixed<Int, Frac, Raw>&
+    fixed<Int, Frac, Raw>::operator =(F f)
         noexcept
     {
         using std::ldexp;

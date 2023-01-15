@@ -14,10 +14,10 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T = select_int_t<Int + Frac>>
+             typename Raw = select_int_t<Int + Frac>>
     struct fixed {
 
-        using raw_type = T;
+        using raw_type = Raw;
         static constexpr int raw_bits = type_width<raw_type>;
         static constexpr int int_bits = Int;
         static constexpr int frac_bits = Frac;
@@ -25,11 +25,11 @@ namespace fxd {
 
         static_assert(raw_bits >= bits);
         static_assert(bits > 0);
-        static_assert(2 * raw_bits >= int_bits);
-        static_assert(2 * raw_bits >= frac_bits);
+        static_assert(int_bits < 2 * raw_bits);
+        static_assert(frac_bits < 2 * raw_bits);
 
         // floating point type that can fully represent this fixed point type
-        using float_type = select_float_t<bits>;
+        using float_type = select_float_t<bits - std::numeric_limits<raw_type>::is_signed>;
 
         /*
          * The actual value is stored as a bitfield.

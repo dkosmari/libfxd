@@ -1,11 +1,8 @@
 #ifndef LIBFXD_TRAITS_HPP
 #define LIBFXD_TRAITS_HPP
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
-#include <type_traits>
 #include <concepts>
+#include <type_traits>
 
 #include "types.hpp"
 #include "fixed.hpp"
@@ -19,8 +16,8 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename T>
-    struct is_fixed_point<fixed<Int, Frac, T>> :
+             typename Raw>
+    struct is_fixed_point<fixed<Int, Frac, Raw>> :
         std::true_type {};
 
 
@@ -30,9 +27,8 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename I>
-    requires(std::numeric_limits<I>::is_specialized && !std::numeric_limits<I>::is_signed)
-    struct is_signed_fixed_point<fixed<Int, Frac, I>> :
+             std::signed_integral Raw>
+    struct is_signed_fixed_point<fixed<Int, Frac, Raw>> :
         std::true_type {};
 
 
@@ -42,9 +38,8 @@ namespace fxd {
 
     template<int Int,
              int Frac,
-             typename U>
-    requires(std::numeric_limits<U>::is_specialized && !std::numeric_limits<U>::is_signed)
-    struct is_unsigned_fixed_point<fixed<Int, Frac, U>> :
+             std::unsigned_integral Raw>
+    struct is_unsigned_fixed_point<fixed<Int, Frac, Raw>> :
         std::true_type {};
 
 
@@ -69,17 +64,24 @@ namespace fxd {
 namespace std {
 
 
-    template<typename Fxd,
-             typename Other>
-    requires(fxd::is_fixed_point_v<Fxd> && is_arithmetic_v<Other>)
-    struct common_type<Fxd, Other> {
+    template<typename Fxd>
+    requires (fxd::is_fixed_point_v<Fxd>)
+    struct common_type<Fxd, Fxd> {
         using type = Fxd;
     };
 
 
     template<typename Fxd,
              typename Other>
-    requires(fxd::is_fixed_point_v<Fxd> && is_arithmetic_v<Other>)
+    requires (fxd::is_fixed_point_v<Fxd> && is_arithmetic_v<Other>)
+    struct common_type<Fxd, Other> {
+        using type = Fxd;
+    };
+
+
+    template<typename Other,
+             typename Fxd>
+    requires (is_arithmetic_v<Other> && fxd::is_fixed_point_v<Fxd>)
     struct common_type<Other, Fxd> {
         using type = Fxd;
     };

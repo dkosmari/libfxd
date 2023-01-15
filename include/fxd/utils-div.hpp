@@ -2,85 +2,142 @@
 #define LIBFXD_UTILS_DIV_HPP
 
 #include <algorithm>
+#include <bit>
 #include <concepts>
+#include <optional>
 #include <tuple>
 #include <utility>
 
 #include "types.hpp"
 
+#include "utils-overflow.hpp"
+#include "utils-shift.hpp"
+
 
 namespace fxd::utils::div {
 
 
-    template<std::integral I>
-    requires (has_wider_v<I>)
-    ALWAYS_INLINE
-    constexpr
-    wider_t<I>
-    div(I a,
-        I b)
-    {
-        constexpr int w = type_width<I>;
-        using W = wider_t<I>;
-        const W aa = a;
-        const W bb = b;
-        return (aa << w) / bb;
-    }
 
-
-    template<std::unsigned_integral U>
-    constexpr
-    std::pair<U, bool>
-    shl_overflow(U a,
-                 int b)
+    // performs a floating-point division
+    // returns the mantissa and exponent as a pair
+    template<int frac_bits,
+             std::unsigned_integral U>
+    std::pair<U, int>
+    div(U a,
+        U b)
         noexcept
     {
-        constexpr int w = type_width<U>;
-        const bool ovf = a >> (w - b);
-        const U result = a << b;
-        return { result, ovf };
+        using shift::shl_real;
+
+        if (!a)
+            return {0, 0};
+
+        const int expo_a = std::countl_zero(a);
+        const int expo_b = std::countl_zero(b);
+        // scale of the result
+        const int scale = expo_b - expo_a;
+
+        a = shl_real(a, expo_a);
+        b = shl_real(b, expo_b);
+
+        U quo = a / b; // calculates the first bit, may also div-by-zero trap
+        U rem = a % b;
+
+        int i = 0;
+        for (; rem && i < frac_bits + scale; ++i) {
+
+            auto [new_rem, carry] = overflow::shl_real(rem, 1);
+            rem = new_rem;
+
+            quo <<= 1;
+            if (carry || rem >= b) {
+                quo |= 1;
+                rem -= b;
+            }
+        }
+
+        return { quo, scale - i };
     }
 
 
     template<int frac_bits,
              std::unsigned_integral U>
-    requires (!has_wider_v<U>)
-    std::tuple<U, U, U>
-    div(U a,
-        U b)
+    requires (has_wider_v<U> && frac_bits > 0 && frac_bits <= type_width<wider_t<U>>)
+    std::pair<U, int>
+        div(U a,
+            U b)
         noexcept
     {
-        constexpr int w = type_width<U>;
+        using W = wider_t<U>;
+        W aa = shift::shl_real<W>(a, frac_bits);
+        W bb = b;
+        W cc = aa / bb;
+        return { cc, -frac_bits };
+    }
 
-        U q_hi = a / b;
-        U rem = a % b;
 
-        U q_mi = 0;
-        for (int i = 0; rem && i < std::min(w, frac_bits); ++i) {
+    template<int frac_bits,
+             std::unsigned_integral U>
+    requires (frac_bits <= 0)
+    std::pair<U, int>
+        div(U a,
+            U b)
+        noexcept
+    {
+        return { a / b, 0 };
+    }
 
-            auto [new_rem, carry] = shl_overflow(rem, 1);
-            rem = new_rem;
 
-            if (carry || rem >= b) {
-                rem -= b;
-                q_mi |= U{1} << (w - i - 1);
-            }
-        }
 
-        U q_lo = 0;
-        if constexpr (frac_bits > w) {
-            for (int i = 0; rem && i < frac_bits - w; ++i) {
-                auto [new_rem, carry] = shl_overflow(rem, 1);
+    namespace overflow {
+
+        // same as above, but the result is optional; if it's missing, there was an overflow
+        template<int frac_bits,
+                 std::unsigned_integral U>
+        std::optional<std::pair<U, int>>
+        div(U a,
+            U b)
+            noexcept
+        {
+            using utils::shift::shl_real;
+
+            if (!a)
+                return std::pair{0, 0};
+
+            const int expo_a = std::countl_zero(a);
+            const int expo_b = std::countl_zero(b);
+            // scale of the result
+            const int scale = expo_b - expo_a;
+
+            a = shl_real(a, expo_a);
+            b = shl_real(b, expo_b);
+
+            if (!b)
+                return {};
+
+            U quo = a / b; // calculates the first bit
+            U rem = a % b;
+
+            int i = 0;
+            for (; rem && i < frac_bits + scale; ++i) {
+
+                auto [new_rem, carry] = utils::overflow::shl_real(rem, 1);
                 rem = new_rem;
 
+                auto [new_quo, ovf] = utils::overflow::shl_real(quo, 1);
+                if (ovf)
+                    return {};
+                quo = new_quo;
+
                 if (carry || rem >= b) {
+                    quo |= 1;
                     rem -= b;
-                    q_lo |= U{1} << (w - i - 1);
                 }
             }
+
+            return std::pair{ quo, scale - i };
         }
 
-        return { q_lo, q_mi, q_hi };
     }
 
 

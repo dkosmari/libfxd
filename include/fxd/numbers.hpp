@@ -11,10 +11,10 @@
 namespace std::numbers {
 
 
-#define FIXED_CONSTANT(x)                       \
-    template<fxd::fixed_point F>                \
-    inline constexpr                            \
-    F x<F> = F{std::numbers:: x <long double>}
+#define FIXED_CONSTANT(x)                                       \
+    template<fxd::fixed_point F>                                \
+    inline constexpr                                            \
+    F x<F> = F{std::numbers:: x <typename F::float_type>}
 
 
     FIXED_CONSTANT(e_v);

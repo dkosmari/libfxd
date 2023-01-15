@@ -12,12 +12,12 @@ namespace std {
 
     template<int Int,
              int Frac,
-             typename T>
-    struct numeric_limits<fxd::fixed<Int, Frac, T>> {
+             typename Raw>
+    struct numeric_limits<fxd::fixed<Int, Frac, Raw>> {
 
 
         static constexpr bool is_specialized = true;
-        static constexpr bool is_signed = numeric_limits<T>::is_signed;
+        static constexpr bool is_signed = numeric_limits<Raw>::is_signed;
         static constexpr bool is_integer = false;
         static constexpr bool is_exact = false;
         static constexpr bool has_infinity = false;
@@ -28,17 +28,17 @@ namespace std {
         static constexpr float_round_style round_style = round_toward_zero;
         static constexpr bool is_iec559 = false;
         static constexpr bool is_bounded = true;
-        static constexpr bool is_modulo = numeric_limits<T>::is_modulo;
-        static constexpr int radix = numeric_limits<T>::radix;
-        static constexpr int digits = fxd::fixed<Int, Frac, T>::bits - is_signed;
-        static constexpr int digits10 = (Frac - 1) * log10(numeric_limits<T>::radix);
+        static constexpr bool is_modulo = numeric_limits<Raw>::is_modulo;
+        static constexpr int radix = numeric_limits<Raw>::radix;
+        static constexpr int digits = fxd::fixed<Int, Frac, Raw>::bits - is_signed;
+        static constexpr int digits10 = (Frac - 1) * log10(numeric_limits<Raw>::radix);
         static constexpr int max_digits10 = max<int>(ceil(Frac * log10(radix) + 1), 0);
 
         static constexpr int min_exponent = 1 - Frac;
         static constexpr int min_exponent10 = floor(log10(radix) * min_exponent);
         static constexpr int max_exponent = Int - is_signed;
         static constexpr int max_exponent10 = floor(log10(radix) * max_exponent);
-        static constexpr bool traps = numeric_limits<T>::traps;
+        static constexpr bool traps = numeric_limits<Raw>::traps;
         static constexpr bool tinyness_before = false;
 
 
@@ -46,53 +46,53 @@ namespace std {
 
         // smallest positive value
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         min()
             noexcept
         {
-            return fxd::fixed<Int, Frac, T>::from_raw(1);
+            return fxd::fixed<Int, Frac, Raw>::from_raw(1);
         }
 
 
         // this is the closest value to -infinity
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         lowest()
             noexcept
         {
-            using Fxd = fxd::fixed<Int, Frac, T>;
+            using Fxd = fxd::fixed<Int, Frac, Raw>;
             if constexpr (is_signed)
-                return Fxd::from_raw(T{1} << (Fxd::bits - 1));
+                return Fxd::from_raw(Raw{1} << (Fxd::bits - 1));
             else
                 return Fxd::from_raw(0);
         }
 
 
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         max()
             noexcept
         {
-            using Fxd = fxd::fixed<Int, Frac, T>;
+            using Fxd = fxd::fixed<Int, Frac, Raw>;
             if constexpr (is_signed) {
-                using U = make_unsigned_t<T>;
+                using U = make_unsigned_t<Raw>;
                 return Fxd::from_raw((U{1} << (Fxd::bits - 1)) - U{1});
             } else
-                return Fxd::from_raw(~T{0});
+                return Fxd::from_raw(~Raw{0});
         }
 
 
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         epsilon()
             noexcept
         {
-            return fxd::fixed<Int, Frac, T>::from_raw(1);
+            return fxd::fixed<Int, Frac, Raw>::from_raw(1);
         }
 
 
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         round_error()
             noexcept
         {
@@ -101,7 +101,7 @@ namespace std {
 
 
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         infinity()
             noexcept
         {
@@ -110,7 +110,7 @@ namespace std {
 
 
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         quiet_NaN()
             noexcept
         {
@@ -119,7 +119,7 @@ namespace std {
 
 
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         signaling_NaN()
             noexcept
         {
@@ -128,7 +128,7 @@ namespace std {
 
 
         static constexpr
-        fxd::fixed<Int, Frac, T>
+        fxd::fixed<Int, Frac, Raw>
         denorm_min()
             noexcept
         {
