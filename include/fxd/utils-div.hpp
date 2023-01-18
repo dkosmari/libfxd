@@ -4,12 +4,15 @@
 #include <algorithm>
 #include <bit>
 #include <concepts>
-#include <optional>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "types.hpp"
 
+#include "error.hpp"
+#include "utils-expected.hpp"
 #include "utils-overflow.hpp"
 #include "utils-shift.hpp"
 
@@ -17,127 +20,174 @@
 namespace fxd::utils::div {
 
 
+    template<std::integral I>
+    struct div_result {
+        I quotient;
+        int exponent;
+        bool has_remainder;
+    };
 
-    // performs a floating-point division
+
+    template<int frac_bits,
+             bool safe = false,
+             std::integral I>
+    requires (frac_bits <= 0)
+    expected<div_result<I>, error>
+    div(I a,
+        I b)
+        noexcept
+    {
+        if constexpr (safe) {
+            if (!b) {
+                if (!a)
+                    return unexpected{error::not_a_number};
+                return unexpected{a < 0 ? error::underflow : error::overflow};
+            }
+        }
+
+        const I q = a / b;
+        const I r = a % b;
+        return div_result{ q, 0, r != 0 };
+    }
+
+
+    template<int frac_bits,
+             bool safe = false,
+             std::integral I>
+    requires (frac_bits > 0 && has_int_for<frac_bits + type_width<I>, I>)
+    expected<div_result<select_int_for<frac_bits + type_width<I>, I>>, error>
+    div(I a,
+        I b)
+        noexcept
+    {
+        if constexpr (safe) {
+            if (!b) {
+                if (!a)
+                    return unexpected{error::not_a_number};
+                return unexpected{a < 0 ? error::underflow : error::overflow};
+            }
+        }
+
+        using W = select_int_for<frac_bits + type_width<I>, I>;
+        const W aa = shift::shl_real<W>(a, frac_bits);
+        const W bb = b;
+        const W q = aa / bb;
+        const W r = aa % bb;
+        return div_result<W>{ q, -frac_bits, r != 0 };
+    }
+
+
+
+    // performs extended division
     // returns the mantissa and exponent as a pair
     template<int frac_bits,
+             bool safe = false,
              std::unsigned_integral U>
-    std::pair<U, int>
+    requires (!has_int_for<frac_bits + type_width<U>, U>)
+    expected<div_result<U>, error>
     div(U a,
         U b)
         noexcept
     {
         using shift::shl_real;
 
-        if (!a)
-            return {0, 0};
-
         const int expo_a = std::countl_zero(a);
         const int expo_b = std::countl_zero(b);
         // scale of the result
-        const int scale = expo_b - expo_a;
+        const int expo_q = expo_b - expo_a;
 
-        a = shl_real(a, expo_a);
-        b = shl_real(b, expo_b);
+        if (!b)
+            return unexpected{!a ? error::not_a_number : error::overflow};
 
-        U quo = a / b; // calculates the first bit, may also div-by-zero trap
-        U rem = a % b;
+        if (!a)
+            return div_result<U>{ 0, 0, false };
+
+        a = a << expo_a;
+        b = b << expo_b;
+
+        U quo = a >= b;
+        U rem = quo ? a - b : a;
 
         int i = 0;
-        for (; rem && i < frac_bits + scale; ++i) {
+        for (; rem && i < frac_bits + expo_q; ++i) {
 
             auto [new_rem, carry] = overflow::shl_real(rem, 1);
             rem = new_rem;
 
-            quo <<= 1;
+            if constexpr (safe) {
+                auto [new_quo, ovf] = utils::overflow::shl_real(quo, 1);
+                if (ovf)
+                    return unexpected{error::overflow};
+                quo = new_quo;
+            } else {
+                quo <<= 1;
+            }
+
             if (carry || rem >= b) {
                 quo |= 1;
                 rem -= b;
             }
         }
 
-        return { quo, scale - i };
+        return div_result{ quo, expo_q - i, rem != 0 };
     }
+
 
 
     template<int frac_bits,
-             std::unsigned_integral U>
-    requires (has_wider_v<U> && frac_bits > 0 && frac_bits <= type_width<wider_t<U>>)
-    std::pair<U, int>
-        div(U a,
-            U b)
+             bool safe = false,
+             std::signed_integral S>
+    requires (!has_int_for<frac_bits + type_width<S>, S>)
+    expected<div_result<S>, error>
+    div(S a,
+        S b)
         noexcept
     {
-        using W = wider_t<U>;
-        W aa = shift::shl_real<W>(a, frac_bits);
-        W bb = b;
-        W cc = aa / bb;
-        return { cc, -frac_bits };
-    }
+        const bool neg_a = a < 0;
+        const bool neg_b = b < 0;
+        const bool neg_c = neg_a != neg_b;
 
+        using U = std::make_unsigned_t<S>;
 
-    template<int frac_bits,
-             std::unsigned_integral U>
-    requires (frac_bits <= 0)
-    std::pair<U, int>
-        div(U a,
-            U b)
-        noexcept
-    {
-        return { a / b, 0 };
-    }
+        U ua = a;
+        U ub = b;
 
+        if (neg_a)
+            ua = -ua;
+        if (neg_b)
+            ub = -ub;
 
-
-    namespace overflow {
-
-        // same as above, but the result is optional; if it's missing, there was an overflow
-        template<int frac_bits,
-                 std::unsigned_integral U>
-        std::optional<std::pair<U, int>>
-        div(U a,
-            U b)
-            noexcept
-        {
-            using utils::shift::shl_real;
-
-            if (!a)
-                return std::pair{0, 0};
-
-            const int expo_a = std::countl_zero(a);
-            const int expo_b = std::countl_zero(b);
-            // scale of the result
-            const int scale = expo_b - expo_a;
-
-            a = shl_real(a, expo_a);
-            b = shl_real(b, expo_b);
-
-            if (!b)
-                return {};
-
-            U quo = a / b; // calculates the first bit
-            U rem = a % b;
-
-            int i = 0;
-            for (; rem && i < frac_bits + scale; ++i) {
-
-                auto [new_rem, carry] = utils::overflow::shl_real(rem, 1);
-                rem = new_rem;
-
-                auto [new_quo, ovf] = utils::overflow::shl_real(quo, 1);
-                if (ovf)
-                    return {};
-                quo = new_quo;
-
-                if (carry || rem >= b) {
-                    quo |= 1;
-                    rem -= b;
-                }
-            }
-
-            return std::pair{ quo, scale - i };
+        auto r = div<frac_bits, safe>(ua, ub);
+        if (!r) {
+            const error e = r.error();
+            if (e == error::overflow && neg_c)
+                return unexpected{error::underflow};
+            return unexpected{e};
         }
 
+        auto [uc, scale, rem] = *r;
+
+        // using std::clog;
+        // using std::endl;
+        // clog << "in div_ex<S>()" << endl;
+        // clog << "uc = " << uc << endl;
+        // clog << "scale = " << scale << endl;
+
+        if (static_cast<S>(uc) < 0) {
+            // clog << "uc is too large" << endl;
+            auto [new_uc, new_rem] = overflow::shr_real(uc, 1);
+            uc = new_uc;
+            rem |= new_rem;
+            ++scale;
+            // clog << "new_uc = " << new_uc << endl;
+            // clog << "new scale = " << scale << endl;
+        }
+
+        if (neg_c)
+            uc = -uc;
+
+        const S c = uc;
+        return div_result{ c, scale, rem };
     }
 
 

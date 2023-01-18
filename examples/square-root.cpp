@@ -166,12 +166,6 @@ int main()
     F val;
     while ((cout << "Input a number: ") && (cin >> val))
         test(val);
-
+    cout << endl;
 
 }
-
-
-
-// Local Variables:
-// rmsbolt-command: "g++ -std=c++20 -I ~/src/libfxd/include -O2 -march=native"
-// End:

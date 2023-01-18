@@ -60,7 +60,7 @@ namespace fxd {
 
         // assignment
 
-        fixed& operator =(const fixed&) noexcept = default;
+        constexpr fixed& operator =(const fixed&) noexcept = default;
 
         template<std::integral I>
         constexpr fixed& operator =(I i) noexcept;
@@ -91,10 +91,6 @@ namespace fxd {
         template<std::floating_point F>
         explicit
         operator F() const noexcept;
-
-
-        // TODO: might be a problem when there are no integral bits
-        static constexpr fixed one = 1;
 
 
     };

@@ -221,10 +221,33 @@ namespace fxd::utils::overflow {
         noexcept
     {
         constexpr int w = type_width<U>;
+        if (b >= w)
+            return { 0, a != 0 };
         const bool ovf = a >> (w - b);
         const U result = a << b;
         return { result, ovf };
     }
+
+
+
+    template<std::unsigned_integral U>
+    constexpr
+    std::pair<U, bool>
+    shr_real(U a,
+             unsigned b)
+        noexcept
+    {
+        constexpr int w = type_width<U>;
+        if (b >= w)
+            return { 0, a != 0 };
+
+        const bool ovf = a << (w - b);
+        const U result = a >> b;
+        return { result, ovf };
+    }
+
+
+
 
 
 } // namespace fxd::utils::overflow

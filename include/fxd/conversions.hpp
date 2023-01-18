@@ -59,11 +59,11 @@ namespace fxd {
 
     template<fixed_point Fxd>
     requires(!std::is_void_v<typename Fxd::float_type>)
-    Fxd::float_type
+    typename Fxd::float_type
     to_float(Fxd f)
         noexcept
     {
-        using Flt = Fxd::float_type;
+        using Flt = typename Fxd::float_type;
         static_assert(!std::is_void_v<Flt>);
         return static_cast<Flt>(f);
     }

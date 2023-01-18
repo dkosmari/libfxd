@@ -8,12 +8,14 @@
 
 namespace fxd {
 
-    
+
     template<typename T>
     requires(std::numeric_limits<T>::is_specialized)
     constexpr inline
     int type_width = std::numeric_limits<T>::digits +
                      (std::numeric_limits<T>::is_signed ? 1 : 0);
+
+    constexpr int max_type_width = 64;
 
 
     template<int>
@@ -60,9 +62,6 @@ namespace fxd {
     struct select_uint<bits> { using type = std::uint64_t; };
 
 
-    // client is allowed to add wider specializations if they're available
-
-
     template<int bits>
     using select_int_t = typename select_int<bits>::type;
 
@@ -73,49 +72,63 @@ namespace fxd {
 
 
 
+    // select int that matches signedness of argument
 
-    // select integer that has twice as many bits
-    
+    template<int bits,
+             typename I>
+    using select_int_for = std::conditional_t<
+        std::numeric_limits<I>::is_signed,
+        select_int_t<bits>,
+        select_uint_t<bits>
+        >;
+
+    // special case: when you need twice as many bits
+
     template<typename I>
-    using wider_t = std::conditional_t<std::numeric_limits<I>::is_signed,
-                                       select_int_t<2 * type_width<I>>,
-                                       select_uint_t<2 * type_width<I>>>;
+    using wider_t = select_int_for<2 * type_width<I>, I>;
+
+    template<typename I>
+    using narrower_t = select_int_for<type_width<I> / 2, I>;
+
+
+
+    // check if specialization is available
+
+    template<int bits>
+    constexpr bool has_int = !std::is_void_v<select_int_t<bits>>;
+
+
+    template<int bits>
+    constexpr bool has_uint = !std::is_void_v<select_uint_t<bits>>;
+
+
+    template<int bits,
+             typename I>
+    constexpr bool has_int_for = !std::is_void_v<select_int_for<bits, I>>;
+
 
     template<typename I>
     inline constexpr
     bool has_wider_v = !std::is_void_v<wider_t<I>>;
 
 
-    
-    // select integer that has half as many bits
-    
-    template<typename I>
-    using narrower_t = std::conditional_t<std::numeric_limits<I>::is_signed,
-                                          select_int_t<type_width<I> / 2>,
-                                          select_uint_t<type_width<I> / 2>>;
-
-    // template<typename I>
-    // inline constexpr
-    // bool has_narrower_v = !std::is_void_v<narrower_t<I>>; 
 
 
-    
-
-    // select floating point type by the mantissa bits
+    // select floating point type by the mantissa size
 
 
     template<int>
     struct select_float {
         using type = void;
     };
-        
-    
+
+
     template<int bits>
     requires(bits <= std::numeric_limits<float>::digits)
     struct select_float<bits> {
         using type = float;
     };
-    
+
 
     template<int bits>
     requires(bits > std::numeric_limits<float>::digits &&
@@ -123,7 +136,7 @@ namespace fxd {
     struct select_float<bits> {
         using type = double;
     };
-    
+
 
     template<int bits>
     requires(bits > std::numeric_limits<double>::digits &&
@@ -136,7 +149,7 @@ namespace fxd {
     template<int bits>
     using select_float_t = typename select_float<bits>::type;
 
-    
+
 }
 
 

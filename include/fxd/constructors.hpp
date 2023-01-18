@@ -18,7 +18,7 @@ namespace fxd {
     constexpr
     fixed<Int, Frac, Raw>::fixed(I i)
         noexcept :
-        raw_value(utils::shift::shl<raw_type>(i, frac_bits))
+        raw_value{utils::shift::shl<raw_type>(i, frac_bits)}
     {}
 
 

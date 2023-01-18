@@ -5,6 +5,7 @@ fxd_HEADERS = \
 	concepts.hpp \
 	constructors.hpp \
 	conversions.hpp \
+	error.hpp \
 	fixed.hpp \
 	fxd.hpp \
 	hash.hpp \
@@ -21,6 +22,7 @@ fxd_HEADERS = \
 	types.hpp \
 	utils-add.hpp \
 	utils-div.hpp \
+	utils-expected.hpp \
 	utils-mul.hpp \
 	utils-overflow.hpp \
 	utils-shift.hpp \

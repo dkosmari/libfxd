@@ -9,6 +9,7 @@
 #include "fixed.hpp"
 
 #include "concepts.hpp"
+#include "error.hpp"
 #include "limits.hpp"
 #include "traits.hpp"
 #include "utils-div.hpp"
@@ -23,18 +24,8 @@
 namespace fxd::safe {
 
 
-
-    enum class error {
-        underflow,
-        overflow,
-        not_a_number
-    };
-
-
-
     template<typename Handler>
     struct safe_operators {
-
 
 
        template<fxd::fixed_point Fxd>
@@ -70,17 +61,6 @@ namespace fxd::safe {
                 return handler<Fxd>(error::overflow);
 
             return Fxd::from_raw(val);
-        }
-
-
-        template<fxd::fixed_point Fxd,
-                 typename Tup>
-        static constexpr
-        Fxd
-        from_raw_tuple(const Tup& t)
-            noexcept(is_noexcept<Fxd>)
-        {
-            return from_raw<Fxd>(utils::tuple::last(t));
         }
 
 
@@ -211,7 +191,7 @@ namespace fxd::safe {
             if constexpr (Fxd::frac_bits < 0)
                 return f;
 
-            auto [result, carry] = utils::overflow::add(f.raw_value, Fxd::one.raw_value);
+            auto [result, carry] = utils::overflow::add(f.raw_value, Fxd{1}.raw_value);
             if (carry)
                 return f = handler<Fxd>(error::overflow);
 
@@ -252,10 +232,7 @@ namespace fxd::safe {
             if constexpr (Fxd::frac_bits < 0)
                 return f;
 
-            using Raw = Fxd::raw_type;
-            constexpr Raw one = Fxd::one.raw_value;
-
-            auto [result, overflow] = utils::overflow::sub(f.raw_value, one);
+            auto [result, overflow] = utils::overflow::sub(f.raw_value, Fxd{1}.raw_value);
             if (overflow)
                 return f = handler<Fxd>(error::underflow);
 
@@ -372,7 +349,7 @@ namespace fxd::safe {
                 if (offset > 0 && c != shr(d, offset))
                     return handler<Fxd>(is_negative(c) ? error::underflow : error::overflow);
 
-                return from_raw_tuple<Fxd>(d);
+                return from_raw<Fxd>(last(d));
 
             } else {
 
@@ -387,7 +364,7 @@ namespace fxd::safe {
                     if (offset > 0 && biased_c != shr(d, offset))
                         return handler<Fxd>(error::underflow);
 
-                    return from_raw_tuple<Fxd>(d);
+                    return from_raw<Fxd>(last(d));
 
                 } else {
 
@@ -398,7 +375,7 @@ namespace fxd::safe {
                     if (offset > 0 && c != shr(d, offset))
                         return handler<Fxd>(error::overflow);
 
-                    return from_raw_tuple<Fxd>(d);
+                    return from_raw<Fxd>(last(d));
                 }
 
             }
@@ -414,50 +391,25 @@ namespace fxd::safe {
             Fxd b)
             noexcept(is_noexcept<Fxd>)
         {
+            const auto r = utils::div::div<Fxd::frac_bits, true>(a.raw_value,
+                                                                 b.raw_value);
 
-            if (!b) {
-                if (!a)
-                    return handler<Fxd>(error::not_a_number);
-                return handler<Fxd>(a < 0 ? error::underflow : error::overflow);
-            }
+            if (!r)
+                return handler<Fxd>(r.error());
 
-            using R = typename Fxd::raw_type;
-            using U = std::make_unsigned_t<R>;
-
-            const bool neg_a = a.raw_value < 0;
-            const bool neg_b = b.raw_value < 0;
-            const bool neg_c = neg_a != neg_b;
-
-            U ua = a.raw_value;
-            U ub = b.raw_value;
-
-            if (neg_a)
-                ua = -ua;
-
-            if (neg_b)
-                ub = -ub;
-
-            auto result = utils::div::overflow::div<Fxd::frac_bits>(ua, ub);
-            if (!result)
-                return handler<Fxd>(neg_c ? error::underflow : error::overflow);
-
-            auto [uc, expo] = *result;
+            auto [c, expo, rem] = *r;
 
             const int offset = expo + Fxd::frac_bits;
-            U ud = utils::shift::shl(uc, offset);
+            if (c < 0 && offset < 0)
+                    c += utils::shift::make_bias_for(-offset, c);
 
-            // unshift to ensure the value wasn't destroyed
-            if (offset > 0 && uc != utils::shift::shr(ud, offset))
-                return handler<Fxd>(neg_c ? error::underflow : error::overflow);
+            const auto d = utils::shift::shl(c, offset);
 
-            if (neg_c) {
-                R d = ud;
-                if (d < 0)
-                    return handler<Fxd>(error::underflow);
-                return from_raw<Fxd>(-d);
-            } else
-                return from_raw<Fxd>(ud);
+            // unshift to ensure high significant bits were not lost
+            if (offset > 0 && c != utils::shift::shr(d, offset))
+                return handler<Fxd>(c < 0 ? error::underflow : error::overflow);
 
+            return from_raw<Fxd>(d);
         }
 
 

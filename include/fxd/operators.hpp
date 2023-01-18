@@ -138,7 +138,7 @@ namespace fxd {
     operator ++(Fxd& a)
         noexcept
     {
-        a.raw_value += Fxd::one;
+        a += 1;
         return a;
     }
 
@@ -150,7 +150,7 @@ namespace fxd {
     operator --(Fxd& a)
         noexcept
     {
-        a.raw_value -= Fxd::one;
+        a-= 1;
         return a;
     }
 
@@ -163,7 +163,7 @@ namespace fxd {
         noexcept
     {
         Fxd old = a;
-        a.raw_value += Fxd::one;
+        a += 1;
         return old;
     }
 
@@ -176,7 +176,7 @@ namespace fxd {
         noexcept
     {
         Fxd old = a;
-        a.raw_value -= Fxd::one;
+        a -= 1;
         return old;
     }
 

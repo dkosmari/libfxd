@@ -22,6 +22,7 @@
 #include "traits.hpp"
 #include "utils-add.hpp"
 #include "utils-div.hpp"
+#include "utils-expected.hpp"
 #include "utils-mul.hpp"
 #include "utils-overflow.hpp"
 #include "utils-shift.hpp"
