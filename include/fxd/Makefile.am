@@ -13,10 +13,8 @@ fxd_HEADERS = \
 	numbers.hpp \
 	operators.hpp \
 	random.hpp \
-	round-add.hpp \
 	round-div.hpp \
 	round-mul.hpp \
-	round-sub.hpp \
 	safe-operators.hpp \
 	traits.hpp \
 	types.hpp \

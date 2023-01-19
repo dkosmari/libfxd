@@ -274,7 +274,7 @@ TEST_CASE("special-10")
 
 
 TEMPLATE_LIST_TEST_CASE("random-unsafe",
-                        "[random][unsafe]",
+                        "[random][unsafe][zero]",
                         test_types)
 {
     using Fxd = TestType;
@@ -354,4 +354,76 @@ TEMPLATE_LIST_TEST_CASE("random-safe",
         }
 
     }
- }
+}
+
+
+
+TEMPLATE_LIST_TEST_CASE("random-unsafe-up",
+                        "[random][unsafe][up]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+
+    CAPTURE(lo);
+    CAPTURE(hi);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+
+    RNG<Fxd> rng;
+    fxd::utils::round_up guard;
+
+    for (int i = 0; i < 10000; ++i) {
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
+
+        auto fc = to_float(a) / to_float(b);
+        CAPTURE(fc);
+
+        if (b && flo <= fc && fc <= fhi) {
+            Fxd c = fxd::round::up::div(a, b);
+            REQUIRE(c == Fxd{fc});
+        }
+    }
+}
+
+
+
+TEMPLATE_LIST_TEST_CASE("random-unsafe-down",
+                        "[random][unsafe][down]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+
+    CAPTURE(lo);
+    CAPTURE(hi);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+
+    RNG<Fxd> rng;
+    fxd::utils::round_down guard;
+
+    for (int i = 0; i < 10000; ++i) {
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
+
+        auto fc = to_float(a) / to_float(b);
+        CAPTURE(fc);
+
+        if (b && flo <= fc && fc <= fhi) {
+            Fxd c = fxd::round::down::div(a, b);
+            REQUIRE(c == Fxd{fc});
+        }
+    }
+}

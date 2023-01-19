@@ -3,6 +3,7 @@
 
 
 #include <cfenv>
+#include <new>
 
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -22,12 +23,16 @@ namespace fxd::utils {
     opacify(T a)
         noexcept
     {
+#if 0
 #if defined(__GNUC__ ) || defined(__clang__)
         asm volatile ("" : "+rmi" (a) : "rmi" (a));
         return a;
 #else
         volatile T aa = a;
         return aa;
+#endif
+#else
+        return *std::launder(&a);
 #endif
     }
 
@@ -38,25 +43,31 @@ namespace fxd::utils {
 #endif
 
 
+    template<int Mode>
     struct rounder {
 
-        int mode;
+        int old_mode;
 
         rounder()
         noexcept :
-            mode{std::fegetround()}
+            old_mode{std::fegetround()}
         {
-            std::fesetround(FE_TOWARDZERO);
+            std::fesetround(Mode);
         }
 
         ~rounder()
             noexcept
         {
-            if (mode >= 0)
-                std::fesetround(mode);
+            if (old_mode >= 0)
+                std::fesetround(old_mode);
         }
 
     };
+
+    using round_zero = rounder<FE_TOWARDZERO>;
+    using round_nearest = rounder<FE_TONEAREST>;
+    using round_up = rounder<FE_UPWARD>;
+    using round_down = rounder<FE_DOWNWARD>;
 
 }
 

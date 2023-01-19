@@ -1,6 +1,7 @@
 #ifndef LIBFXD_CONSTRUCTORS_HPP
 #define LIBFXD_CONSTRUCTORS_HPP
 
+#include <cfenv>
 #include <cmath>
 
 #include "fixed.hpp"
@@ -30,10 +31,9 @@ namespace fxd {
     fixed<Int, Frac, Raw>::fixed(Flt f)
         noexcept
     {
-        // note: no need to control rounding mode here, since
-        // conversion to int is always rounded to zero
-        using std::ldexp;
-        raw_value = static_cast<raw_type>(ldexp(f, frac_bits));
+        const auto scaled_f = std::ldexp(f, frac_bits);
+        const auto rounded_f = std::rint(scaled_f);
+        raw_value = static_cast<raw_type>(rounded_f);
     }
 
 

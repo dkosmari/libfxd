@@ -338,7 +338,7 @@ namespace fxd::safe {
 
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = utils::mul::mul(a.raw_value, b.raw_value);
+            const auto c = utils::mul::mul<Fxd::bits>(a.raw_value, b.raw_value);
 
             if constexpr (Fxd::frac_bits <= 0) {
 

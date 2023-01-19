@@ -11,10 +11,8 @@
 #include "fixed.hpp"
 
 #include "concepts.hpp"
-#include "round-add.hpp"
 #include "round-div.hpp"
 #include "round-mul.hpp"
-#include "round-sub.hpp"
 #include "utils-div.hpp"
 #include "utils-mul.hpp"
 #include "utils-shift.hpp"
@@ -82,7 +80,8 @@ namespace fxd {
                 const T& b)
         noexcept
     {
-        return a = round::add<Fxd>(a, b);
+        a.raw_value += Fxd{b}.raw_value;
+        return a;
     }
 
 
@@ -95,7 +94,8 @@ namespace fxd {
                 const T& b)
         noexcept
     {
-        return a = round::sub<Fxd>(a, b);
+        a.raw_value -= Fxd{b}.raw_value;
+        return a;
     }
 
 
@@ -150,7 +150,7 @@ namespace fxd {
     operator --(Fxd& a)
         noexcept
     {
-        a-= 1;
+        a -= 1;
         return a;
     }
 
@@ -163,7 +163,7 @@ namespace fxd {
         noexcept
     {
         Fxd old = a;
-        a += 1;
+        ++a;
         return old;
     }
 
@@ -176,7 +176,7 @@ namespace fxd {
         noexcept
     {
         Fxd old = a;
-        a -= 1;
+        --a;
         return old;
     }
 
@@ -220,7 +220,8 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        return round::add<Fxd>(a, b);
+        Fxd c{a};
+        return c += Fxd{b};
     }
 
 
@@ -234,7 +235,8 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        return round::sub<Fxd>(a, b);
+        Fxd c{a};
+        return c -= Fxd{b};
     }
 
 
@@ -295,8 +297,6 @@ namespace fxd {
             f = ff;
         return in;
     }
-
-
 
 
 }

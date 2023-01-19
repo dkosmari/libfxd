@@ -160,7 +160,7 @@ TEST_CASE("round_s32.32", "[s32.32]")
 }
 
 
-TEST_CASE("special1")
+TEST_CASE("special-1")
 {
     using F = fxd::fixed<33, 20>;
 
@@ -180,7 +180,7 @@ TEST_CASE("special1")
 }
 
 
-TEST_CASE("special2")
+TEST_CASE("special-2")
 {
     using std::cout;
     using std::endl;
@@ -189,13 +189,13 @@ TEST_CASE("special2")
 
     I a = 0xfff99a67f370c65a;
     I b = 0x0002bd0e4b41fb2d;
-    auto c = fxd::utils::mul::mul(a, b);
+    auto c = fxd::utils::mul::mul<64>(a, b);
     CHECK(get<0>(c) == 0x814a34a018271bd2ULL);
     CHECK(get<1>(c) == static_cast<I>(0xffffffee7b7335e1LL));
 }
 
 
-TEST_CASE("special3")
+TEST_CASE("special-3")
 {
     using F = fxd::fixed<-1, 65>;
 
@@ -210,7 +210,7 @@ TEST_CASE("special3")
 }
 
 
-TEST_CASE("special4")
+TEST_CASE("special-4")
 {
     using F = fxd::fixed<-1, 65>;
 
@@ -224,9 +224,89 @@ TEST_CASE("special4")
 }
 
 
+TEST_CASE("special-5", "[up]")
+{
+    using Fxd = fxd::fixed<13, 12>;
+
+    fxd::utils::round_up guard;
+
+    Fxd a = Fxd::from_raw(2832);
+    Fxd b = Fxd::from_raw(14248059);
+    Fxd c = fxd::round::up::mul(a, b);
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa * fb;
+    CAPTURE(a);
+    CAPTURE(fa);
+    CAPTURE(b);
+    CAPTURE(fb);
+    CAPTURE(c);
+    CAPTURE(fc);
+    CHECK(c == Fxd{fc});
+}
+
+
+TEST_CASE("special-6", "[up]")
+{
+    using Fxd = fxd::fixed<13, 12>;
+
+    fxd::utils::round_up guard;
+
+    Fxd a = Fxd::from_raw(8775);
+    Fxd b = Fxd::from_raw(88974);
+    Fxd c = fxd::round::up::mul(a, b);
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa * fb;
+    CAPTURE(a);
+    CAPTURE(fa);
+    CAPTURE(b);
+    CAPTURE(fb);
+    CAPTURE(c);
+    CAPTURE(fc);
+    CHECK(c == Fxd{fc});
+}
+/*
+test-mul.cpp:431: FAILED:
+  REQUIRE( c == Fxd{ab} )
+with expansion:
+  245.08837_fix<13,12>  [ 1003882 (0xf516a) ]
+  ==
+  245.08813_fix<13,12>  [ 1003881 (0xf5169) ]
+with messages:
+  lo := -4096.0_fix<13,12>  [ -16777216 ]
+  hi := 4095.99975_fix<13,12>  [ 16777215 (0xffffff) ]
+  flo := -4096.0f
+  fhi := 4095.999755859f
+  a := -247.56641_fix<13,12>  [ -1014032 ]
+  b := -0.99_fix<13,12>  [ -4055 ]
+  ab := 245.088317871f
+
+ */
+TEST_CASE("special-7", "[down]")
+{
+    using Fxd = fxd::fixed<13, 12>;
+
+    fxd::utils::round_down guard;
+
+    Fxd a = Fxd::from_raw(-1014032);
+    Fxd b = Fxd::from_raw(-4055);
+    Fxd c = fxd::round::down::mul(a, b);
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa * fb;
+    CAPTURE(a);
+    CAPTURE(fa);
+    CAPTURE(b);
+    CAPTURE(fb);
+    CAPTURE(c);
+    CAPTURE(fc);
+    CHECK(c == Fxd{fc});
+}
+
 
 TEMPLATE_LIST_TEST_CASE("random-basic",
-                        "[unsafe]",
+                        "[unsafe][zero]",
                         test_types)
 {
     using Fxd = TestType;
@@ -311,4 +391,82 @@ TEMPLATE_LIST_TEST_CASE("random-safe",
 
     }
 
+}
+
+
+TEMPLATE_LIST_TEST_CASE("random-basic-up",
+                        "[unsafe][up]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+    CAPTURE(lo);
+    CAPTURE(hi);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+    CAPTURE(flo);
+    CAPTURE(fhi);
+
+    RNG<Fxd> rng;
+
+    fxd::utils::round_up guard;
+
+    for (int i = 0; i < 10000; ++i) {
+
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
+
+        auto ab = to_float(a) * to_float(b);
+        CAPTURE(ab);
+
+        if (flo <= ab && ab <= fhi) {
+            Fxd c = fxd::round::up::mul(a, b);
+            REQUIRE(c == Fxd{ab});
+        }
+
+    }
+}
+
+
+TEMPLATE_LIST_TEST_CASE("random-basic-down",
+                        "[unsafe][down]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+    CAPTURE(lo);
+    CAPTURE(hi);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+    CAPTURE(flo);
+    CAPTURE(fhi);
+
+    RNG<Fxd> rng;
+
+    fxd::utils::round_down guard;
+
+    for (int i = 0; i < 10000; ++i) {
+
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
+
+        auto ab = to_float(a) * to_float(b);
+        CAPTURE(ab);
+
+        if (flo <= ab && ab <= fhi) {
+            Fxd c = fxd::round::down::mul(a, b);
+            REQUIRE(c == Fxd{ab});
+        }
+
+    }
 }

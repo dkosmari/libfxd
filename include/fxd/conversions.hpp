@@ -51,7 +51,6 @@ namespace fxd {
     fixed<Int, Frac, Raw>::operator Flt()
         const noexcept
     {
-        utils::rounder r;
         using std::ldexp;
         return ldexp(static_cast<Flt>(utils::opacify(raw_value)), -frac_bits);
     }

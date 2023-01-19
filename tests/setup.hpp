@@ -109,7 +109,7 @@ public:
     using Catch::EventListenerBase::EventListenerBase;
 
     void
-    testRunStarting(Catch::TestRunInfo const&)
+    testRunStarting(const Catch::TestRunInfo&)
         override
     {
         std::fesetround(FE_TOWARDZERO);

@@ -12,24 +12,40 @@
 namespace fxd::utils::mul {
 
 
-    template<std::integral I>
-    requires (has_wider_v<I>)
+    template<int bits,
+             std::integral I>
+    requires (has_int_for<2 * bits, I>)
     ALWAYS_INLINE
     constexpr
-    wider_t<I>
+    select_int_for<2 * bits, I>
     mul(I a,
         I b)
         noexcept
     {
-        using W = wider_t<I>;
+        using W = select_int_for<2 * bits, I>;
         return static_cast<W>(a) * static_cast<W>(b);
     }
 
 
+    // template<std::integral I>
+    // requires (has_wider_v<I>)
+    // ALWAYS_INLINE
+    // constexpr
+    // wider_t<I>
+    // mul(I a,
+    //     I b)
+    //     noexcept
+    // {
+    //     using W = wider_t<I>;
+    //     return static_cast<W>(a) * static_cast<W>(b);
+    // }
+
+
     // returns low, high parts of the full multiplication a * b
     // without using larger arithmetic than I
-    template<std::integral I>
-    requires (!has_wider_v<I>)
+    template<int bits,
+             std::integral I>
+    requires (!has_int_for<2 * bits, I>)
     ALWAYS_INLINE
     constexpr
     std::tuple<std::make_unsigned_t<I>, I>
