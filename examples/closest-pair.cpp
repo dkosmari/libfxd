@@ -7,6 +7,7 @@
 #include <iterator>
 #include <unordered_set>
 #include <bit>
+#include <span>
 
 
 #include <fxd/fxd.hpp>
@@ -70,7 +71,7 @@ template<std::ranges::random_access_range R>
 void
 closest_pair(R&& points)
 {
-    using std::ranges::subrange;
+    using std::span;
 
     const auto n = size(points);
     if (n < 2)
@@ -81,8 +82,10 @@ closest_pair(R&& points)
 
     auto center = mid->x;
 
-    closest_pair(subrange{begin(points), mid});
-    closest_pair(subrange{mid, end(points)});
+    //closest_pair(std::ranges::subrange{begin(points), mid});
+    //closest_pair(std::ranges::subrange{mid, end(points)});
+    closest_pair(span{begin(points), mid});
+    closest_pair(span{mid, end(points)});
 
     std::inplace_merge(begin(points),
                        begin(points) + n2,
@@ -91,7 +94,7 @@ closest_pair(R&& points)
 
     Pt p1, p2, p3, p4;
     p1 = p2 = p3 = p4 = *begin(points);
-    for (const auto& p : points | std::views::drop(1)) {
+    for (const auto& p : points | std::ranges::views::drop(1)) {
 #if 0
         F d = p.x - center;
         d = d * d;

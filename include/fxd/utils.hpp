@@ -23,17 +23,7 @@ namespace fxd::utils {
     opacify(T a)
         noexcept
     {
-#if 0
-#if defined(__GNUC__ ) || defined(__clang__)
-        asm volatile ("" : "+rmi" (a) : "rmi" (a));
-        return a;
-#else
-        volatile T aa = a;
-        return aa;
-#endif
-#else
         return *std::launder(&a);
-#endif
     }
 
 

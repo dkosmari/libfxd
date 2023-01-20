@@ -25,6 +25,7 @@ check_PROGRAMS = \
 	test-add \
 	test-conv \
 	test-div \
+	test-limits \
 	test-mul \
 	test-sub
 

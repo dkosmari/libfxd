@@ -74,7 +74,7 @@ print(F f)
     using std::string;
 
     constexpr int p = 5 + std::numeric_limits<F>::max_digits10;
-    constexpr int w = std::ceil(std::log10(2) * F::int_bits)
+    const int w = std::ceil(std::log10(2) * F::int_bits)
                   + p + 3;
 
     auto old_flags = std::cout.flags();

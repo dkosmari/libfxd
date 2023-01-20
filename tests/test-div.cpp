@@ -71,6 +71,169 @@ TEST_CASE("basic", "[s16.16]")
 }
 
 
+TEMPLATE_LIST_TEST_CASE("random-unsafe",
+                        "[random][unsafe][zero]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+    constexpr Fxd ep = std::numeric_limits<Fxd>::epsilon();
+
+    CAPTURE(lo);
+    CAPTURE(hi);
+    CAPTURE(ep);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+
+    RNG<Fxd> rng;
+
+    for (int i = 0; i < 10000; ++i) {
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
+
+        auto ab = to_float(a) / to_float(b);
+        CAPTURE(ab);
+
+        if (b && flo <= ab && ab <= fhi) {
+            Fxd c = a / b;
+            REQUIRE(c == Fxd{ab});
+        }
+    }
+}
+
+
+TEMPLATE_LIST_TEST_CASE("random-safe",
+                        "[safe][random][zero]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+
+    CAPTURE(lo);
+    CAPTURE(hi);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+
+    CAPTURE(flo);
+    CAPTURE(fhi);
+
+    RNG<Fxd> rng;
+
+    for (int i = 0; i < 10000; ++i) {
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+
+        if (!a && !b)
+            continue;
+
+        CAPTURE(a);
+        CAPTURE(b);
+
+        Fxd c = fxd::safe::saturate::div(a, b);
+
+        auto ab = to_float(a) / to_float(b);
+        CAPTURE(ab);
+
+        if (ab < flo) {
+            REQUIRE_THROWS_AS(fxd::safe::except::div(a, b), std::underflow_error);
+            REQUIRE(c == lo);
+        } else if (fhi < ab) {
+            REQUIRE_THROWS_AS(fxd::safe::except::div(a, b), std::overflow_error);
+            REQUIRE(c == hi);
+        } else {
+            REQUIRE_NOTHROW(fxd::safe::except::div(a, b));
+            REQUIRE(c == Fxd{ab});
+        }
+
+    }
+}
+
+
+
+TEMPLATE_LIST_TEST_CASE("random-unsafe-up",
+                        "[random][unsafe][up]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+    constexpr Fxd ep = std::numeric_limits<Fxd>::epsilon();
+
+    CAPTURE(lo);
+    CAPTURE(hi);
+    CAPTURE(ep);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+
+    RNG<Fxd> rng;
+    fxd::utils::round_up guard;
+
+    for (int i = 0; i < 10000; ++i) {
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
+
+        auto fc = to_float(a) / to_float(b);
+        CAPTURE(fc);
+
+        if (b && flo <= fc && fc <= fhi) {
+            Fxd c = fxd::round::up::div(a, b);
+            REQUIRE(c == Fxd{fc});
+        }
+    }
+}
+
+
+
+TEMPLATE_LIST_TEST_CASE("random-unsafe-down",
+                        "[random][unsafe][down]",
+                        test_types)
+{
+    using Fxd = TestType;
+
+    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
+    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+    constexpr Fxd ep = std::numeric_limits<Fxd>::epsilon();
+
+    CAPTURE(lo);
+    CAPTURE(hi);
+    CAPTURE(ep);
+
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
+
+    RNG<Fxd> rng;
+    fxd::utils::round_down guard;
+
+    for (int i = 0; i < 10000; ++i) {
+        Fxd a = rng.get();
+        Fxd b = rng.get();
+        CAPTURE(a);
+        CAPTURE(b);
+
+        auto fc = to_float(a) / to_float(b);
+        CAPTURE(fc);
+
+        if (b && flo <= fc && fc <= fhi) {
+            Fxd c = fxd::round::down::div(a, b);
+            REQUIRE(c == Fxd{fc});
+        }
+    }
+}
+
+
+
 TEST_CASE("special-1")
 {
     using Fxd = fxd::fixed<-1, 65>;
@@ -273,157 +436,117 @@ TEST_CASE("special-10")
 }
 
 
-TEMPLATE_LIST_TEST_CASE("random-unsafe",
-                        "[random][unsafe][zero]",
-                        test_types)
+TEST_CASE("special-11", "[up]")
 {
-    using Fxd = TestType;
+    using Fxd = fxd::fixed<24, 1>;
 
-    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
-    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
-
-    CAPTURE(lo);
-    CAPTURE(hi);
-
-    const auto flo = to_float(lo);
-    const auto fhi = to_float(hi);
-
-    RNG<Fxd> rng;
-
-    for (int i = 0; i < 10000; ++i) {
-        Fxd a = rng.get();
-        Fxd b = rng.get();
-        CAPTURE(a);
-        CAPTURE(b);
-
-        auto ab = to_float(a) / to_float(b);
-        CAPTURE(ab);
-
-        if (b && flo <= ab && ab <= fhi) {
-            Fxd c = a / b;
-            REQUIRE(c == Fxd{ab});
-        }
-    }
-}
-
-
-TEMPLATE_LIST_TEST_CASE("random-safe",
-                        "[safe][random]",
-                        test_types)
-{
-    using Fxd = TestType;
-
-    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
-    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
-
-    CAPTURE(lo);
-    CAPTURE(hi);
-
-    const auto flo = to_float(lo);
-    const auto fhi = to_float(hi);
-
-    CAPTURE(flo);
-    CAPTURE(fhi);
-
-    RNG<Fxd> rng;
-
-    for (int i = 0; i < 10000; ++i) {
-        Fxd a = rng.get();
-        Fxd b = rng.get();
-
-        if (!a && !b)
-            continue;
-
-        CAPTURE(a);
-        CAPTURE(b);
-
-        Fxd c = fxd::safe::saturate::div(a, b);
-
-        auto ab = to_float(a) / to_float(b);
-        CAPTURE(ab);
-
-        if (ab < flo) {
-            REQUIRE_THROWS_AS(fxd::safe::except::div(a, b), std::underflow_error);
-            REQUIRE(c == lo);
-        } else if (fhi < ab) {
-            REQUIRE_THROWS_AS(fxd::safe::except::div(a, b), std::overflow_error);
-            REQUIRE(c == hi);
-        } else {
-            REQUIRE_NOTHROW(fxd::safe::except::div(a, b));
-            REQUIRE(c == Fxd{ab});
-        }
-
-    }
-}
-
-
-
-TEMPLATE_LIST_TEST_CASE("random-unsafe-up",
-                        "[random][unsafe][up]",
-                        test_types)
-{
-    using Fxd = TestType;
-
-    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
-    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
-
-    CAPTURE(lo);
-    CAPTURE(hi);
-
-    const auto flo = to_float(lo);
-    const auto fhi = to_float(hi);
-
-    RNG<Fxd> rng;
     fxd::utils::round_up guard;
 
-    for (int i = 0; i < 10000; ++i) {
-        Fxd a = rng.get();
-        Fxd b = rng.get();
-        CAPTURE(a);
-        CAPTURE(b);
+    Fxd a = Fxd::from_raw(3977664);
+    Fxd b = Fxd::from_raw(-8733244);
+    CAPTURE(a);
+    CAPTURE(b);
 
-        auto fc = to_float(a) / to_float(b);
-        CAPTURE(fc);
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa / fb;
+    CAPTURE(fa);
+    CAPTURE(fb);
+    CAPTURE(fc);
 
-        if (b && flo <= fc && fc <= fhi) {
-            Fxd c = fxd::round::up::div(a, b);
-            REQUIRE(c == Fxd{fc});
-        }
-    }
+    Fxd c = fxd::round::up::div(a, b);
+    CHECK(c == Fxd{fc});
 }
 
 
-
-TEMPLATE_LIST_TEST_CASE("random-unsafe-down",
-                        "[random][unsafe][down]",
-                        test_types)
+TEST_CASE("special-12", "[up]")
 {
-    using Fxd = TestType;
+    using Fxd = fxd::fixed<13, 12>;
 
-    constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
-    constexpr Fxd hi = std::numeric_limits<Fxd>::max();
+    fxd::utils::round_up guard;
 
-    CAPTURE(lo);
-    CAPTURE(hi);
+    Fxd a = Fxd::from_raw(8235717);
+    Fxd b = Fxd::from_raw(12116731);
+    CAPTURE(a);
+    CAPTURE(b);
 
-    const auto flo = to_float(lo);
-    const auto fhi = to_float(hi);
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa / fb;
+    CAPTURE(fa);
+    CAPTURE(fb);
+    CAPTURE(fc);
 
-    RNG<Fxd> rng;
-    fxd::utils::round_down guard;
+    Fxd c = fxd::round::up::div(a, b);
+    CHECK(c == Fxd{fc});
+}
 
-    for (int i = 0; i < 10000; ++i) {
-        Fxd a = rng.get();
-        Fxd b = rng.get();
-        CAPTURE(a);
-        CAPTURE(b);
 
-        auto fc = to_float(a) / to_float(b);
-        CAPTURE(fc);
+TEST_CASE("special-13", "[up]")
+{
+    using Fxd = fxd::fixed<13, 12>;
 
-        if (b && flo <= fc && fc <= fhi) {
-            Fxd c = fxd::round::down::div(a, b);
-            REQUIRE(c == Fxd{fc});
-        }
-    }
+    fxd::utils::round_up guard;
+
+    Fxd a = Fxd::from_raw(1605);
+    Fxd b = Fxd::from_raw(16714058);
+    CAPTURE(a);
+    CAPTURE(b);
+
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa / fb;
+    CAPTURE(fa);
+    CAPTURE(fb);
+    CAPTURE(fc);
+
+    Fxd c = fxd::round::up::div(a, b);
+    CHECK(c == Fxd{fc});
+}
+
+
+TEST_CASE("special-14", "[up]")
+{
+    using Fxd = fxd::fixed<13, 12>;
+
+    fxd::utils::round_up guard;
+
+    Fxd a = Fxd::from_raw(-407);
+    Fxd b = Fxd::from_raw(4714082);
+    CAPTURE(a);
+    CAPTURE(b);
+
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa / fb;
+    CAPTURE(fa);
+    CAPTURE(fb);
+    CAPTURE(fc);
+
+    Fxd c = fxd::round::up::div(a, b);
+    CHECK(c == Fxd{fc});
+}
+
+
+TEST_CASE("special-15", "[up]")
+{
+    using Fxd = fxd::fixed<26, -1>;
+
+    fxd::utils::round_up guard;
+
+    Fxd a = Fxd::from_raw(11126233);
+    Fxd b = Fxd::from_raw(-3231766);
+    CAPTURE(a);
+    CAPTURE(b);
+
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa / fb;
+    CAPTURE(fa);
+    CAPTURE(fb);
+    CAPTURE(fc);
+
+    Fxd c = fxd::round::up::div(a, b);
+    CHECK(c == Fxd{fc});
+
 }

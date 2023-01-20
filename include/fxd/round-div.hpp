@@ -32,8 +32,10 @@ namespace fxd::round {
 
             auto [c, expo, rem] = *r;
 
+            // offset used for shifting left
             const int offset = expo + Fxd::frac_bits;
 
+            // Right-shifting a negative number would round it down, not to zero.
             if (c < 0 && offset < 0)
                 c += utils::shift::make_bias_for(-offset, c);
 
@@ -63,13 +65,18 @@ namespace fxd::round {
 
             auto [c, expo, rem] = *r;
 
+            const bool neg = (a.raw_value < 0) != (b.raw_value < 0);
+
+            // offset used for shifting left
             const int offset = expo + Fxd::frac_bits;
 
-            if (c >= 0 && rem) {
+            // When a/b is positive, it may have been rounded down.
+            if (!neg && rem)
                 ++c;
-                if (offset < 0)
-                    c += utils::shift::make_bias_for(-offset, c);
-            }
+
+            // Right-shifting will always round down.
+            if (offset < 0)
+                c += utils::shift::make_bias_for(-offset, c);
 
             const auto d = utils::shift::shl(c, offset);
 
@@ -97,13 +104,16 @@ namespace fxd::round {
 
             auto [c, expo, rem] = *r;
 
+            const bool neg = (a.raw_value < 0) != (b.raw_value < 0);
+
+            // offset used for shifting left
             const int offset = expo + Fxd::frac_bits;
 
-            if (c < 0 && rem) {
+             // When a/b is negative, it may have been rounded up.
+            if (neg && rem)
                 --c;
-                if (offset < 0)
-                    c -= utils::shift::make_bias_for(-offset, c);
-            }
+
+            // Right-shifting always rounds down, so we don't need top handle it.
 
             const auto d = utils::shift::shl(c, offset);
 

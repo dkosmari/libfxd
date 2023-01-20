@@ -47,7 +47,7 @@ namespace fxd::utils::div {
 
         const I q = a / b;
         const I r = a % b;
-        return div_result{ q, 0, r != 0 };
+        return div_result<I>{ q, 0, r != 0 };
     }
 
 
@@ -129,7 +129,7 @@ namespace fxd::utils::div {
             }
         }
 
-        return div_result{ quo, expo_q - i, rem != 0 };
+        return div_result<U>{ quo, expo_q - i, rem != 0 };
     }
 
 
@@ -167,27 +167,18 @@ namespace fxd::utils::div {
 
         auto [uc, scale, rem] = *r;
 
-        // using std::clog;
-        // using std::endl;
-        // clog << "in div_ex<S>()" << endl;
-        // clog << "uc = " << uc << endl;
-        // clog << "scale = " << scale << endl;
-
         if (static_cast<S>(uc) < 0) {
-            // clog << "uc is too large" << endl;
             auto [new_uc, new_rem] = overflow::shr_real(uc, 1);
             uc = new_uc;
             rem |= new_rem;
             ++scale;
-            // clog << "new_uc = " << new_uc << endl;
-            // clog << "new scale = " << scale << endl;
         }
 
         if (neg_c)
             uc = -uc;
 
         const S c = uc;
-        return div_result{ c, scale, rem };
+        return div_result<S>{ c, scale, rem };
     }
 
 

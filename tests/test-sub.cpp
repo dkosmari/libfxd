@@ -67,7 +67,6 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
                         test_types)
 {
     using Fxd = TestType;
-    using Flt = Fxd::float_type;
 
     constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
     constexpr Fxd hi = std::numeric_limits<Fxd>::max();
@@ -75,8 +74,8 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
     CAPTURE(lo);
     CAPTURE(hi);
 
-    const Flt flo = static_cast<Flt>(lo);
-    const Flt fhi = static_cast<Flt>(hi);
+    const auto flo = to_float(lo);
+    const auto fhi = to_float(hi);
 
     CAPTURE(flo);
     CAPTURE(fhi);
@@ -88,19 +87,21 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
         Fxd a = rng.get();
         Fxd b = rng.get();
         Fxd c = fxd::safe::saturate::sub(a, b);
-        Flt d = static_cast<Flt>(a) - static_cast<Flt>(b);
+        auto fa = to_float(a);
+        auto fb = to_float(b);
+        auto fc = fa - fb;
 
         CAPTURE(a);
         CAPTURE(b);
         CAPTURE(c);
-        CAPTURE(d);
+        CAPTURE(fc);
 
-        if (d < flo)
+        if (fc < flo)
             REQUIRE(c == lo);
-        else if (d < fhi)
-            REQUIRE(c == Fxd{d});
-        else
+        else if (fhi < fc)
             REQUIRE(c == hi);
+        else
+            REQUIRE(c == Fxd{fc});
 
     }
 }
