@@ -1,6 +1,7 @@
 #ifndef LIBFXD_LIMITS_HPP
 #define LIBFXD_LIMITS_HPP
 
+#include <algorithm>
 #include <limits>
 
 #include "fixed.hpp"

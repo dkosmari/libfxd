@@ -14,10 +14,12 @@ namespace fxd {
     template<int Int,
              int Frac,
              typename Raw = select_int_t<Int + Frac>>
-    requires (std::numeric_limits<Raw>::is_specialized)
     struct fixed {
 
         using raw_type = Raw;
+        static_assert(std::numeric_limits<Raw>::is_specialized,
+                      "raw type is not usable, lacks std::numeric_limits support");
+
         static constexpr int raw_bits = type_width<raw_type>;
         static constexpr int int_bits = Int;
         static constexpr int frac_bits = Frac;
@@ -27,6 +29,7 @@ namespace fxd {
         static_assert(bits > 0);
         static_assert(int_bits < 2 * raw_bits);
         static_assert(frac_bits < 2 * raw_bits);
+
 
         // floating point type that can fully represent this fixed point type
         using float_type = select_float_t<bits - std::numeric_limits<raw_type>::is_signed>;
