@@ -82,34 +82,35 @@ namespace fxd {
         select_uint_t<bits>
         >;
 
-    // special case: when you need twice as many bits
+    template<typename I>
+    using double_width_t = select_int_for<2 * type_width<I>, I>;
 
     template<typename I>
-    using wider_t = select_int_for<2 * type_width<I>, I>;
-
-    template<typename I>
-    using narrower_t = select_int_for<type_width<I> / 2, I>;
+    using half_width_t = select_int_for<type_width<I> / 2, I>;
 
 
 
     // check if specialization is available
 
     template<int bits>
-    constexpr bool has_int = !std::is_void_v<select_int_t<bits>>;
+    constexpr inline
+    bool has_int = !std::is_void_v<select_int_t<bits>>;
 
 
     template<int bits>
-    constexpr bool has_uint = !std::is_void_v<select_uint_t<bits>>;
+    constexpr inline
+    bool has_uint = !std::is_void_v<select_uint_t<bits>>;
 
 
     template<int bits,
              typename I>
-    constexpr bool has_int_for = !std::is_void_v<select_int_for<bits, I>>;
+    constexpr inline
+    bool has_int_for = !std::is_void_v<select_int_for<bits, I>>;
 
 
-    template<typename I>
-    inline constexpr
-    bool has_wider_v = !std::is_void_v<wider_t<I>>;
+    // template<typename I>
+    // inline constexpr
+    // bool has_wider_v = !std::is_void_v<wider_t<I>>;
 
 
 

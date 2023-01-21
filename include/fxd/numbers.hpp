@@ -3,8 +3,6 @@
 
 #include <numbers>
 
-#include "fixed.hpp"
-
 #include "concepts.hpp"
 
 

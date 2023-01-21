@@ -40,8 +40,8 @@ TEST_CASE("basic", "[s16.16]")
 TEST_CASE("extremes", "[s16.16][saturation][exception]")
 {
     using Fxd = fxd::fixed<16, 16>;
-    using sat = fxd::safe::saturate;
-    using exc = fxd::safe::except;
+    namespace sat = fxd::saturate;
+    namespace exc = fxd::except;
 
     {
         Fxd a = 0;
@@ -86,7 +86,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::saturate::sub(a, b);
+        Fxd c = fxd::saturate::sub(a, b);
         auto fa = to_float(a);
         auto fb = to_float(b);
         auto fc = fa - fb;

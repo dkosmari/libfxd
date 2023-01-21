@@ -4,10 +4,7 @@
 #include <algorithm>
 #include <bit>
 #include <concepts>
-#include <tuple>
 #include <type_traits>
-#include <utility>
-#include <variant>
 
 #include "types.hpp"
 
@@ -32,7 +29,8 @@ namespace fxd::utils::div {
              bool safe = false,
              std::integral I>
     requires (frac_bits <= 0)
-    expected<div_result<I>, error>
+    expected<div_result<I>,
+             error>
     div(I a,
         I b)
         noexcept
@@ -55,7 +53,8 @@ namespace fxd::utils::div {
              bool safe = false,
              std::integral I>
     requires (frac_bits > 0 && has_int_for<frac_bits + type_width<I>, I>)
-    expected<div_result<select_int_for<frac_bits + type_width<I>, I>>, error>
+    expected<div_result<select_int_for<frac_bits + type_width<I>, I>>,
+             error>
     div(I a,
         I b)
         noexcept
@@ -84,7 +83,8 @@ namespace fxd::utils::div {
              bool safe = false,
              std::unsigned_integral U>
     requires (!has_int_for<frac_bits + type_width<U>, U>)
-    expected<div_result<U>, error>
+    expected<div_result<U>,
+             error>
     div(U a,
         U b)
         noexcept
@@ -138,7 +138,8 @@ namespace fxd::utils::div {
              bool safe = false,
              std::signed_integral S>
     requires (!has_int_for<frac_bits + type_width<S>, S>)
-    expected<div_result<S>, error>
+    expected<div_result<S>,
+             error>
     div(S a,
         S b)
         noexcept

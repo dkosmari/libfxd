@@ -1,7 +1,7 @@
 #ifndef LIBFXD_UTILS_TUPLE_HPP
 #define LIBFXD_UTILS_TUPLE_HPP
 
-
+#include <concepts>
 #include <tuple>
 #include <utility>
 
@@ -47,11 +47,11 @@ namespace fxd::utils::tuple {
     // treat it as a tuple, but unsigned
     template<std::integral I>
     constexpr
-    std::make_unsigned_t<narrower_t<I>>
+    std::make_unsigned_t<half_width_t<I>>
     first(I i)
         noexcept
     {
-        using U = std::make_unsigned_t<narrower_t<I>>;
+        using U = std::make_unsigned_t<half_width_t<I>>;
         return static_cast<U>(i);
     }
 
@@ -69,11 +69,11 @@ namespace fxd::utils::tuple {
     // treat it as a tuple
     template<std::integral I>
     constexpr
-    narrower_t<I>
+    half_width_t<I>
     last(I i)
         noexcept
     {
-        using N = narrower_t<I>;
+        using N = half_width_t<I>;
         constexpr int h = type_width<I> / 2;
         return static_cast<N>(i >> h);
     }

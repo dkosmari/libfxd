@@ -1,7 +1,6 @@
 #ifndef LIBFXD_UTILS_OVERFLOW_HPP
 #define LIBFXD_UTILS_OVERFLOW_HPP
 
-#include <cfenv>
 #include <concepts>
 #include <cstdint>
 #include <limits>
@@ -23,9 +22,13 @@
 #  define LIBFXD_GCC_BUILTINS
 
 #elif defined(_MSC_VER) && defined(_M_AMD64)
-
-#  include <intrin.h>
-#  define LIBFXD_INTEL_BUILTINS
+// Note: MSVC only has the Intel built-ins, and they can't handle negatives
+#  if 0
+#    include <intrin.h>
+#    define LIBFXD_INTEL_BUILTINS
+#  else
+#    define LIBFXD_NO_BUILTINS
+#  endif
 
 #else
 
@@ -212,7 +215,6 @@ namespace fxd::utils::overflow {
 
 
 
-
     template<std::unsigned_integral U>
     constexpr
     std::pair<U, bool>
@@ -227,7 +229,6 @@ namespace fxd::utils::overflow {
         const U result = a << b;
         return { result, ovf };
     }
-
 
 
     template<std::unsigned_integral U>
@@ -245,9 +246,6 @@ namespace fxd::utils::overflow {
         const U result = a >> b;
         return { result, ovf };
     }
-
-
-
 
 
 } // namespace fxd::utils::overflow

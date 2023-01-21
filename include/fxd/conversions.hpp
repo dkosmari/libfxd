@@ -3,11 +3,11 @@
 
 #include <cmath>
 #include <concepts>
-
-#include "fixed.hpp"
+#include <type_traits>
 
 #include "concepts.hpp"
 #include "utils-shift.hpp"
+#include "utils.hpp"
 
 
 namespace fxd {

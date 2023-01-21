@@ -137,19 +137,19 @@ TEMPLATE_LIST_TEST_CASE("random-safe",
         CAPTURE(a);
         CAPTURE(b);
 
-        Fxd c = fxd::safe::saturate::div(a, b);
+        Fxd c = fxd::saturate::div(a, b);
 
         auto ab = to_float(a) / to_float(b);
         CAPTURE(ab);
 
         if (ab < flo) {
-            REQUIRE_THROWS_AS(fxd::safe::except::div(a, b), std::underflow_error);
+            REQUIRE_THROWS_AS(fxd::except::div(a, b), std::underflow_error);
             REQUIRE(c == lo);
         } else if (fhi < ab) {
-            REQUIRE_THROWS_AS(fxd::safe::except::div(a, b), std::overflow_error);
+            REQUIRE_THROWS_AS(fxd::except::div(a, b), std::overflow_error);
             REQUIRE(c == hi);
         } else {
-            REQUIRE_NOTHROW(fxd::safe::except::div(a, b));
+            REQUIRE_NOTHROW(fxd::except::div(a, b));
             REQUIRE(c == Fxd{ab});
         }
 
@@ -304,10 +304,10 @@ TEST_CASE("special-4")
 
     CHECK(c == Fxd{ab});
 
-    Fxd d = fxd::safe::saturate::div(a, b);
+    Fxd d = fxd::saturate::div(a, b);
     CHECK(d == Fxd{ab});
 
-    CHECK_NOTHROW(fxd::safe::except::div(a, b));
+    CHECK_NOTHROW(fxd::except::div(a, b));
 }
 
 
@@ -324,10 +324,10 @@ TEST_CASE("special-5")
     CAPTURE(ab);
 
     const auto hi = std::numeric_limits<Fxd>::max();
-    Fxd d = fxd::safe::saturate::div(a, b);
+    Fxd d = fxd::saturate::div(a, b);
     CHECK(d == hi);
 
-    CHECK_THROWS_AS(fxd::safe::except::div(a, b), std::overflow_error);
+    CHECK_THROWS_AS(fxd::except::div(a, b), std::overflow_error);
 }
 
 
@@ -346,10 +346,10 @@ TEST_CASE("special-6")
     Fxd c = a / b;
     CHECK(c == Fxd{ab});
 
-    Fxd d = fxd::safe::saturate::div(a, b);
+    Fxd d = fxd::saturate::div(a, b);
     CHECK(d == Fxd{ab});
 
-    CHECK_NOTHROW(fxd::safe::except::div(a, b));
+    CHECK_NOTHROW(fxd::except::div(a, b));
 }
 
 
@@ -368,7 +368,7 @@ TEST_CASE("special-7")
     Fxd c = a / b;
     CHECK(c == Fxd{ab});
 
-    Fxd d = fxd::safe::saturate::div(a, b);
+    Fxd d = fxd::saturate::div(a, b);
     CHECK(d == Fxd{ab});
 }
 
@@ -388,7 +388,7 @@ TEST_CASE("special-8")
     Fxd c = a / b;
     CHECK(c == Fxd{ab});
 
-    Fxd d = fxd::safe::saturate::div(a, b);
+    Fxd d = fxd::saturate::div(a, b);
     CHECK(d == Fxd{ab});
 }
 
@@ -408,7 +408,7 @@ TEST_CASE("special-9")
     Fxd c = a / b;
     CHECK(c == Fxd{ab});
 
-    Fxd d = fxd::safe::saturate::div(a, b);
+    Fxd d = fxd::saturate::div(a, b);
     CHECK(d == Fxd{ab});
 }
 
@@ -429,10 +429,10 @@ TEST_CASE("special-10")
     auto ab = to_float(a) / to_float(b);
     CAPTURE(ab);
 
-    Fxd d = fxd::safe::saturate::div(a, b);
+    Fxd d = fxd::saturate::div(a, b);
     CHECK(d == hi);
 
-    CHECK_THROWS_AS(fxd::safe::except::div(a, b), std::overflow_error);
+    CHECK_THROWS_AS(fxd::except::div(a, b), std::overflow_error);
 }
 
 

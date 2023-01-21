@@ -17,7 +17,7 @@
 TEST_CASE("raw1", "[s8.4]")
 {
     using F = fxd::fixed<8, 4>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
 
     std::int16_t s;
     std::uint16_t u;
@@ -55,7 +55,7 @@ TEST_CASE("raw1", "[s8.4]")
 TEST_CASE("raw2", "[u8.4]")
 {
     using F = fxd::ufixed<8, 4>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
 
     std::int16_t s;
     std::uint16_t u;
@@ -94,7 +94,7 @@ TEST_CASE("raw3", "[s8.4]")
 {
     using F = fxd::fixed<8, 4>;
     using Lim = std::numeric_limits<F>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
 
     for (int i = -512; i <= 512; ++i) {
 
@@ -122,7 +122,7 @@ TEST_CASE("raw4", "[u8.4]")
 {
     using F = fxd::ufixed<8, 4>;
     using Lim = std::numeric_limits<F>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
 
     for (int i = -512; i <= 512; ++i) {
 
@@ -150,7 +150,7 @@ TEST_CASE("make1", "[s8.4]")
 {
     using F = fxd::fixed<8, 4>;
     using Lim = std::numeric_limits<F>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
 
     constexpr F min = Lim::lowest();
     constexpr F max = Lim::max();
@@ -177,7 +177,7 @@ TEST_CASE("make2", "[u8.4]")
 {
     using F = fxd::ufixed<8, 4>;
     using Lim = std::numeric_limits<F>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
 
     constexpr F min = Lim::lowest();
     constexpr F max = Lim::max();
@@ -205,7 +205,7 @@ TEST_CASE("make3", "[s1.31]")
 {
     using Fxd = fxd::fixed<1, 31>; // range is [-1, 1)
     using Flt = Fxd::float_type;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
     using std::nextafter;
     using over = std::overflow_error;
     using under = std::underflow_error;
@@ -255,7 +255,7 @@ TEST_CASE("make4", "[u1.31]")
 {
     using Fxd = fxd::ufixed<1, 31>; // range is [0, 2)
     using Flt = Fxd::float_type;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
     using std::nextafter;
     using over = std::overflow_error;
     using under = std::underflow_error;
@@ -298,7 +298,7 @@ TEST_CASE("make4", "[u1.31]")
 TEST_CASE("make5", "[u25.0]")
 {
     using Fxd = fxd::ufixed<25, 0>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
 
     const float a = 0x01fffffep0f;
     {
@@ -323,7 +323,7 @@ TEST_CASE("make5", "[u25.0]")
 TEST_CASE("make6", "[s26.0]")
 {
     using Fxd = fxd::fixed<26, 0>;
-    using exc = fxd::safe::except;
+    namespace exc = fxd::except;
     using std::nextafter;
 
     const float a = 0x01fffffep0f;

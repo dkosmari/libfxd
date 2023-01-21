@@ -16,6 +16,7 @@ namespace std {
     template<int Int,
              int Frac,
              typename Raw>
+    requires (numeric_limits<Raw>::is_specialized)
     struct numeric_limits<fxd::fixed<Int, Frac, Raw>> {
 
         static_assert(numeric_limits<Raw>::radix == 2);

@@ -1,8 +1,6 @@
 #ifndef LIBFXD_ROUND_MUL_HPP
 #define LIBFXD_ROUND_MUL_HPP
 
-#include "fixed.hpp"
-
 #include "concepts.hpp"
 #include "utils-add.hpp"
 #include "utils-mul.hpp"

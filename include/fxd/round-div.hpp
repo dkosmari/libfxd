@@ -3,8 +3,6 @@
 
 #include <csignal>
 
-// #include <iostream>
-
 #include "fixed.hpp"
 
 #include "concepts.hpp"
@@ -123,7 +121,7 @@ namespace fxd::round {
     } // namespace down
 
 
-}
+} // namespace fxd::round
 
 
 #endif

@@ -56,12 +56,15 @@ check(const Pt& a, const Pt& b)
     auto dy = a.y - b.y;
     auto d2 = dx * dx + dy * dy;
 #else
-    using exc = fxd::safe::except;
-    auto dx = exc::sub(a.x, b.x);
-    auto dy = exc::sub(a.y, b.y);
-    auto dx2 = exc::mul(dx, dx);
-    auto dy2 = exc::mul(dy, dy);
-    auto d2 = exc::add(dx2, dy2);
+    using fxd::except::add;
+    using fxd::except::mul;
+    using fxd::except::sub;
+
+    auto dx = sub(a.x, b.x);
+    auto dy = sub(a.y, b.y);
+    auto dx2 = mul(dx, dx);
+    auto dy2 = mul(dy, dy);
+    auto d2 = add(dx2, dy2);
 #endif
     global_min = std::min(global_min, d2);
 }
@@ -99,8 +102,8 @@ closest_pair(R&& points)
         F d = p.x - center;
         d = d * d;
 #else
-        F d = fxd::safe::except::sub(p.x, center);
-        d = fxd::safe::except::mul(d, d);
+        F d = fxd::except::sub(p.x, center);
+        d = fxd::except::mul(d, d);
 #endif
         if (d < global_min) {
             check(p, p1);

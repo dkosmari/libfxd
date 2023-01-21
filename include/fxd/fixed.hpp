@@ -6,7 +6,6 @@
 #include <limits>
 
 #include "types.hpp"
-#include "utils.hpp"
 
 
 namespace fxd {
@@ -15,6 +14,7 @@ namespace fxd {
     template<int Int,
              int Frac,
              typename Raw = select_int_t<Int + Frac>>
+    requires (std::numeric_limits<Raw>::is_specialized)
     struct fixed {
 
         using raw_type = Raw;
@@ -74,6 +74,7 @@ namespace fxd {
         constexpr
         bool operator ==(const fixed& other)
             const noexcept = default;
+
         constexpr
         std::strong_ordering operator <=>(const fixed& other)
             const noexcept = default;
@@ -101,12 +102,6 @@ namespace fxd {
              int Frac>
     using ufixed = fixed<Int, Frac, select_uint_t<Int + Frac>>;
 
-
-
-    // deduction guides
-
-    // template<std::integral I>
-    // fixed(I i) -> fixed<8 * sizeof(I), 0, I>;
 
 }
 

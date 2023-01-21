@@ -6,6 +6,7 @@ fxd_HEADERS = \
 	constructors.hpp \
 	conversions.hpp \
 	error.hpp \
+	except.hpp \
 	fixed.hpp \
 	fxd.hpp \
 	hash.hpp \
@@ -15,7 +16,9 @@ fxd_HEADERS = \
 	random.hpp \
 	round-div.hpp \
 	round-mul.hpp \
-	safe-operators.hpp \
+	utils-safe.hpp \
+	utils-safe-includes.hpp \
+	saturate.hpp \
 	traits.hpp \
 	types.hpp \
 	utils-add.hpp \

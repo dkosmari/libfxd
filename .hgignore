@@ -21,9 +21,12 @@ examples/square-root
 Makefile
 Makefile.in
 stamp-h1
+
 tests/*.py
 tests/test-add
 tests/test-conv
 tests/test-div
+tests/test-limits
 tests/test-mul
 tests/test-sub
+

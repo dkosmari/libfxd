@@ -33,7 +33,7 @@ TEST_CASE("basic", "[s16.16]")
 
 
 TEMPLATE_LIST_TEST_CASE("random-sat",
-                        "[saturation]",
+                        "[saturate]",
                         test_types)
 {
     using Fxd = TestType;
@@ -56,7 +56,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
         Fxd a = rng.get();
         Fxd b = rng.get();
-        Fxd c = fxd::safe::saturate::add(a, b);
+        Fxd c = fxd::saturate::add(a, b);
         auto fa = to_float(a);
         auto fb = to_float(b);
         auto fc = fa + fb;

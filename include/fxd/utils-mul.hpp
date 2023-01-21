@@ -3,6 +3,8 @@
 
 #include <concepts>
 #include <tuple>
+#include <type_traits> // make_unsigned_t
+#include <utility> // tie()
 
 #include "types.hpp"
 #include "utils-overflow.hpp"
@@ -22,23 +24,9 @@ namespace fxd::utils::mul {
         I b)
         noexcept
     {
-        using W = select_int_for<2 * bits, I>;
-        return static_cast<W>(a) * static_cast<W>(b);
+        using II = select_int_for<2 * bits, I>;
+        return static_cast<II>(a) * static_cast<II>(b);
     }
-
-
-    // template<std::integral I>
-    // requires (has_wider_v<I>)
-    // ALWAYS_INLINE
-    // constexpr
-    // wider_t<I>
-    // mul(I a,
-    //     I b)
-    //     noexcept
-    // {
-    //     using W = wider_t<I>;
-    //     return static_cast<W>(a) * static_cast<W>(b);
-    // }
 
 
     // returns low, high parts of the full multiplication a * b

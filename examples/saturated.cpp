@@ -12,28 +12,26 @@
 using std::cout;
 using std::endl;
 
-
-
-
 //using F = fxd::fixed<10, 54>;
 using F = fxd::fixed<10, 22>;
-using Sat = fxd::safe::saturate;
 
 int main()
 {
+    using namespace fxd::saturate;
+
     F a = std::numeric_limits<F>::max();
     SHOW(a);
 
-    F b = Sat::negate(a);
+    F b = negate(a);
     SHOW(b);
 
     F c = std::numeric_limits<F>::epsilon();
     SHOW(c);
 
-    F d = Sat::sub(a, b);
+    F d = sub(a, b);
     SHOW(d);
 
-    F e = Sat::negate(d);
+    F e = negate(d);
     SHOW(e);
 
     cout << endl;
@@ -44,7 +42,7 @@ int main()
     F g = 500;
     SHOW(g);
 
-    F h = Sat::mul(f, g);
+    F h = mul(f, g);
     SHOW(h);
 
 }

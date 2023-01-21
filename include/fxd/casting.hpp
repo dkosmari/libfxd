@@ -3,8 +3,6 @@
 
 #include <type_traits>
 
-#include "fixed.hpp"
-
 #include "concepts.hpp"
 #include "utils-shift.hpp"
 
@@ -22,7 +20,7 @@ namespace fxd {
         noexcept
     {
         Raw raw = utils::shift::shl(Raw(src.raw_value),
-                                  Frac - Src::fractional_bits);
+                                    Frac - Src::fractional_bits);
         return fixed<Int, Frac, Raw>::from_raw(raw);
     }
 

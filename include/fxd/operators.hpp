@@ -1,18 +1,14 @@
 #ifndef LIBFXD_OPERATORS_HPP
 #define LIBFXD_OPERATORS_HPP
 
-#include <cmath>
-#include <compare>
 #include <concepts>
-#include <csignal>
 #include <ostream>
 #include <istream>
-
-#include "fixed.hpp"
 
 #include "concepts.hpp"
 #include "round-div.hpp"
 #include "round-mul.hpp"
+#include "traits.hpp"
 #include "utils-div.hpp"
 #include "utils-mul.hpp"
 #include "utils-shift.hpp"
@@ -77,7 +73,7 @@ namespace fxd {
     constexpr
     Fxd&
     operator +=(Fxd& a,
-                const T& b)
+                T b)
         noexcept
     {
         a.raw_value += Fxd{b}.raw_value;
@@ -91,7 +87,7 @@ namespace fxd {
     constexpr
     Fxd&
     operator -=(Fxd& a,
-                const T& b)
+                T b)
         noexcept
     {
         a.raw_value -= Fxd{b}.raw_value;
@@ -105,7 +101,7 @@ namespace fxd {
     constexpr
     Fxd&
     operator *=(Fxd& a,
-                const T& b)
+                T b)
         noexcept
     {
         return a = round::zero::mul<Fxd>(a, b);
@@ -118,7 +114,7 @@ namespace fxd {
     constexpr
     Fxd&
     operator /=(Fxd& a,
-                const T& b)
+                T b)
         noexcept
     {
         return a = round::zero::div<Fxd>(a, b);
@@ -190,8 +186,8 @@ namespace fxd {
     template<fixed_point Fxd>
     ALWAYS_INLINE
     constexpr
-    const Fxd&
-    operator +(const Fxd& a)
+    Fxd
+    operator +(Fxd a)
         noexcept
     {
         return a;
@@ -202,21 +198,21 @@ namespace fxd {
     ALWAYS_INLINE
     constexpr
     Fxd
-    operator -(const Fxd& a)
+    operator -(Fxd a)
         noexcept
     {
         return Fxd::from_raw(-a.raw_value);
     }
 
 
-
     template<typename A,
              typename B>
-    requires(fixed_point<A> || fixed_point<B>)
+    requires (fixed_point<A> || fixed_point<B>)
     ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
-    operator +(A a, B b)
+    operator +(A a,
+               B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
@@ -227,11 +223,12 @@ namespace fxd {
 
     template<typename A,
              typename B>
-    requires(fixed_point<A> || fixed_point<B>)
+    requires (fixed_point<A> || fixed_point<B>)
     ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
-    operator -(A a, B b)
+    operator -(A a,
+               B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
@@ -242,11 +239,12 @@ namespace fxd {
 
     template<typename A,
              typename B>
-    requires(fixed_point<A> || fixed_point<B>)
+    requires (fixed_point<A> || fixed_point<B>)
     ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
-    operator *(A a, B b)
+    operator *(A a,
+               B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
@@ -256,11 +254,12 @@ namespace fxd {
 
     template<typename A,
              typename B>
-    requires(fixed_point<A> || fixed_point<B>)
+    requires (fixed_point<A> || fixed_point<B>)
     ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
-    operator /(A a, B b)
+    operator /(A a,
+               B b)
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
@@ -279,7 +278,7 @@ namespace fxd {
              fixed_point Fxd>
     std::basic_ostream<CharT, Traits>&
     operator <<(std::basic_ostream<CharT, Traits>& out,
-                const Fxd& f)
+                Fxd f)
     {
         return out << to_float(f);
     }

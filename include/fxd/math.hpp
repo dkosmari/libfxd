@@ -1,10 +1,9 @@
 #ifndef LIBFXD_MATH_HPP
 #define LIBFXD_MATH_HPP
 
-#include "fixed.hpp"
-
 #include "concepts.hpp"
 #include "limits.hpp"
+#include "round-div.hpp"
 
 
 namespace fxd {
@@ -16,7 +15,7 @@ namespace fxd {
     abs(Fxd f)
         noexcept
     {
-        return Fxd::from_raw(std::abs(f.raw_value));
+        return f < 0 ? -f : f;
     }
 
 
@@ -24,7 +23,8 @@ namespace fxd {
     template<fixed_point Fxd>
     constexpr
     Fxd
-    fdim(Fxd a, Fxd b)
+    fdim(Fxd a,
+         Fxd b)
         noexcept
     {
         if (a > b)
@@ -38,7 +38,8 @@ namespace fxd {
     template<fixed_point Fxd>
     constexpr
     Fxd
-    nextafter(Fxd from, Fxd to)
+    nextafter(Fxd from,
+              Fxd to)
         noexcept
     {
         constexpr Fxd e = std::numeric_limits<Fxd>::epsilon();
@@ -68,11 +69,7 @@ namespace fxd {
             if (++i > Fxd::bits)
                 return a;
 
-            // TODO: should ensure this division is rounding up
-            Fxd b = x / a;
-
-            if (a > b) // a is always the lower bound
-                std::swap(a, b);
+            Fxd b = round::up::div(x, a);
 
             old_a = a;
 

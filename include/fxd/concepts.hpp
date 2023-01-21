@@ -2,8 +2,6 @@
 #define LIBFXD_CONCEPTS_HPP
 
 
-#include "fixed.hpp"
-
 #include "traits.hpp"
 
 

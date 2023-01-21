@@ -5,8 +5,6 @@
 #include <ostream>
 #include <random>
 
-#include "fixed.hpp"
-
 #include "concepts.hpp"
 #include "limits.hpp"
 
