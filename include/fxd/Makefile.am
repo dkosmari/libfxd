@@ -10,14 +10,13 @@ fxd_HEADERS = \
 	fixed.hpp \
 	fxd.hpp \
 	hash.hpp \
+	limits.hpp \
 	math.hpp \
 	numbers.hpp \
 	operators.hpp \
 	random.hpp \
 	round-div.hpp \
 	round-mul.hpp \
-	utils-safe.hpp \
-	utils-safe-includes.hpp \
 	saturate.hpp \
 	traits.hpp \
 	types.hpp \
@@ -26,6 +25,8 @@ fxd_HEADERS = \
 	utils-expected.hpp \
 	utils-mul.hpp \
 	utils-overflow.hpp \
+	utils-safe-includes.hpp \
+	utils-safe.hpp \
 	utils-shift.hpp \
 	utils-tuple.hpp \
 	utils.hpp

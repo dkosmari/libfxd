@@ -1,3 +1,10 @@
+/*
+ * libfxd - a fixed-point library for C++
+ *
+ * Copyright 2023 Daniel K. O.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef LIBFXD_CONVERSIONS_HPP
 #define LIBFXD_CONVERSIONS_HPP
 
@@ -48,16 +55,17 @@ namespace fxd {
              int Frac,
              typename Raw>
     template<std::floating_point Flt>
+    constexpr
     fixed<Int, Frac, Raw>::operator Flt()
         const noexcept
     {
-        using std::ldexp;
-        return ldexp(static_cast<Flt>(utils::opacify(raw_value)), -frac_bits);
+        return std::ldexp(static_cast<Flt>(utils::opacify(raw_value)), -frac_bits);
     }
 
 
     template<fixed_point Fxd>
     requires(!std::is_void_v<typename Fxd::float_type>)
+    constexpr
     typename Fxd::float_type
     to_float(Fxd f)
         noexcept

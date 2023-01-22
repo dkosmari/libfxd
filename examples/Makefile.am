@@ -2,6 +2,7 @@
 
 noinst_HEADERS = printer.hpp
 
+DEFAULT_INCLUDES =
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include
@@ -16,6 +17,7 @@ AM_DEFAULT_SOURCE_EXT = .cpp
 noinst_PROGRAMS = \
 	basic \
 	closest-pair \
+	numbers \
 	saturated \
 	square-root
 

@@ -1,5 +1,7 @@
 # tests/catch2/Makefile.am
 
+EXTRA_DIST = COPYING.BSL
+
 check_LIBRARIES = libcatch2.a
 
 libcatch2_a_SOURCES = \

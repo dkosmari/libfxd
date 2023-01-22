@@ -3,6 +3,7 @@ syntax: glob
 *.a
 *.log
 *.o
+*.tar.gz
 *.trs
 *~
 .deps
@@ -14,10 +15,13 @@ config.h
 config.h.in
 config.status
 configure
+
 examples/basic
 examples/closest-pair
+examples/numbers
 examples/saturated
 examples/square-root
+
 Makefile
 Makefile.in
 stamp-h1

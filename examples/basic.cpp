@@ -1,20 +1,20 @@
 #include <iostream>
-#include <iomanip>
-#include <numeric>
-
 
 #include <fxd/fxd.hpp>
-#include <fxd/limits.hpp>
-
 
 int main()
 {
-    using F = fxd::fixed<24, 40>;
+    using F = fxd::fixed<20, 12>;
 
     F a = 5;
-    std::cout << "a = " << a << std::endl;
+    F b = 2.5;
+    F c;
 
-    std::cout << "the raw value of a is " << a.raw_value << std::endl;
+    std::cout << "Enter a value: ";
+    std::cin >> c;
 
+    F d = (a + b + c) / 3;
 
+    std::cout << "Average: " << d << std::endl;
+    std::cout << "which has raw value: " << d.raw_value << std::endl;
 }

@@ -1,3 +1,10 @@
+/*
+ * libfxd - a fixed-point library for C++
+ *
+ * Copyright 2023 Daniel K. O.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef LIBFXD_MATH_HPP
 #define LIBFXD_MATH_HPP
 

@@ -1,3 +1,10 @@
+/*
+ * libfxd - a fixed-point library for C++
+ *
+ * Copyright 2023 Daniel K. O.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef LIBFXD_OPERATORS_HPP
 #define LIBFXD_OPERATORS_HPP
 
@@ -216,8 +223,7 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        Fxd c{a};
-        return c += Fxd{b};
+        return Fxd::from_raw(Fxd{a}.raw_value + Fxd{b}.raw_value);
     }
 
 
@@ -232,8 +238,7 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        Fxd c{a};
-        return c -= Fxd{b};
+        return Fxd::from_raw(Fxd{a}.raw_value - Fxd{b}.raw_value);
     }
 
 
@@ -292,8 +297,8 @@ namespace fxd {
                 Fxd& f)
     {
         typename Fxd::float_type ff;
-        if (in >> ff)
-            f = ff;
+        in >> ff;
+        f = ff;
         return in;
     }
 

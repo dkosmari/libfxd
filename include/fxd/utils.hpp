@@ -1,15 +1,21 @@
+/*
+ * libfxd - a fixed-point library for C++
+ *
+ * Copyright 2023 Daniel K. O.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef LIBFXD_UTILS_HPP
 #define LIBFXD_UTILS_HPP
-
 
 #include <cfenv>
 #include <new>
 
 
-#if defined(__GNUC__) || defined(__clang__)
+#if 0 && (defined(__GNUC__) || defined(__clang__))
 #define ALWAYS_INLINE __attribute__((always_inline))
 #else
-#define ALWAYS_INLINE inline
+#define ALWAYS_INLINE /*inline*/
 #endif
 
 
@@ -60,7 +66,6 @@ namespace fxd::utils {
     using round_down = rounder<FE_DOWNWARD>;
 
 }
-
 
 
 #endif

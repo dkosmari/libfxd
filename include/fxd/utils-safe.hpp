@@ -1,3 +1,10 @@
+/*
+ * libfxd - a fixed-point library for C++
+ *
+ * Copyright 2023 Daniel K. O.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef LIBFXD_INCLUDING_UTILS_SAFE_HPP_IMPL
 #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
 #endif

@@ -1,3 +1,10 @@
+/*
+ * libfxd - a fixed-point library for C++
+ *
+ * Copyright 2023 Daniel K. O.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef LIBFXD_FIXED_HPP
 #define LIBFXD_FIXED_HPP
 
@@ -63,7 +70,8 @@ namespace fxd {
 
         // assignment
 
-        constexpr fixed& operator =(const fixed&) noexcept = default;
+        // constexpr fixed& operator =(const fixed&) noexcept = default;
+        // constexpr fixed& operator =(fixed&&) noexcept = default;
 
         template<std::integral I>
         constexpr fixed& operator =(I i) noexcept;
@@ -93,7 +101,7 @@ namespace fxd {
         operator I() const noexcept;
 
         template<std::floating_point F>
-        explicit
+        explicit constexpr
         operator F() const noexcept;
 
 

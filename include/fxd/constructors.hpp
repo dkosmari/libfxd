@@ -1,9 +1,17 @@
+/*
+ * libfxd - a fixed-point library for C++
+ *
+ * Copyright 2023 Daniel K. O.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef LIBFXD_CONSTRUCTORS_HPP
 #define LIBFXD_CONSTRUCTORS_HPP
 
 #include <cfenv>
 #include <cmath>
 #include <concepts>
+#include <type_traits>
 
 #include "fixed.hpp"
 #include "utils-shift.hpp"
@@ -32,8 +40,10 @@ namespace fxd {
         noexcept
     {
         const auto scaled_f = std::ldexp(f, frac_bits);
-        const auto rounded_f = std::rint(scaled_f);
-        raw_value = static_cast<raw_type>(rounded_f);
+        if (std::is_constant_evaluated())
+            raw_value = static_cast<raw_type>(scaled_f);
+        else
+            raw_value = static_cast<raw_type>(std::rint(scaled_f));
     }
 
 
