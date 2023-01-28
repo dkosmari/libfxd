@@ -10,6 +10,9 @@
 #endif
 
 
+// Constructors
+
+
 template<fxd::fixed_point Fxd,
          std::integral I>
 constexpr
@@ -138,6 +141,110 @@ make_ufixed(Src src)
 
 
 
+// Casting (fixed -> fixed)
+
+
+template<fixed_point Dst,
+         fixed_point Src>
+constexpr
+Dst
+fixed_cast(Src src)
+{
+    using DstRaw = typename Dst::raw_type;
+    using SrcRaw = typename Src::raw_type;
+    using Raw = std::common_type_t<DstRaw, SrcRaw>;
+    using DstLim = std::numeric_limits<Dst>;
+    using SrcLim = std::numeric_limits<Src>;
+
+    if constexpr (DstLim::is_signed != SrcLim::is_signed)
+        if (src < 0)
+            return handler<Dst>(error::underflow);
+
+    constexpr int diff = Dst::fractional_bits - Src::fractional_bits;
+    if constexpr (diff > 0) {
+        auto [raw, overflow] = utils::shift::overflow::shl_real<Raw>(src.raw_value, diff);
+        if (overflow)
+            return handler<Dst>(src < 0 ? error::underflow : error::overflow);
+        return from_raw<Dst>(raw);
+    } else {
+        const Raw raw = utils::shift::shr_real(src.raw_value, -diff);
+        return from_raw<Dst>(raw);
+    }
+
+}
+
+
+template<int Int,
+         int Frac,
+         typename Raw = select_int_t<Int + Frac>,
+         fixed_point Src>
+constexpr
+fixed<Int, Frac, Raw>
+fixed_cast(Src src)
+    noexcept
+{
+    return fixed_cast<fixed<Int, Frac, Raw>>(src);
+}
+
+
+template<int Int,
+         int Frac,
+         typename Raw = select_uint_t<Int + Frac>,
+         fixed_point Src>
+constexpr
+fixed<Int, Frac, Raw>
+ufixed_cast(Src src)
+    noexcept
+{
+    return fixed_cast<fixed<Int, Frac, Raw>>(src);
+}
+
+
+
+// Conversions (fixed -> primitive)
+
+
+template<std::integral I,
+         fixed_point Fxd>
+I
+to_int(Fxd f)
+{
+    using Raw = typename Fxd::raw_type;
+    Raw raw = f.raw_value;
+
+    using LimI = std::numeric_limits<I>;
+    using LimR = std::numeric_limits<Raw>;
+
+    if constexpr (!LimI::is_signed && LimR::is_signed) {
+        if (raw < 0)
+            return handler<Fxd>(error::underflow);
+    }
+
+    if constexpr (Fxd::frac_bits > 0) {
+        if (raw < 0) // if negative, add a bias before shifting
+            raw += utils::shift::make_bias_for(Fxd::frac_bits, raw);
+        raw = utils::shift::shr_real(raw, Fxd::frac_bits);
+        if (std::cmp_less(raw, LimI::min()))
+            return handler<Fxd>(error::underflow);
+        if (std::cmp_greater(raw, LimI::max()))
+            return handler<Fxd>(error::overflow);
+        return raw;
+    } else {
+        // Allow left-shifting to happen on a wider type
+        using Common = std::common_type_t<Raw, I>;
+        auto [result, ovf] = utils::shift::overflow::shl_real<Common>(raw, -Fxd::frac_bits);
+        if (ovf)
+            return handler<Fxd>(raw < 0 ? error::underflow : error::overflow);
+        return result;
+    }
+
+}
+
+
+
+// Operators
+
+
 template<fixed_point Fxd,
          std::convertible_to<Fxd> Src>
 constexpr
@@ -159,7 +266,7 @@ inc(Fxd& f)
     if constexpr (Fxd::int_bits < 1)
         return f = handler<Fxd>(error::overflow);
 
-    auto [result, carry] = utils::overflow::add(f.raw_value, Fxd{1}.raw_value);
+    auto [result, carry] = utils::add::overflow::add(f.raw_value, Fxd{1}.raw_value);
     if (carry)
         return f = handler<Fxd>(error::overflow);
 
@@ -241,7 +348,7 @@ Fxd
 add(Fxd a,
     Fxd b)
 {
-    auto [result, overflow] = utils::overflow::add(a.raw_value, b.raw_value);
+    auto [result, overflow] = utils::add::overflow::add(a.raw_value, b.raw_value);
 
     if (overflow) {
         if constexpr (std::numeric_limits<Fxd>::is_signed)
@@ -277,97 +384,13 @@ sub(Fxd a,
 }
 
 
-// multiplication when no fractional bits
-template<fixed_point Fxd>
-requires (Fxd::frac_bits <= 0)
-constexpr
-Fxd
-mul(Fxd a,
-    Fxd b)
-{
-    constexpr int w = type_width<typename Fxd::raw_type>;
-    // offset used for shifting left.
-    constexpr int offset = w - Fxd::frac_bits;
-    const auto c = utils::mul::mul<Fxd::bits>(a.raw_value, b.raw_value);
-
-    // no lower bits will be discarded, so no rounding needed
-    const auto d = utils::shift::shl_real(c, offset);
-
-    // unshift, check that the value matches
-    if (offset > 0 && c != utils::shift::shr_real(d, offset))
-        return handler<Fxd>(utils::tuple::is_negative(c)
-                            ? error::underflow
-                            : error::overflow);
-
-    return from_raw<Fxd>(utils::tuple::last(d));
-}
+#include "utils-safe-mul.hpp"
 
 
-// multiplication when there are fractional bits
-template<fixed_point Fxd>
-requires (Fxd::frac_bits > 0)
-constexpr
-Fxd
-mul(Fxd a,
-    Fxd b)
-{
-    using utils::tuple::is_negative;
-    using utils::shift::shr;
-    using utils::shift::shl;
-
-    constexpr int w = type_width<typename Fxd::raw_type>;
-    // offset used for shifting left.
-    constexpr int offset = w - Fxd::frac_bits;
-
-    auto c = utils::mul::mul<Fxd::bits>(a.raw_value, b.raw_value);
-
-    if (is_negative(c)) {
-        // negative numbers need a bias to zero when shifting
-        const auto bias = utils::shift::make_bias_for(Fxd::frac_bits, c);
-        c = utils::add::add(c, bias);
-    }
-
-    const auto d = shl(c, offset);
-    // unshift, check that the value matches
-    if (offset > 0 && c != shr(d, offset))
-        return handler<Fxd>(is_negative(c)
-                            ? error::underflow
-                            : error::overflow);
-
-    return from_raw<Fxd>(utils::tuple::last(d));
-}
+#include "utils-safe-div.hpp"
 
 
-
-template<fixed_point Fxd>
-constexpr
-Fxd
-div(Fxd a,
-    Fxd b)
-{
-    const auto r = utils::div::div<Fxd::frac_bits, true>(a.raw_value,
-                                                         b.raw_value);
-
-    if (!r)
-        return handler<Fxd>(r.error());
-
-    auto [c, expo, rem] = *r;
-
-    const int offset = expo + Fxd::frac_bits;
-    if (c < 0 && offset < 0)
-        c += utils::shift::make_bias_for(-offset, c);
-
-    const auto d = utils::shift::shl(c, offset);
-
-    // unshift to ensure high significant bits were not lost
-    if (offset > 0 && c != utils::shift::shr(d, offset))
-        return handler<Fxd>(c < 0
-                            ? error::underflow
-                            : error::overflow);
-
-    return from_raw<Fxd>(d);
-}
-
+using namespace round::zero;
 
 
 template<fixed_point Fxd>

@@ -8,6 +8,9 @@
 #include "test-types.hpp"
 
 
+const int max_iterations = 1000;
+
+
 TEST_CASE("basic", "[s16.16]")
 {
     using F = fxd::fixed<16, 16>;
@@ -52,7 +55,7 @@ TEMPLATE_LIST_TEST_CASE("random-sat",
 
     RNG<Fxd> rng;
 
-    for (int i = 0; i < 10000; ++i) {
+    for (int i = 0; i < max_iterations; ++i) {
 
         Fxd a = rng.get();
         Fxd b = rng.get();

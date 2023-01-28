@@ -34,19 +34,14 @@ namespace fxd {
 
         static_assert(raw_bits >= bits);
         static_assert(bits > 0);
-        static_assert(int_bits < 2 * raw_bits);
-        static_assert(frac_bits < 2 * raw_bits);
+        static_assert(int_bits <= 2 * raw_bits);
+        static_assert(frac_bits <= 2 * raw_bits);
 
 
         // floating point type that can fully represent this fixed point type
         using float_type = select_float_t<bits - std::numeric_limits<raw_type>::is_signed>;
 
-        /*
-         * The actual value is stored as a bitfield.
-         * By default, the bitfield has the full size of the underlying type,
-         * so it has no runtime cost. If the bits are limited, the compiler
-         * will generate the appropriate shift and mask operations.
-         */
+        // The raw value is stored as a bitfield.
         raw_type raw_value : bits;
 
 

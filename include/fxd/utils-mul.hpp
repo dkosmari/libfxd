@@ -63,13 +63,15 @@ namespace fxd::utils::mul {
 
         U c01 = a0 * b0;
 
-        U carry1, carry2;
-        std::tie(c01, carry1) = utils::overflow::add(c01, static_cast<U>(a0b1 & mask) << k);
-        std::tie(c01, carry2) = utils::overflow::add(c01, static_cast<U>(a1b0 & mask) << k);
+        bool carry1, carry2;
+        std::tie(c01, carry1) = utils::add::overflow::add(c01,
+                                                          static_cast<U>(a0b1 & mask) << k);
+        std::tie(c01, carry2) = utils::add::overflow::add(c01,
+                                                          static_cast<U>(a1b0 & mask) << k);
 
         I c23 = a1 * b1
-            + (a0b1 >> k)
-            + (a1b0 >> k)
+            + static_cast<U>(a0b1 >> k)
+            + static_cast<U>(a1b0 >> k)
             + carry1 + carry2;
 
         return { c01, c23 };

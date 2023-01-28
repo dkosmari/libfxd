@@ -25,7 +25,9 @@ fxd_HEADERS = \
 	utils-expected.hpp \
 	utils-mul.hpp \
 	utils-overflow.hpp \
+	utils-safe-div.hpp \
 	utils-safe-includes.hpp \
+	utils-safe-mul.hpp \
 	utils-safe.hpp \
 	utils-shift.hpp \
 	utils-tuple.hpp \

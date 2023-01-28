@@ -70,6 +70,8 @@ namespace fxd::round {
 
             auto [c, expo, rem] = *r;
 
+            // Note: div() rounds to zero; so we might lose the info about which
+            // side of zero the result was.
             const bool neg = (a.raw_value < 0) != (b.raw_value < 0);
 
             // offset used for shifting left
@@ -114,11 +116,11 @@ namespace fxd::round {
             // offset used for shifting left
             const int offset = expo + Fxd::frac_bits;
 
-             // When a/b is negative, it may have been rounded up.
+            // When a/b is negative, it may have been rounded up.
             if (neg && rem)
                 --c;
 
-            // Right-shifting always rounds down, so we don't need top handle it.
+            // Right-shifting always rounds down, so we don't need to bias it.
 
             const auto d = utils::shift::shl(c, offset);
 

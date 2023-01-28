@@ -11,9 +11,9 @@
 #include <concepts>
 #include <cstdint>
 #include <limits>
+#include <tuple>
 #include <type_traits>
 #include <utility>
-
 
 /*
  * TODO: figure out a valid check for C23's <stdckdint.h>
@@ -49,20 +49,6 @@ namespace fxd::utils::overflow {
 
 #ifdef LIBFXD_C23_BUILTINS
 
-    template<std::integral I>
-    constexpr
-    std::pair<I, bool>
-    add(I a, I b, bool carry = false)
-        noexcept
-    {
-        I result;
-        bool ovf = ckd_add(&result, a, b);
-        if (carry)
-            ovf |= ckd_add(&result, result, I{1});
-        return { result, ovf };
-    }
-
-
     template<std::integral I1>
     constexpr
     std::pair<I, bool>
@@ -80,20 +66,6 @@ namespace fxd::utils::overflow {
 
 
 #ifdef LIBFXD_GCC_BUILTINS
-
-    template<std::integral I>
-    constexpr
-    std::pair<I, bool>
-    add(I a, I b, bool carry = false)
-        noexcept
-    {
-        I result;
-        bool ovf = __builtin_add_overflow(a, b, &result);
-        if (carry)
-            ovf |= __builtin_add_overflow(result, I{1}, &result);
-        return { result, ovf };
-    }
-
 
     template<std::integral I>
     constexpr
@@ -180,79 +152,6 @@ namespace fxd::utils::overflow {
 
 
 #endif // LIBFXD_INTEL_BUILTINS
-
-
-#ifdef LIBFXD_NO_BUILTINS
-
-    template<std::unsigned_integral U>
-    constexpr
-    std::pair<U, bool>
-    add(U a, U b, bool carry = false)
-        noexcept
-    {
-        const U ab = a + b;
-        const U result = a + b + carry;
-        constexpr U max = std::numeric_limits<U>::max();
-        const bool ovf = (a > max - b) || (ab > max - carry);
-        return { result, ovf };
-    }
-
-
-    template<std::signed_integral S>
-    constexpr
-    std::pair<S, bool>
-    add(S a, S b, bool carry = false)
-        noexcept
-    {
-        constexpr S max = std::numeric_limits<S>::max();
-        constexpr S min = std::numeric_limits<S>::min();
-        using U = std::make_unsigned_t<S>;
-        const S ab  = static_cast<U>(a) + static_cast<U>(b);
-        const S result = static_cast<U>(a) + static_cast<U>(b) + static_cast<U>(carry);
-        const bool ovf =
-            (b > 0 && a > max - b) // a + b > max
-            ||
-            (b < 0 && a < min - b) // a + b < min
-            ||
-            (c && ab > max - c); // a + b + c > max
-        return { result, ovf };
-    }
-
-#endif // LIBFXD_NO_BUILTINS
-
-
-
-    template<std::unsigned_integral U>
-    constexpr
-    std::pair<U, bool>
-    shl_real(U a,
-             unsigned b)
-        noexcept
-    {
-        constexpr int w = type_width<U>;
-        if (b >= w)
-            return { 0, a != 0 };
-        const bool ovf = a >> (w - b);
-        const U result = a << b;
-        return { result, ovf };
-    }
-
-
-    template<std::unsigned_integral U>
-    constexpr
-    std::pair<U, bool>
-    shr_real(U a,
-             unsigned b)
-        noexcept
-    {
-        constexpr int w = type_width<U>;
-        if (b >= w)
-            return { 0, a != 0 };
-
-        const bool ovf = a << (w - b);
-        const U result = a >> b;
-        return { result, ovf };
-    }
 
 
 } // namespace fxd::utils::overflow

@@ -25,7 +25,7 @@ namespace fxd {
         noexcept
     {
         using DstRaw = typename Dst::raw_type;
-        using SrcRaw = typename Dst::raw_type;
+        using SrcRaw = typename Src::raw_type;
         using Raw = std::common_type_t<DstRaw, SrcRaw>;
         constexpr int diff = Dst::fractional_bits - Src::fractional_bits;
         const Raw raw = utils::shift::shl<Raw>(src.raw_value,
@@ -47,16 +47,6 @@ namespace fxd {
     }
 
 
-    template<unsigned_fixed_point Dst,
-             fixed_point Src>
-    constexpr
-    Dst
-    ufixed_cast(Src src)
-        noexcept
-    {
-        return fixed_cast<Dst>(src);
-    }
-
 
     template<int Int,
              int Frac,
@@ -67,7 +57,7 @@ namespace fxd {
     ufixed_cast(Src src)
         noexcept
     {
-        return ufixed_cast<fixed<Int, Frac, Raw>>(src);
+        return fixed_cast<fixed<Int, Frac, Raw>>(src);
     }
 
 

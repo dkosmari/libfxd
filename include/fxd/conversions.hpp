@@ -31,6 +31,28 @@ namespace fxd {
     }
 
 
+
+    template<std::integral I,
+             fixed_point Fxd>
+    constexpr
+    I
+    to_int(Fxd f)
+        noexcept
+    {
+        using Raw = typename Fxd::raw_type;
+        Raw raw = f.raw_value;
+        if constexpr (Fxd::frac_bits > 0) {
+            if (raw < 0)
+                raw += utils::shift::make_bias_for(Fxd::frac_bits, raw);
+            return utils::shift::shr_real(raw, Fxd::frac_bits);
+        } else {
+            // Allow left-shifting to happen on a wider type
+            using Common = std::common_type_t<Raw, I>;
+            return utils::shift::shl_real<Common>(raw, -Fxd::frac_bits);
+        }
+    }
+
+
     template<int Int,
              int Frac,
              typename Raw>
@@ -39,15 +61,32 @@ namespace fxd {
     fixed<Int, Frac, Raw>::operator I()
         const noexcept
     {
-        if constexpr (frac_bits < 0) {
-            return utils::shift::shl_real(raw_value, -frac_bits);
-        } else {
-            raw_type v = raw_value;
-            if (v < 0)
-                v += utils::shift::make_bias_for(frac_bits, v);
+        return to_int<I>(*this);
+    }
 
-            return utils::shift::shr_real(v, frac_bits);
-        }
+
+
+
+
+    template<std::floating_point Flt,
+             fixed_point Fxd>
+    constexpr
+    Flt
+    to_float(Fxd f)
+        noexcept
+    {
+        const Flt fraw = static_cast<Flt>(utils::opacify(f.raw_value));
+        return std::ldexp(fraw, -Fxd::frac_bits);
+    }
+
+
+    template<fixed_point Fxd>
+    constexpr
+    typename Fxd::float_type
+    to_float(Fxd f)
+        noexcept
+    {
+        return to_float<typename Fxd::float_type>(f);
     }
 
 
@@ -59,21 +98,9 @@ namespace fxd {
     fixed<Int, Frac, Raw>::operator Flt()
         const noexcept
     {
-        return std::ldexp(static_cast<Flt>(utils::opacify(raw_value)), -frac_bits);
+        return to_float<Flt>(*this);
     }
 
-
-    template<fixed_point Fxd>
-    requires(!std::is_void_v<typename Fxd::float_type>)
-    constexpr
-    typename Fxd::float_type
-    to_float(Fxd f)
-        noexcept
-    {
-        using Flt = typename Fxd::float_type;
-        static_assert(!std::is_void_v<Flt>);
-        return static_cast<Flt>(f);
-    }
 
 }
 

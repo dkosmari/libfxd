@@ -12,6 +12,8 @@
 #include <tuple>
 #include <utility>
 
+#include "types.hpp"
+
 
 namespace fxd::utils::tuple {
 
@@ -134,6 +136,19 @@ namespace fxd::utils::tuple {
     {
         return i < 0;
     }
+
+
+} // namespace fxd::utils::tuple
+
+
+
+namespace fxd {
+
+
+    template<template<typename...> typename Tuple,
+             std::integral... I>
+    constexpr inline
+    int type_width<Tuple<I...>> = (0 + ... + type_width<I>);
 
 
 }

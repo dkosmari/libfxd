@@ -315,6 +315,64 @@ namespace fxd::utils::shift {
 
 
 
+
+
+    namespace overflow {
+
+        template<typename T>
+        constexpr
+        std::pair<T, bool>
+        shl_real(T a,
+                 unsigned b)
+            noexcept
+        {
+            const T result = shift::shl_real(a, b);
+            const bool ovf = a != shift::shr_real(result, b);
+            return { result, ovf };
+        }
+
+
+        template<typename T>
+        constexpr
+        std::pair<T, bool>
+        shr_real(T a,
+                 unsigned b)
+            noexcept
+        {
+            const T result = shift::shr_real(a, b);
+            const bool ovf = a != shift::shl_real(a, b);
+            return { result, ovf };
+        }
+
+
+        template<typename T>
+        std::pair<T, bool>
+        shl(T a,
+            int b)
+        {
+            if (b < 0)
+                return shr_real(a, -b);
+            else
+                return shl_real(a, b);
+        }
+
+
+        template<typename T>
+        std::pair<T, bool>
+        shr(T a,
+            int b)
+        {
+            if (b < 0)
+                return shl_real(a, -b);
+            else
+                return shr_real(a, b);
+        }
+
+
+    } // namespace shift
+
+
+
 }
 
 

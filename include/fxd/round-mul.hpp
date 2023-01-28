@@ -84,9 +84,6 @@ namespace fxd::round {
             using utils::tuple::last;
             using utils::shift::shl;
 
-            // using std::clog;
-            // using std::endl;
-
             constexpr int w = type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
@@ -127,8 +124,6 @@ namespace fxd::round {
             Fxd b)
             noexcept
         {
-            using utils::tuple::last;
-
             constexpr int w = type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
@@ -138,7 +133,7 @@ namespace fxd::round {
 
             const auto d = utils::shift::shl(c, offset);
 
-            return Fxd::from_raw(last(d));
+            return Fxd::from_raw(utils::tuple::last(d));
         }
 
     } // namespace down

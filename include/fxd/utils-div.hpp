@@ -118,11 +118,11 @@ namespace fxd::utils::div {
         int i = 0;
         for (; rem && i < frac_bits + expo_q; ++i) {
 
-            auto [new_rem, carry] = overflow::shl_real(rem, 1);
+            auto [new_rem, carry] = shift::overflow::shl_real(rem, 1);
             rem = new_rem;
 
             if constexpr (safe) {
-                auto [new_quo, ovf] = utils::overflow::shl_real(quo, 1);
+                auto [new_quo, ovf] = shift::overflow::shl_real(quo, 1);
                 if (ovf)
                     return unexpected{error::overflow};
                 quo = new_quo;
@@ -176,7 +176,7 @@ namespace fxd::utils::div {
         auto [uc, scale, rem] = *r;
 
         if (static_cast<S>(uc) < 0) {
-            auto [new_uc, new_rem] = overflow::shr_real(uc, 1);
+            auto [new_uc, new_rem] = shift::overflow::shr_real(uc, 1);
             uc = new_uc;
             rem |= new_rem;
             ++scale;

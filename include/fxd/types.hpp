@@ -17,7 +17,7 @@ namespace fxd {
 
 
     template<typename T>
-    requires(std::numeric_limits<T>::is_specialized)
+    requires (std::numeric_limits<T>::is_specialized)
     constexpr inline
     int type_width = std::numeric_limits<T>::digits +
                      (std::numeric_limits<T>::is_signed ? 1 : 0);
