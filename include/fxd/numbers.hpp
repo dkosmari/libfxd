@@ -16,9 +16,9 @@
 namespace std::numbers {
 
 #ifdef __cpp_lib_constexpr_cmath
-#define LIBFXD_CONSTEXPR constexpr
+#    define LIBFXD_CONSTEXPR constexpr
 #else
-#define LIBFXD_CONSTEXPR const
+#    define LIBFXD_CONSTEXPR const
 #endif
 
 #define LIBFXD_CONSTANT(x)                                       \
@@ -43,7 +43,6 @@ namespace std::numbers {
 
 
 #undef LIBFXD_CONSTANT
-
 #undef LIBFXD_CONSTEXPR
 
 }
