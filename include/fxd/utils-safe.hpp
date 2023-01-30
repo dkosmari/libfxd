@@ -299,7 +299,7 @@ dec(Fxd& f)
     if constexpr (Fxd::int_bits < 1)
         return f = handler<Fxd>(error::underflow);
 
-    auto [result, overflow] = utils::overflow::sub(f.raw_value, Fxd{1}.raw_value);
+    auto [result, overflow] = utils::sub::overflow::sub(f.raw_value, Fxd{1}.raw_value);
     if (overflow)
         return f = handler<Fxd>(error::underflow);
 
@@ -369,7 +369,7 @@ Fxd
 sub(Fxd a,
     Fxd b)
 {
-    auto [result, overflow] = utils::overflow::sub(a.raw_value, b.raw_value);
+    auto [result, overflow] = utils::sub::overflow::sub(a.raw_value, b.raw_value);
 
     if (overflow) {
         if constexpr (std::numeric_limits<Fxd>::is_signed)

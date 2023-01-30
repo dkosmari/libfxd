@@ -17,7 +17,6 @@
 
 #include "error.hpp"
 #include "utils-expected.hpp"
-#include "utils-overflow.hpp"
 #include "utils-shift.hpp"
 
 
@@ -31,7 +30,7 @@ namespace fxd::utils::div {
         bool has_remainder;
     };
 
-
+    // When only integer division is required.
     template<int frac_bits,
              bool safe = false,
              std::integral I>
@@ -48,6 +47,12 @@ namespace fxd::utils::div {
                     return unexpected{error::not_a_number};
                 return unexpected{a < 0 ? error::underflow : error::overflow};
             }
+
+            // protect against INT_MIN / -1
+            if constexpr (std::numeric_limits<I>::is_signed) {
+                if (a == std::numeric_limits<I>::min() && b == -1)
+                    return unexpected{error::overflow};
+            }
         }
 
         const I q = a / b;
@@ -56,10 +61,17 @@ namespace fxd::utils::div {
     }
 
 
+
+    template<int frac_bits,
+             typename I>
+    concept can_use_int_div = has_int_for<frac_bits + type_width<I>, I>;
+
+
+    // When fractional bits are required, but they fit in a larger integer.
     template<int frac_bits,
              bool safe = false,
              std::integral I>
-    requires (frac_bits > 0 && has_int_for<frac_bits + type_width<I>, I>)
+    requires (frac_bits > 0 && can_use_int_div<frac_bits, I>)
     expected<div_result<select_int_for<frac_bits + type_width<I>, I>>,
              error>
     div(I a,
@@ -72,42 +84,87 @@ namespace fxd::utils::div {
                     return unexpected{error::not_a_number};
                 return unexpected{a < 0 ? error::underflow : error::overflow};
             }
+
+            // protect against INT_MIN / -1
+            if constexpr (std::numeric_limits<I>::is_signed) {
+                if (a == std::numeric_limits<I>::min() && b == -1)
+                    return unexpected{error::overflow};
+            }
         }
 
         using W = select_int_for<frac_bits + type_width<I>, I>;
-        const W aa = shift::shl_real<W>(a, frac_bits);
+        const W aa = static_cast<W>(a) << frac_bits;
         const W bb = b;
         const W q = aa / bb;
         const W r = aa % bb;
+
+        if constexpr (safe) {
+            if (q > std::numeric_limits<I>::max())
+                return unexpected{error::overflow};
+            if (q < std::numeric_limits<I>::min())
+                return unexpected{error::underflow};
+        }
+
         return div_result<W>{ q, -frac_bits, r != 0 };
     }
 
 
 
-    // performs extended division
-    // returns the mantissa and exponent as a pair
+
+
+
+    // Fallback implementation: long binary division.
+
     template<int frac_bits,
              bool safe = false,
              std::unsigned_integral U>
-    requires (!has_int_for<frac_bits + type_width<U>, U>)
+    requires (!can_use_int_div<frac_bits, U>)
     expected<div_result<U>,
              error>
     div(U a,
         U b)
         noexcept
     {
-        using shift::shl_real;
+
+#if __SIZEOF_INT128__ == 16
+        if constexpr (type_width<U> + frac_bits <= 128) {
+
+            if constexpr (safe) {
+                if (!b)
+                    return unexpected{!a ? error::not_a_number : error::overflow};
+                if (!a)
+                    return div_result<U>{ 0, 0, false };
+            }
+
+            using UU = __uint128_t;
+            const UU aa = static_cast<UU>(a) << frac_bits;
+            const UU bb = b;
+            UU q = aa / bb;
+            const UU r = aa % bb;
+            int expo = -frac_bits;
+
+            if constexpr (safe)
+                if (q > std::numeric_limits<U>::max())
+                    return unexpected{error::overflow};
+
+            return div_result<U>{
+                static_cast<U>(q),
+                expo,
+                r != 0
+            };
+        }
+#endif
+
+        if (!b)
+            return unexpected{!a ? error::not_a_number : error::overflow};
+        if (!a)
+            return div_result<U>{ 0, 0, false };
 
         const int expo_a = std::countl_zero(a);
         const int expo_b = std::countl_zero(b);
         // scale of the result
         const int expo_q = expo_b - expo_a;
 
-        if (!b)
-            return unexpected{!a ? error::not_a_number : error::overflow};
-
-        if (!a)
-            return div_result<U>{ 0, 0, false };
 
         a = a << expo_a;
         b = b << expo_b;
@@ -144,13 +201,59 @@ namespace fxd::utils::div {
     template<int frac_bits,
              bool safe = false,
              std::signed_integral S>
-    requires (!has_int_for<frac_bits + type_width<S>, S>)
+    requires (!can_use_int_div<frac_bits, S>)
     expected<div_result<S>,
              error>
     div(S a,
         S b)
         noexcept
     {
+
+#if __SIZEOF_INT128__ == 16
+        if constexpr (type_width<S> + frac_bits <= 128) {
+
+            if constexpr (safe) {
+                if (!b)
+                    return unexpected{!a
+                        ? error::not_a_number
+                        : (a < 0 ? error::underflow : error::overflow)};
+                if (!a)
+                    return div_result<S>{ 0, 0, false };
+
+                // protect against INT_MIN / -1
+                if (a == std::numeric_limits<S>::min() && b == -1)
+                    return unexpected{error::overflow};
+            }
+
+            using SS = __int128_t;
+            const SS aa = static_cast<SS>(a) << frac_bits;
+            const SS bb = b;
+            SS q = aa / bb;
+            const SS r = aa % bb;
+            int expo = -frac_bits;
+
+            if constexpr (safe) {
+                if (q > std::numeric_limits<S>::max())
+                    return unexpected{error::overflow};
+                if (q < std::numeric_limits<S>::min())
+                    return unexpected{error::underflow};
+            }
+
+            return div_result<S>{
+                static_cast<S>(q),
+                expo,
+                r != 0
+            };
+        }
+#endif
+
+        if (!b)
+            return unexpected{!a
+                ? error::not_a_number
+                : (a < 0 ? error::underflow : error::overflow)};
+        if (!a)
+            return div_result<S>{ 0, 0, false };
+
         const bool neg_a = a < 0;
         const bool neg_b = b < 0;
         const bool neg_c = neg_a != neg_b;

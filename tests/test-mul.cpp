@@ -8,6 +8,7 @@
 
 #include "printer.hpp"
 #include "rng.hpp"
+#include "rounder.hpp"
 #include "setup.hpp"
 #include "test-types.hpp"
 
@@ -234,7 +235,7 @@ TEMPLATE_LIST_TEST_CASE("random-up",
 
     RNG<Fxd> rng;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     for (int i = 0; i < max_iterations; ++i) {
 
@@ -285,7 +286,7 @@ TEMPLATE_LIST_TEST_CASE("random-down",
 
     RNG<Fxd> rng;
 
-    fxd::utils::round_down guard;
+    round_down guard;
 
     for (int i = 0; i < max_iterations; ++i) {
 
@@ -384,7 +385,7 @@ TEST_CASE("special-5", "[up]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     Fxd a = Fxd::from_raw(2832);
     Fxd b = Fxd::from_raw(14248059);
@@ -406,7 +407,7 @@ TEST_CASE("special-6", "[up]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     Fxd a = Fxd::from_raw(8775);
     Fxd b = Fxd::from_raw(88974);
@@ -428,7 +429,7 @@ TEST_CASE("special-7", "[down]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    fxd::utils::round_down guard;
+    round_down guard;
 
     Fxd a = Fxd::from_raw(-1014032);
     Fxd b = Fxd::from_raw(-4055);

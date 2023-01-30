@@ -9,22 +9,11 @@
 #define LIBFXD_UTILS_ADD_HPP
 
 #include <concepts>
+#include <limits>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
-
-
-#if 0
-#  include <stdckdint.h>
-#  define LIBFXD_C23_BUILTINS
-#elif defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
-#  define LIBFXD_GCC_BUILTINS
-#else
-#  define LIBFXD_NO_BUILTINS
-#endif
-
-
-#include "utils-overflow.hpp"
 #include "utils-tuple.hpp"
 
 
@@ -33,48 +22,155 @@ namespace fxd::utils::add {
 
     namespace overflow {
 
-#ifdef LIBFXD_C23_BUILTINS
-        template<std::integral I>
-        constexpr
-        std::pair<I, bool>
-        add(I a,
-            I b,
-            bool carry = false)
-            noexcept
-        {
-            I result;
-            bool ovf = ckd_add(&result, a, b);
-            if (carry)
-                ovf |= ckd_add(&result, result, I{1});
-            return { result, ovf };
-        }
-#endif
 
-#ifdef LIBFXD_GCC_BUILTINS
-        template<std::integral I>
-        constexpr
-        std::pair<I, bool>
-        add(I a,
-            I b,
-            bool carry = false)
-            noexcept
-        {
-            I result;
-            bool ovf = __builtin_add_overflow(a, b, &result);
-            if (carry)
-                ovf |= __builtin_add_overflow(result, I{1}, &result);
-            return { result, ovf };
-        }
-#endif
-
-#ifdef LIBFXD_NO_BUILTINS
+#ifdef __amd64__
+#define LIBFXD_HAVE_ADD_OVERFLOW_ASM
 
         template<std::unsigned_integral U>
-        constexpr
         std::pair<U, bool>
-        add(U a, U b, bool carry = false)
+        add_asm(U a,
+                U b,
+                bool carry)
             noexcept
         {
+            asm("\n\
+        addb    $-1, %[CARRY] \n\
+        adc     %[B], %[A] \n\
+        setc    %[CARRY] \n\
+        "
+                : // outputs
+                  [A] "+R" (a),
+                  [CARRY] "+&q" (carry)
+                : // inputs
+                  [B] "rm" (b)
+                : // clobbers
+                  "cc"
+                );
+
+            return { a, carry };
+        }
+
+
+
+        template<std::signed_integral S>
+        std::pair<S, bool>
+        add_asm(S a,
+                S b,
+                bool carry)
+            noexcept
+        {
+            asm("\n\
+        addb    $-1, %[CARRY] \n\
+        adc     %[B], %[A] \n\
+        seto    %[CARRY] \n\
+        "
+                : // outputs
+                  [A] "+R" (a),
+                  [CARRY] "+&q" (carry)
+                : // inputs
+                  [B] "rm" (b)
+                : // clobbers
+                  "cc"
+                );
+
+            return { a, carry };
+        }
+
+
+#endif // __amd64__
+
+
+#if !defined(LIBFXD_HAVE_ADD_OVERFLOW)                                          \
+    && (defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER))
+#define LIBFXD_HAVE_ADD_OVERFLOW
+
+        template<std::integral I>
+        constexpr
+        std::pair<I, bool>
+        add(I a,
+            I b,
+            bool carry)
+            noexcept
+        {
+#ifdef LIBFXD_HAVE_ADD_OVERFLOW_ASM
+            if (!std::is_constant_evaluated())
+                return add_asm(a, b, carry);
+#endif
+            I r1;
+            const bool o1 = __builtin_add_overflow(a, b, &r1);
+            I r2;
+            const bool o2 = __builtin_add_overflow(r1, I{carry}, &r2);
+            return { r2, o1 || o2 };
+        }
+
+
+        template<std::integral I>
+        constexpr
+        std::pair<I, bool>
+        add(I a,
+            I b)
+            noexcept
+        {
+            I result;
+            const bool ovf = __builtin_add_overflow(a, b, &result);
+            return { result, ovf };
+        }
+
+#endif
+
+
+
+#ifndef LIBFXD_HAVE_ADD_OVERFLOW
+#define LIBFXD_HAVE_ADD_OVERFLOW
+
+        // fallback implementation using only standard language constructs
+
+        template<std::unsigned_integral U>
+        requires (has_uint<type_width<U> + 1>)
+        constexpr inline
+        std::pair<U, bool>
+        add(U a,
+            U b,
+            bool carry)
+            noexcept
+        {
+            using UU = select_uint_t<type_width<U> + 1>;
+            const UU aa = a;
+            const UU bb = b;
+            const UU result = aa + bb + carry;
+            constexpr UU max = std::numeric_limits<U>::max();
+            const bool ovf = result > max;
+            return { result, ovf };
+        }
+
+
+        template<std::unsigned_integral U>
+        requires (has_uint<type_width<U> + 1>)
+        constexpr inline
+        std::pair<U, bool>
+        add(U a,
+            U b)
+            noexcept
+        {
+            using UU = select_uint_t<type_width<U> + 1>;
+            const UU aa = a;
+            const UU bb = b;
+            const UU result = aa + bb;
+            constexpr UU max = std::numeric_limits<U>::max();
+            const bool ovf = result > max;
+            return { result, ovf };
+        }
+
+
+
+        constexpr inline
+        std::pair<std::uintmax_t, bool>
+        add(std::uintmax_t a,
+            std::uintmax_t b,
+            bool carry)
+            noexcept
+        {
+            using U = std::uintmax_t;
             const U ab = a + b;
             const U result = a + b + carry;
             constexpr U max = std::numeric_limits<U>::max();
@@ -83,29 +179,103 @@ namespace fxd::utils::add {
         }
 
 
-        template<std::signed_integral S>
-        constexpr
-        std::pair<S, bool>
-        add(S a, S b, bool carry = false)
+        constexpr inline
+        std::pair<std::uintmax_t, bool>
+        add(std::uintmax_t a,
+            std::uintmax_t b)
             noexcept
         {
+            using U = std::uintmax_t;
+            const U result = a + b;
+            constexpr U max = std::numeric_limits<U>::max();
+            const bool ovf = (a > max - b);
+            return { result, ovf };
+        }
+
+
+
+        template<std::signed_integral S>
+        requires (has_int<type_width<S> + 1>)
+        constexpr inline
+        std::pair<S, bool>
+        add(S a,
+            S b,
+            bool carry)
+            noexcept
+        {
+            using SS = select_int_t<type_width<S> + 1>;
+            const SS aa = a;
+            const SS bb = b;
+            const SS result = aa + bb + carry;
+            constexpr SS max = std::numeric_limits<S>::max();
+            constexpr SS min = std::numeric_limits<S>::min();
+            const bool ovf = result < min || result > max;
+            return { result, ovf };
+        }
+
+
+        template<std::signed_integral S>
+        requires (has_int<type_width<S> + 1>)
+        constexpr inline
+        std::pair<S, bool>
+        add(S a,
+            S b)
+            noexcept
+        {
+            using SS = select_int_t<type_width<S> + 1>;
+            const SS aa = a;
+            const SS bb = b;
+            const SS result = aa + bb;
+            constexpr SS max = std::numeric_limits<S>::max();
+            constexpr SS min = std::numeric_limits<S>::min();
+            const bool ovf = result < min || result > max;
+            return { result, ovf };
+        }
+
+
+        constexpr inline
+        std::pair<std::intmax_t, bool>
+        add(std::intmax_t a,
+            std::intmax_t b,
+            bool carry)
+            noexcept
+        {
+            using S = std::intmax_t;
+            using U = std::make_unsigned_t<S>;
             constexpr S max = std::numeric_limits<S>::max();
             constexpr S min = std::numeric_limits<S>::min();
-            using U = std::make_unsigned_t<S>;
-            const S ab  = static_cast<U>(a) + static_cast<U>(b);
-            const S result = static_cast<U>(a) + static_cast<U>(b) + static_cast<U>(carry);
+
+            const S ab     = static_cast<U>(a) + static_cast<U>(b);
+            const S result = static_cast<U>(a) + static_cast<U>(b) + carry;
             const bool ovf =
                 (b > 0 && a > max - b) // a + b > max
                 ||
                 (b < 0 && a < min - b) // a + b < min
                 ||
-                (c && ab > max - c); // a + b + c > max
+                (carry && ab > max - carry); // a + b + c > max
             return { result, ovf };
         }
 
-#endif // LIBFXD_NO_BUILTINS
 
+        constexpr inline
+        std::pair<std::intmax_t, bool>
+        add(std::intmax_t a,
+            std::intmax_t b)
+            noexcept
+        {
+            using S = std::intmax_t;
+            using U = std::make_unsigned_t<S>;
+            constexpr S max = std::numeric_limits<S>::max();
+            constexpr S min = std::numeric_limits<S>::min();
+            const S result = static_cast<U>(a) + static_cast<U>(b);
+            const bool ovf =
+                (b > 0 && a > max - b) // a + b > max
+                ||
+                (b < 0 && a < min - b); // a + b < min
+            return { result, ovf };
+        }
 
+#endif
 
 
         template<tuple::tuple_like Tup>

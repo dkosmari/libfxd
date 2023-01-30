@@ -64,15 +64,7 @@ namespace fxd {
 
 
         // assignment
-
-        // constexpr fixed& operator =(const fixed&) noexcept = default;
-        // constexpr fixed& operator =(fixed&&) noexcept = default;
-
-        template<std::integral I>
-        constexpr fixed& operator =(I i) noexcept;
-
-        template<std::floating_point Flt>
-        constexpr fixed& operator = (Flt f) noexcept;
+        constexpr fixed& operator =(const fixed&) noexcept = default;
 
 
         // Comparison

@@ -14,7 +14,7 @@
 #include <utility> // tie()
 
 #include "types.hpp"
-#include "utils-overflow.hpp"
+#include "utils-add.hpp"
 #include "utils.hpp"
 
 
@@ -35,6 +35,44 @@ namespace fxd::utils::mul {
         return static_cast<II>(a) * static_cast<II>(b);
     }
 
+
+
+#if __SIZEOF_INT128__ == 16
+#define LIBFXD_HAVE_MUL128
+
+    template<int bits,
+    std::integral I>
+    requires (!has_int_for<2 * bits, I>)
+    ALWAYS_INLINE
+    constexpr
+    std::tuple<std::make_unsigned_t<I>, I>
+    mul(I a,
+        I b)
+        noexcept
+    {
+        using U = std::make_unsigned_t<I>;
+
+        using II = std::conditional_t<std::numeric_limits<I>::is_signed,
+                                      __int128_t,
+                                      __uint128_t>;
+
+        static_assert(sizeof(II) > sizeof(I));
+
+        const II cc = static_cast<II>(a) * static_cast<II>(b);
+
+        return {
+            static_cast<U>(cc),
+            static_cast<I>(cc >> type_width<U>)
+        };
+    }
+
+#endif
+
+
+
+#ifndef LIBFXD_HAVE_MUL128
+
+    // fallback implementation using only standard C++
 
     // returns low, high parts of the full multiplication a * b
     // without using larger arithmetic than I
@@ -76,6 +114,8 @@ namespace fxd::utils::mul {
 
         return { c01, c23 };
     }
+
+#endif // LIBFXD_HAVE_MUL128
 
 }
 

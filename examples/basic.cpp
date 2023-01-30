@@ -7,7 +7,9 @@ int main()
     using F = fxd::fixed<20, 12>;
 
     F a = 5;
+    a = 6;
     F b = 2.5;
+    b = 3.5;
     F c;
 
     std::cout << "Enter a value: ";

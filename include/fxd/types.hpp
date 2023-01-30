@@ -22,8 +22,6 @@ namespace fxd {
     int type_width = std::numeric_limits<T>::digits +
                      (std::numeric_limits<T>::is_signed ? 1 : 0);
 
-    constexpr int max_type_width = 64;
-
 
     template<int>
     struct select_int { using type = void; };
@@ -113,11 +111,6 @@ namespace fxd {
              typename I>
     constexpr inline
     bool has_int_for = !std::is_void_v<select_int_for<bits, I>>;
-
-
-    // template<typename I>
-    // inline constexpr
-    // bool has_wider_v = !std::is_void_v<wider_t<I>>;
 
 
 

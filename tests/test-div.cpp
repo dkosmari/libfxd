@@ -7,6 +7,7 @@
 
 #include "printer.hpp"
 #include "rng.hpp"
+#include "rounder.hpp"
 #include "setup.hpp"
 #include "test-types.hpp"
 
@@ -126,6 +127,8 @@ TEMPLATE_LIST_TEST_CASE("random-up",
                         "[random][up]",
                         test_types)
 {
+    round_up guard;
+
     using Fxd = TestType;
 
     constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
@@ -134,8 +137,6 @@ TEMPLATE_LIST_TEST_CASE("random-up",
     CAPTURE(lo);
     CAPTURE(hi);
     CAPTURE(ep);
-
-    fxd::utils::round_up guard;
 
     const auto flo = to_float(lo);
     const auto fhi = to_float(hi);
@@ -176,6 +177,8 @@ TEMPLATE_LIST_TEST_CASE("random-down",
                         "[random][down]",
                         test_types)
 {
+    round_down guard;
+
     using Fxd = TestType;
 
     constexpr Fxd lo = std::numeric_limits<Fxd>::lowest();
@@ -184,8 +187,6 @@ TEMPLATE_LIST_TEST_CASE("random-down",
     CAPTURE(lo);
     CAPTURE(hi);
     CAPTURE(ep);
-
-    fxd::utils::round_down guard;
 
     const auto flo = to_float(lo);
     const auto fhi = to_float(hi);
@@ -429,7 +430,7 @@ TEST_CASE("special-11", "[up]")
 {
     using Fxd = fxd::fixed<24, 1>;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     Fxd a = Fxd::from_raw(3977664);
     Fxd b = Fxd::from_raw(-8733244);
@@ -452,7 +453,7 @@ TEST_CASE("special-12", "[up]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     Fxd a = Fxd::from_raw(8235717);
     Fxd b = Fxd::from_raw(12116731);
@@ -475,7 +476,7 @@ TEST_CASE("special-13", "[up]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     Fxd a = Fxd::from_raw(1605);
     Fxd b = Fxd::from_raw(16714058);
@@ -498,7 +499,7 @@ TEST_CASE("special-14", "[up]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     Fxd a = Fxd::from_raw(-407);
     Fxd b = Fxd::from_raw(4714082);
@@ -521,7 +522,7 @@ TEST_CASE("special-15", "[up]")
 {
     using Fxd = fxd::fixed<26, -1>;
 
-    fxd::utils::round_up guard;
+    round_up guard;
 
     Fxd a = Fxd::from_raw(11126233);
     Fxd b = Fxd::from_raw(-3231766);
@@ -555,4 +556,58 @@ TEST_CASE("special-16", "[up]")
     CHECK(c == hi);
 
     CHECK(fxd::saturate::div(a, b) == hi);
+}
+
+
+TEST_CASE("special-17", "[zero]")
+{
+    using Fxd = fxd::fixed<1, 53>;
+    Fxd a = Fxd::from_raw(-8554731877316490LL); // -0.94976602996915571_fix<1,53>
+    Fxd b = Fxd::from_raw(-5615165162258LL); // -0.00062340856502118_fix<1,53>
+    CAPTURE(a);
+    CAPTURE(b);
+    Fxd hi = std::numeric_limits<Fxd>::max();
+    Fxd sc = fxd::saturate::div(a, b);
+    CHECK(sc == hi);
+}
+
+
+TEST_CASE("special-18", "[up]")
+{
+    /*
+-------------------------------------------------------------------------------
+random-up - test_types - 12
+-------------------------------------------------------------------------------
+test-div.cpp:128
+...............................................................................
+
+test-div.cpp:168: FAILED:
+  REQUIRE( c == Fxd{fc} )
+with expansion:
+  0.000360095874_ufix<-10,34>  [ 6186400 (0x5e65a0) ]
+  ==
+  0.000360095001_ufix<-10,34>  [ 6186385 (0x5e6591) ]
+with messages:
+  a := 0.00000017602_ufix<-10,34>  [ 3024 (0xbd0) ]
+  b := 0.000488815364_ufix<-10,34>  [ 8397784 (0x8023d8) ]
+  fa := 0.000000177f
+  fb := 0.000488816f
+  fc := 0.000360096f
+     */
+    round_up guard;
+
+    using Fxd = fxd::ufixed<-10, 34>;
+    Fxd a = Fxd::from_raw(3024);
+    Fxd b = Fxd::from_raw(8397784);
+    Fxd c = fxd::round::up::div(a, b);
+    CAPTURE(a);
+    CAPTURE(b);
+    CAPTURE(c);
+    auto fa = to_float(a);
+    auto fb = to_float(b);
+    auto fc = fa / fb;
+    CAPTURE(fa);
+    CAPTURE(fb);
+    CAPTURE(fc);
+    CHECK(c == Fxd{fc});
 }

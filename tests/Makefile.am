@@ -4,6 +4,7 @@
 noinst_HEADERS = \
 	printer.hpp \
 	rng.hpp \
+	rounder.hpp \
 	setup.hpp \
 	test-types.hpp
 

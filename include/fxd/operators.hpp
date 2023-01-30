@@ -43,37 +43,6 @@ namespace fxd {
     // Assignment //
     // ---------- //
 
-
-    template<int Int,
-             int Frac,
-             typename Raw>
-    template<std::integral I>
-    ALWAYS_INLINE
-    constexpr
-    fixed<Int, Frac, Raw>&
-    fixed<Int, Frac, Raw>::operator =(I i)
-        noexcept
-    {
-        raw_value = utils::shift::shl<Raw>(i, frac_bits);
-        return *this;
-    }
-
-
-    template<int Int,
-             int Frac,
-             typename Raw>
-    template<std::floating_point F>
-    constexpr
-    fixed<Int, Frac, Raw>&
-    fixed<Int, Frac, Raw>::operator =(F f)
-        noexcept
-    {
-        using std::ldexp;
-        raw_value = static_cast<raw_type>(ldexp(f, frac_bits));
-        return *this;
-    }
-
-
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
     ALWAYS_INLINE

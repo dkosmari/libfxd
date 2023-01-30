@@ -24,12 +24,13 @@ fxd_HEADERS = \
 	utils-div.hpp \
 	utils-expected.hpp \
 	utils-mul.hpp \
-	utils-overflow.hpp \
+	utils-opacify.hpp \
 	utils-safe-div.hpp \
 	utils-safe-includes.hpp \
 	utils-safe-mul.hpp \
 	utils-safe.hpp \
 	utils-shift.hpp \
+	utils-sub.hpp \
 	utils-tuple.hpp \
 	utils.hpp
 

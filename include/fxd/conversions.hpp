@@ -10,12 +10,12 @@
 
 #include <cmath>
 #include <concepts>
+#include <new> // launder()
 #include <type_traits>
 
 #include "concepts.hpp"
+#include "utils-opacify.hpp"
 #include "utils-shift.hpp"
-#include "utils.hpp"
-
 
 namespace fxd {
 
@@ -75,7 +75,19 @@ namespace fxd {
     to_float(Fxd f)
         noexcept
     {
-        const Flt fraw = static_cast<Flt>(utils::opacify(f.raw_value));
+#if defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__)
+#pragma STDC FENV_ACCESS ON
+#endif
+
+        const auto r = f.raw_value;
+#if 0
+        // Note: all compilers fail to respect rounding mode, so this isn't safe.
+        const Flt fraw = static_cast<Flt>(r);
+#else
+        // This version kills optimizations to ensure correct code.
+        const Flt fraw = static_cast<Flt>(utils::opacify(r));
+#endif
+
         return std::ldexp(fraw, -Fxd::frac_bits);
     }
 

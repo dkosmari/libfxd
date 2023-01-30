@@ -11,8 +11,12 @@
 
 #include "printer.hpp"
 #include "rng.hpp"
+#include "rounder.hpp"
 #include "setup.hpp"
 
+#if defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__)
+#pragma STDC FENV_ACCESS ON
+#endif
 
 TEST_CASE("raw1", "[s8.4]")
 {
@@ -203,6 +207,8 @@ TEST_CASE("make2", "[u8.4]")
 
 TEST_CASE("make3", "[s1.31]")
 {
+    round_down guard;
+
     using Fxd = fxd::fixed<1, 31>; // range is [-1, 1)
     using Flt = Fxd::float_type;
     namespace exc = fxd::except;
@@ -253,6 +259,8 @@ TEST_CASE("make3", "[s1.31]")
 
 TEST_CASE("make4", "[u1.31]")
 {
+    round_down guard;
+
     using Fxd = fxd::ufixed<1, 31>; // range is [0, 2)
     using Flt = Fxd::float_type;
     namespace exc = fxd::except;
@@ -297,6 +305,8 @@ TEST_CASE("make4", "[u1.31]")
 
 TEST_CASE("make5", "[u25.0]")
 {
+    round_down guard;
+
     using Fxd = fxd::ufixed<25, 0>;
     namespace exc = fxd::except;
 
@@ -322,6 +332,8 @@ TEST_CASE("make5", "[u25.0]")
 
 TEST_CASE("make6", "[s26.0]")
 {
+    round_down guard;
+
     using Fxd = fxd::fixed<26, 0>;
     namespace exc = fxd::except;
     using std::nextafter;

@@ -15,10 +15,15 @@
 
 namespace std::numbers {
 
+#ifdef __cpp_lib_constexpr_cmath
+#define LIBFXD_CONSTEXPR constexpr
+#else
+#define LIBFXD_CONSTEXPR const
+#endif
 
 #define LIBFXD_CONSTANT(x)                                       \
-    template<fxd::fixed_point F>                                \
-    inline constexpr                                            \
+    template<fxd::fixed_point F>                                 \
+    inline LIBFXD_CONSTEXPR                                      \
     F x<F> = F{std::numbers:: x <typename F::float_type>}
 
 
@@ -39,6 +44,7 @@ namespace std::numbers {
 
 #undef LIBFXD_CONSTANT
 
+#undef LIBFXD_CONSTEXPR
 
 }
 

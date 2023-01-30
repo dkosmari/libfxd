@@ -123,5 +123,8 @@ public:
 
 CATCH_REGISTER_LISTENER(Setup)
 
+#if defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__)
+#pragma STDC FENV_ACCESS ON
+#endif
 
 #endif
