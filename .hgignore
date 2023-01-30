@@ -18,6 +18,7 @@ configure
 
 examples/basic
 examples/closest-pair
+examples/matrix-mul
 examples/numbers
 examples/saturated
 examples/square-root

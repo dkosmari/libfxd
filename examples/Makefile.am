@@ -17,9 +17,13 @@ AM_DEFAULT_SOURCE_EXT = .cpp
 noinst_PROGRAMS = \
 	basic \
 	closest-pair \
+	matrix-mul \
 	numbers \
 	saturated \
 	square-root
+
+
+matrix_mul_CXXFLAGS = $(AM_CXXFLAGS) -frounding-math
 
 
 .PHONY: company
