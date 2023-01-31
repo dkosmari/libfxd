@@ -1,15 +1,28 @@
 fxddir = $(includedir)/fxd
 
-fxd_HEADERS = \
+nobase_fxd_HEADERS = \
 	casting.hpp \
 	concepts.hpp \
 	constructors.hpp \
 	conversions.hpp \
-	error.hpp \
 	except.hpp \
 	fixed.hpp \
 	fxd.hpp \
 	hash.hpp \
+	impl/add.hpp \
+	impl/bias.hpp \
+	impl/div.hpp \
+	impl/error.hpp \
+	impl/expected.hpp \
+	impl/mul.hpp \
+	impl/opacify.hpp \
+	impl/safe-div.hpp \
+	impl/safe-includes.hpp \
+	impl/safe-mul.hpp \
+	impl/safe.hpp \
+	impl/shift.hpp \
+	impl/sub.hpp \
+	impl/tuple.hpp \
 	limits.hpp \
 	math.hpp \
 	numbers.hpp \
@@ -19,20 +32,7 @@ fxd_HEADERS = \
 	round-mul.hpp \
 	saturate.hpp \
 	traits.hpp \
-	types.hpp \
-	utils-add.hpp \
-	utils-div.hpp \
-	utils-expected.hpp \
-	utils-mul.hpp \
-	utils-opacify.hpp \
-	utils-safe-div.hpp \
-	utils-safe-includes.hpp \
-	utils-safe-mul.hpp \
-	utils-safe.hpp \
-	utils-shift.hpp \
-	utils-sub.hpp \
-	utils-tuple.hpp \
-	utils.hpp
+	types.hpp
 
 
 .PHONY: company

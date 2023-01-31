@@ -5,113 +5,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_UTILS_SHIFT_HPP
-#define LIBFXD_UTILS_SHIFT_HPP
+#ifndef LIBFXD_IMPL_SHIFT_HPP
+#define LIBFXD_IMPL_SHIFT_HPP
 
 #include <concepts>
 #include <limits>
 
-#include "types.hpp"
-#include "utils-add.hpp"
-#include "utils-tuple.hpp"
-#include "utils.hpp"
+#include "../types.hpp"
+#include "add.hpp"
+#include "tuple.hpp"
 
 
-namespace fxd::utils::shift {
-
-
-    template<template<typename...> typename Tuple,
-             typename... I>
-    concept tuple_of_similar_ints = tuple::tuple_like<Tuple<I...>> &&
-        (std::integral<I> && ...) &&
-        ((sizeof(I) == sizeof(tuple::first_element_t<Tuple<I...>>)) && ...);
-
+namespace fxd::impl {
 
 
     template<std::integral I>
-    ALWAYS_INLINE
-    constexpr
-    I
-    make_bias(unsigned bits)
-        noexcept
-    {
-        constexpr unsigned w = type_width<I>;
-        if (bits < w)
-            return (I{1} << bits) - I{1};
-        else
-            return ~I{0};
-    }
-
-
-    template<std::integral I>
-    ALWAYS_INLINE
-    constexpr
-    I
-    make_bias_for(unsigned bits,
-                  I)
-        noexcept
-    {
-        return make_bias<I>(bits);
-    }
-
-
-
-
-    template<std::integral... I,
-             std::size_t... Idx>
-    ALWAYS_INLINE
-    constexpr
-    std::tuple<I...>
-    make_bias_tuple_helper(unsigned bits,
-                           std::index_sequence<Idx...>)
-        noexcept
-    {
-        using Tup = std::tuple<I...>;
-        using Elem = std::tuple_element_t<0, Tup>;
-        constexpr unsigned w = type_width<Elem>;
-
-        const std::size_t partial_idx = bits / w;
-        const unsigned partial_off = bits % w;
-        const Elem partial_elem = make_bias<Elem>(partial_off);
-        return { (
-                  Idx > partial_idx
-                  ? Elem{0}
-                  : (
-                     Idx < partial_idx
-                     ? ~Elem{0}
-                     : partial_elem
-                    )
-                  ) ... };
-    }
-
-
-    template<std::integral... I>
-    ALWAYS_INLINE
-    constexpr
-    std::tuple<I...>
-    make_bias_tuple(unsigned bits)
-        noexcept
-    {
-        using Seq = std::index_sequence_for<I...>;
-        return make_bias_tuple_helper<I...>(bits, Seq{});
-    }
-
-
-    template<template<typename...> typename Tup,
-             std::integral... I>
-    ALWAYS_INLINE
-    constexpr
-    std::tuple<I...>
-    make_bias_for(unsigned bits,
-                  const Tup<I...>&)
-        noexcept
-    {
-        return make_bias_tuple<I...>(bits);
-    }
-
-
-    template<std::integral I>
-    ALWAYS_INLINE
     constexpr
     I
     shl_real(I a,
@@ -129,7 +37,6 @@ namespace fxd::utils::shift {
 
 
     template<std::integral I>
-    ALWAYS_INLINE
     constexpr
     I
     shl(I a,
@@ -143,7 +50,6 @@ namespace fxd::utils::shift {
 
 
     template<std::integral I>
-    ALWAYS_INLINE
     constexpr
     I
     shr_real(I a,
@@ -157,7 +63,6 @@ namespace fxd::utils::shift {
 
 
     template<std::integral I>
-    ALWAYS_INLINE
     constexpr
     I
     shr(I a,
@@ -174,9 +79,8 @@ namespace fxd::utils::shift {
 
 
     template<std::size_t At,
-             tuple::tuple_like Tup,
+             tuple_like Tup,
              std::size_t... Idx>
-    ALWAYS_INLINE
     constexpr
     std::tuple_element_t<At, Tup>
     shl_at(const Tup& a,
@@ -193,9 +97,8 @@ namespace fxd::utils::shift {
 
 
 
-    template<tuple::tuple_like Tup,
+    template<tuple_like Tup,
              std::size_t... Idx>
-    ALWAYS_INLINE
     constexpr
     Tup
     shl_helper(const Tup& a,
@@ -210,7 +113,6 @@ namespace fxd::utils::shift {
     template<template<typename...> typename Tuple,
              std::integral... I>
     requires tuple_of_similar_ints<Tuple, I...>
-    ALWAYS_INLINE
     constexpr
     Tuple<I...>
     shl_real(const Tuple<I...>& a,
@@ -232,7 +134,6 @@ namespace fxd::utils::shift {
     template<template<typename...> typename Tuple,
              std::integral... I>
     requires tuple_of_similar_ints<Tuple, I...>
-    ALWAYS_INLINE
     constexpr
     Tuple<I...>
     shl(const Tuple<I...>& a,
@@ -247,9 +148,8 @@ namespace fxd::utils::shift {
 
 
     template<std::size_t At,
-             tuple::tuple_like Tup,
+             tuple_like Tup,
              std::size_t... Idx>
-    ALWAYS_INLINE
     constexpr
     std::tuple_element_t<At, Tup>
     shr_at(const Tup& a,
@@ -266,9 +166,8 @@ namespace fxd::utils::shift {
 
 
 
-    template<tuple::tuple_like Tup,
+    template<tuple_like Tup,
              std::size_t... Idx>
-    ALWAYS_INLINE
     constexpr
     Tup
     shr_helper(const Tup& a,
@@ -286,7 +185,6 @@ namespace fxd::utils::shift {
     template<template<typename...> typename Tuple,
              std::integral... I>
     requires tuple_of_similar_ints<Tuple, I...>
-    ALWAYS_INLINE
     constexpr
     Tuple<I...>
     shr_real(const Tuple<I...>& a,
@@ -301,7 +199,6 @@ namespace fxd::utils::shift {
     template<template<typename...> typename Tuple,
              std::integral... I>
     requires tuple_of_similar_ints<Tuple, I...>
-    ALWAYS_INLINE
     constexpr
     Tuple<I...>
     shr(const Tuple<I...>& a,
@@ -326,8 +223,8 @@ namespace fxd::utils::shift {
                  unsigned b)
             noexcept
         {
-            const T result = shift::shl_real(a, b);
-            const bool ovf = a != shift::shr_real(result, b);
+            const T result = impl::shl_real(a, b);
+            const bool ovf = a != impl::shr_real(result, b);
             return { result, ovf };
         }
 
@@ -339,8 +236,8 @@ namespace fxd::utils::shift {
                  unsigned b)
             noexcept
         {
-            const T result = shift::shr_real(a, b);
-            const bool ovf = a != shift::shl_real(a, b);
+            const T result = impl::shr_real(a, b);
+            const bool ovf = a != impl::shl_real(a, b);
             return { result, ovf };
         }
 
@@ -369,11 +266,10 @@ namespace fxd::utils::shift {
         }
 
 
-    } // namespace shift
+    } // namespace overflow
 
 
-
-}
+} // namespace fxd::impl
 
 
 #endif

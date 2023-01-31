@@ -5,22 +5,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_UTILS_DIV_HPP
-#define LIBFXD_UTILS_DIV_HPP
+#ifndef LIBFXD_IMPL_DIV_HPP
+#define LIBFXD_IMPL_DIV_HPP
 
 #include <algorithm>
 #include <bit>
 #include <concepts>
 #include <type_traits>
 
-#include "types.hpp"
+#include "../types.hpp"
 
 #include "error.hpp"
-#include "utils-expected.hpp"
-#include "utils-shift.hpp"
+#include "expected.hpp"
+#include "shift.hpp"
 
 
-namespace fxd::utils::div {
+namespace fxd::impl {
 
 
     template<std::integral I>
@@ -29,6 +29,7 @@ namespace fxd::utils::div {
         int exponent;
         bool has_remainder;
     };
+
 
     // When only integer division is required.
     template<int frac_bits,
@@ -175,11 +176,11 @@ namespace fxd::utils::div {
         int i = 0;
         for (; rem && i < frac_bits + expo_q; ++i) {
 
-            auto [new_rem, carry] = shift::overflow::shl_real(rem, 1);
+            auto [new_rem, carry] = overflow::shl_real(rem, 1);
             rem = new_rem;
 
             if constexpr (safe) {
-                auto [new_quo, ovf] = shift::overflow::shl_real(quo, 1);
+                auto [new_quo, ovf] = overflow::shl_real(quo, 1);
                 if (ovf)
                     return unexpected{error::overflow};
                 quo = new_quo;
@@ -216,7 +217,9 @@ namespace fxd::utils::div {
                 if (!b)
                     return unexpected{!a
                         ? error::not_a_number
-                        : (a < 0 ? error::underflow : error::overflow)};
+                        : (a < 0
+                           ? error::underflow
+                           : error::overflow)};
                 if (!a)
                     return div_result<S>{ 0, 0, false };
 
@@ -250,7 +253,9 @@ namespace fxd::utils::div {
         if (!b)
             return unexpected{!a
                 ? error::not_a_number
-                : (a < 0 ? error::underflow : error::overflow)};
+                : (a < 0
+                   ? error::underflow
+                   : error::overflow)};
         if (!a)
             return div_result<S>{ 0, 0, false };
 
@@ -279,7 +284,7 @@ namespace fxd::utils::div {
         auto [uc, scale, rem] = *r;
 
         if (static_cast<S>(uc) < 0) {
-            auto [new_uc, new_rem] = shift::overflow::shr_real(uc, 1);
+            auto [new_uc, new_rem] = overflow::shr_real(uc, 1);
             uc = new_uc;
             rem |= new_rem;
             ++scale;
@@ -293,7 +298,7 @@ namespace fxd::utils::div {
     }
 
 
-}
+} // namespace fxd::impl
 
 
 #endif

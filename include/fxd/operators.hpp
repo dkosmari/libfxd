@@ -16,10 +16,11 @@
 #include "round-div.hpp"
 #include "round-mul.hpp"
 #include "traits.hpp"
-#include "utils-div.hpp"
-#include "utils-mul.hpp"
-#include "utils-shift.hpp"
-#include "utils.hpp"
+
+#include "impl/div.hpp"
+#include "impl/mul.hpp"
+#include "impl/shift.hpp"
+
 
 
 /*
@@ -45,7 +46,6 @@ namespace fxd {
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
-    ALWAYS_INLINE
     constexpr
     Fxd&
     operator +=(Fxd& a,
@@ -59,7 +59,6 @@ namespace fxd {
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
-    ALWAYS_INLINE
     constexpr
     Fxd&
     operator -=(Fxd& a,
@@ -73,27 +72,25 @@ namespace fxd {
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
-    ALWAYS_INLINE
     constexpr
     Fxd&
     operator *=(Fxd& a,
                 T b)
         noexcept
     {
-        return a = round::zero::mul<Fxd>(a, b);
+        return a = zero::mul<Fxd>(a, b);
     }
 
 
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
-    ALWAYS_INLINE
     constexpr
     Fxd&
     operator /=(Fxd& a,
                 T b)
         noexcept
     {
-        return a = round::zero::div<Fxd>(a, b);
+        return a = zero::div<Fxd>(a, b);
     }
 
 
@@ -104,7 +101,6 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
-    ALWAYS_INLINE
     constexpr
     Fxd&
     operator ++(Fxd& a)
@@ -116,7 +112,6 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
-    ALWAYS_INLINE
     constexpr
     Fxd&
     operator --(Fxd& a)
@@ -128,7 +123,6 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
-    ALWAYS_INLINE
     constexpr
     Fxd
     operator ++(Fxd& a, int)
@@ -141,7 +135,6 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
-    ALWAYS_INLINE
     constexpr
     Fxd
     operator --(Fxd& a, int)
@@ -160,7 +153,6 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
-    ALWAYS_INLINE
     constexpr
     Fxd
     operator +(Fxd a)
@@ -171,7 +163,6 @@ namespace fxd {
 
 
     template<fixed_point Fxd>
-    ALWAYS_INLINE
     constexpr
     Fxd
     operator -(Fxd a)
@@ -184,7 +175,6 @@ namespace fxd {
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
-    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator +(A a,
@@ -199,7 +189,6 @@ namespace fxd {
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
-    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator -(A a,
@@ -214,7 +203,6 @@ namespace fxd {
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
-    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator *(A a,
@@ -222,14 +210,13 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        return round::zero::mul<Fxd>(a, b);
+        return zero::mul<Fxd>(a, b);
     }
 
 
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
-    ALWAYS_INLINE
     constexpr
     std::common_type_t<A, B>
     operator /(A a,
@@ -237,7 +224,7 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        return round::zero::div<Fxd>(a, b);
+        return zero::div<Fxd>(a, b);
     }
 
 

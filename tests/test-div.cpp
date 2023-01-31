@@ -148,7 +148,7 @@ TEMPLATE_LIST_TEST_CASE("random-up",
         Fxd b = rng.get();
         CAPTURE(a);
         CAPTURE(b);
-        Fxd sc = fxd::saturate::round::up::div(a, b);
+        Fxd sc = fxd::saturate::up::div(a, b);
 
         auto fa = to_float(a);
         auto fb = to_float(b);
@@ -159,15 +159,15 @@ TEMPLATE_LIST_TEST_CASE("random-up",
 
         if (fc < flo) {
             REQUIRE(sc == lo);
-            REQUIRE_THROWS_AS(fxd::except::round::up::div(a, b), std::underflow_error);
+            REQUIRE_THROWS_AS(fxd::except::up::div(a, b), std::underflow_error);
         } else if (fc > fhi) {
             REQUIRE(sc == hi);
-            REQUIRE_THROWS_AS(fxd::except::round::up::div(a, b), std::overflow_error);
+            REQUIRE_THROWS_AS(fxd::except::up::div(a, b), std::overflow_error);
         } else {
-            Fxd c = fxd::round::up::div(a, b);
+            Fxd c = fxd::up::div(a, b);
             REQUIRE(c == Fxd{fc});
             REQUIRE(c == sc);
-            REQUIRE_NOTHROW(c == fxd::except::round::up::div(a, b));
+            REQUIRE_NOTHROW(c == fxd::except::up::div(a, b));
         }
     }
 }
@@ -198,7 +198,7 @@ TEMPLATE_LIST_TEST_CASE("random-down",
         Fxd b = rng.get();
         CAPTURE(a);
         CAPTURE(b);
-        Fxd sc = fxd::saturate::round::down::div(a, b);
+        Fxd sc = fxd::saturate::down::div(a, b);
 
         auto fa = to_float(a);
         auto fb = to_float(b);
@@ -209,15 +209,15 @@ TEMPLATE_LIST_TEST_CASE("random-down",
 
         if (fc < flo) {
             REQUIRE(sc == lo);
-            REQUIRE_THROWS_AS(fxd::except::round::down::div(a, b), std::underflow_error);
+            REQUIRE_THROWS_AS(fxd::except::down::div(a, b), std::underflow_error);
         } else if (fc > fhi) {
             REQUIRE(sc == hi);
-            REQUIRE_THROWS_AS(fxd::except::round::down::div(a, b), std::overflow_error);
+            REQUIRE_THROWS_AS(fxd::except::down::div(a, b), std::overflow_error);
         } else {
-            Fxd c = fxd::round::down::div(a, b);
+            Fxd c = fxd::down::div(a, b);
             REQUIRE(c == Fxd{fc});
             REQUIRE(c == sc);
-            REQUIRE_NOTHROW(c == fxd::except::round::down::div(a, b));
+            REQUIRE_NOTHROW(c == fxd::except::down::div(a, b));
         }
     }
 }
@@ -444,7 +444,7 @@ TEST_CASE("special-11", "[up]")
     CAPTURE(fb);
     CAPTURE(fc);
 
-    Fxd c = fxd::round::up::div(a, b);
+    Fxd c = fxd::up::div(a, b);
     CHECK(c == Fxd{fc});
 }
 
@@ -467,7 +467,7 @@ TEST_CASE("special-12", "[up]")
     CAPTURE(fb);
     CAPTURE(fc);
 
-    Fxd c = fxd::round::up::div(a, b);
+    Fxd c = fxd::up::div(a, b);
     CHECK(c == Fxd{fc});
 }
 
@@ -490,7 +490,7 @@ TEST_CASE("special-13", "[up]")
     CAPTURE(fb);
     CAPTURE(fc);
 
-    Fxd c = fxd::round::up::div(a, b);
+    Fxd c = fxd::up::div(a, b);
     CHECK(c == Fxd{fc});
 }
 
@@ -513,7 +513,7 @@ TEST_CASE("special-14", "[up]")
     CAPTURE(fb);
     CAPTURE(fc);
 
-    Fxd c = fxd::round::up::div(a, b);
+    Fxd c = fxd::up::div(a, b);
     CHECK(c == Fxd{fc});
 }
 
@@ -536,7 +536,7 @@ TEST_CASE("special-15", "[up]")
     CAPTURE(fb);
     CAPTURE(fc);
 
-    Fxd c = fxd::round::up::div(a, b);
+    Fxd c = fxd::up::div(a, b);
     CHECK(c == Fxd{fc});
 
 }
@@ -552,7 +552,7 @@ TEST_CASE("special-16", "[up]")
     CAPTURE(b);
     Fxd hi = std::numeric_limits<Fxd>::max();
 
-    Fxd c = fxd::saturate::round::up::div(a, b);
+    Fxd c = fxd::saturate::up::div(a, b);
     CHECK(c == hi);
 
     CHECK(fxd::saturate::div(a, b) == hi);
@@ -574,32 +574,12 @@ TEST_CASE("special-17", "[zero]")
 
 TEST_CASE("special-18", "[up]")
 {
-    /*
--------------------------------------------------------------------------------
-random-up - test_types - 12
--------------------------------------------------------------------------------
-test-div.cpp:128
-...............................................................................
-
-test-div.cpp:168: FAILED:
-  REQUIRE( c == Fxd{fc} )
-with expansion:
-  0.000360095874_ufix<-10,34>  [ 6186400 (0x5e65a0) ]
-  ==
-  0.000360095001_ufix<-10,34>  [ 6186385 (0x5e6591) ]
-with messages:
-  a := 0.00000017602_ufix<-10,34>  [ 3024 (0xbd0) ]
-  b := 0.000488815364_ufix<-10,34>  [ 8397784 (0x8023d8) ]
-  fa := 0.000000177f
-  fb := 0.000488816f
-  fc := 0.000360096f
-     */
     round_up guard;
 
     using Fxd = fxd::ufixed<-10, 34>;
     Fxd a = Fxd::from_raw(3024);
     Fxd b = Fxd::from_raw(8397784);
-    Fxd c = fxd::round::up::div(a, b);
+    Fxd c = fxd::up::div(a, b);
     CAPTURE(a);
     CAPTURE(b);
     CAPTURE(c);

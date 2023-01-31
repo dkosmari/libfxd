@@ -21,28 +21,28 @@ namespace std::numbers {
 #    define LIBFXD_CONSTEXPR const
 #endif
 
-#define LIBFXD_CONSTANT(x)                                       \
-    template<fxd::fixed_point F>                                 \
-    inline LIBFXD_CONSTEXPR                                      \
+#define LIBFXD_NUMBER(x)                                        \
+    template<fxd::fixed_point F>                                \
+    inline LIBFXD_CONSTEXPR                                     \
     F x<F> = F{std::numbers:: x <typename F::float_type>}
 
 
-    LIBFXD_CONSTANT(e_v);
-    LIBFXD_CONSTANT(egamma_v);
-    LIBFXD_CONSTANT(inv_pi_v);
-    LIBFXD_CONSTANT(inv_sqrt3_v);
-    LIBFXD_CONSTANT(inv_sqrtpi_v);
-    LIBFXD_CONSTANT(ln10_v);
-    LIBFXD_CONSTANT(ln2_v);
-    LIBFXD_CONSTANT(log10e_v);
-    LIBFXD_CONSTANT(log2e_v);
-    LIBFXD_CONSTANT(phi_v);
-    LIBFXD_CONSTANT(pi_v);
-    LIBFXD_CONSTANT(sqrt2_v);
-    LIBFXD_CONSTANT(sqrt3_v);
+    LIBFXD_NUMBER(e_v);
+    LIBFXD_NUMBER(egamma_v);
+    LIBFXD_NUMBER(inv_pi_v);
+    LIBFXD_NUMBER(inv_sqrt3_v);
+    LIBFXD_NUMBER(inv_sqrtpi_v);
+    LIBFXD_NUMBER(ln10_v);
+    LIBFXD_NUMBER(ln2_v);
+    LIBFXD_NUMBER(log10e_v);
+    LIBFXD_NUMBER(log2e_v);
+    LIBFXD_NUMBER(phi_v);
+    LIBFXD_NUMBER(pi_v);
+    LIBFXD_NUMBER(sqrt2_v);
+    LIBFXD_NUMBER(sqrt3_v);
 
 
-#undef LIBFXD_CONSTANT
+#undef LIBFXD_NUMBER
 #undef LIBFXD_CONSTEXPR
 
 }

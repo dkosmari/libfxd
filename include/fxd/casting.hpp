@@ -11,7 +11,8 @@
 #include <type_traits>
 
 #include "concepts.hpp"
-#include "utils-shift.hpp"
+
+#include "impl/shift.hpp"
 
 
 namespace fxd {
@@ -28,8 +29,8 @@ namespace fxd {
         using SrcRaw = typename Src::raw_type;
         using Raw = std::common_type_t<DstRaw, SrcRaw>;
         constexpr int diff = Dst::fractional_bits - Src::fractional_bits;
-        const Raw raw = utils::shift::shl<Raw>(src.raw_value,
-                                               diff);
+        const Raw raw = impl::shl<Raw>(src.raw_value,
+                                       diff);
         return Dst::from_raw(raw);
     }
 

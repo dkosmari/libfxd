@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_UTILS_SUB_HPP
-#define LIBFXD_UTILS_SUB_HPP
+#ifndef LIBFXD_IMPL_SUB_HPP
+#define LIBFXD_IMPL_SUB_HPP
 
 #include <concepts>
 #include <limits>
@@ -14,7 +14,7 @@
 #include <utility>
 
 
-namespace fxd::utils::sub::overflow {
+namespace fxd::impl::overflow {
 
 
 #ifdef __amd64__
@@ -168,6 +168,6 @@ namespace fxd::utils::sub::overflow {
 #endif
 
 
-} // namespace fxd::utils::sub::overflow
+} // namespace fxd::impl::overflow
 
 #endif

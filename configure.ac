@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.70])
-AC_INIT([libfxd], [0.1], [])
+AC_INIT([libfxd], [0.2], [])
 AC_CONFIG_SRCDIR([include/fxd/fixed.hpp])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])

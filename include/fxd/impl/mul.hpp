@@ -5,26 +5,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_UTILS_MUL_HPP
-#define LIBFXD_UTILS_MUL_HPP
+#ifndef LIBFXD_IMPL_MUL_HPP
+#define LIBFXD_IMPL_MUL_HPP
 
 #include <concepts>
 #include <tuple>
 #include <type_traits> // make_unsigned_t
 #include <utility> // tie()
 
-#include "types.hpp"
-#include "utils-add.hpp"
-#include "utils.hpp"
+#include "../types.hpp"
+#include "add.hpp"
 
 
-namespace fxd::utils::mul {
+namespace fxd::impl {
 
 
     template<int bits,
              std::integral I>
     requires (has_int_for<2 * bits, I>)
-    ALWAYS_INLINE
     constexpr
     select_int_for<2 * bits, I>
     mul(I a,
@@ -43,7 +41,6 @@ namespace fxd::utils::mul {
     template<int bits,
     std::integral I>
     requires (!has_int_for<2 * bits, I>)
-    ALWAYS_INLINE
     constexpr
     std::tuple<std::make_unsigned_t<I>, I>
     mul(I a,
@@ -79,7 +76,6 @@ namespace fxd::utils::mul {
     template<int bits,
              std::integral I>
     requires (!has_int_for<2 * bits, I>)
-    ALWAYS_INLINE
     constexpr
     std::tuple<std::make_unsigned_t<I>, I>
     mul(I a,

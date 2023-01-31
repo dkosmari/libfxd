@@ -11,8 +11,9 @@
 #include <csignal>
 
 #include "concepts.hpp"
-#include "error.hpp"
-#include "utils-safe-includes.hpp"
+
+#include "impl/error.hpp"
+#include "impl/safe-includes.hpp"
 
 
 namespace fxd::saturate {
@@ -21,24 +22,24 @@ namespace fxd::saturate {
     template<fxd::fixed_point Fxd>
     [[nodiscard]]
     Fxd
-    handler(error e)
+    handler(impl::error e)
         noexcept
     {
         switch (e) {
-            case error::underflow:
+            case impl::error::underflow:
                 return std::numeric_limits<Fxd>::lowest();
-            case error::overflow:
+            case impl::error::overflow:
                 return std::numeric_limits<Fxd>::max();
-            case error::not_a_number:
+            case impl::error::not_a_number:
                 std::raise(SIGFPE);
         }
         return 0;
     }
 
 
-#define LIBFXD_INCLUDING_UTILS_SAFE_HPP_IMPL
-#include "utils-safe.hpp"
-#undef LIBFXD_INCLUDING_UTILS_SAFE_HPP_IMPL
+#define LIBFXD_INCLUDING_IMPL_SAFE_HPP
+#include "impl/safe.hpp"
+#undef LIBFXD_INCLUDING_IMPL_SAFE_HPP
 
 
 } // namespace fxd::saturate

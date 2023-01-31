@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_INCLUDING_UTILS_SAFE_HPP_IMPL
+#ifndef LIBFXD_INCLUDING_IMPL_SAFE_HPP
 #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
 #endif
 
@@ -22,10 +22,10 @@ from_raw(I val)
     using Lim = std::numeric_limits<Fxd>;
 
     if (std::cmp_less(val, Lim::lowest().raw_value))
-        return handler<Fxd>(error::underflow);
+        return handler<Fxd>(impl::error::underflow);
 
     if (std::cmp_greater(val, Lim::max().raw_value))
-        return handler<Fxd>(error::overflow);
+        return handler<Fxd>(impl::error::overflow);
 
     return Fxd::from_raw(val);
 }
@@ -40,10 +40,10 @@ Fxd
 make_fixed(I val)
 {
     if (val < 0)
-        val += utils::shift::make_bias_for(-Fxd::frac_bits, val);
+        val += impl::make_bias_for(-Fxd::frac_bits, val);
 
     using Raw = typename Fxd::raw_type;
-    const Raw shifted_val = utils::shift::shr_real<Raw>(val, -Fxd::frac_bits);
+    const Raw shifted_val = impl::shr_real<Raw>(val, -Fxd::frac_bits);
     return from_raw<Fxd>(shifted_val);
 }
 
@@ -62,25 +62,25 @@ make_fixed(I val)
 
     // ensure val can be represented as raw_type
     if (std::cmp_less(val, Lim::min()))
-        return handler<Fxd>(error::underflow);
+        return handler<Fxd>(impl::error::underflow);
     if (std::cmp_greater(val, Lim::max()))
-        return handler<Fxd>(error::overflow);
+        return handler<Fxd>(impl::error::overflow);
 
     // top are the bits that will be thrown out after the shift
-    const Raw top = utils::shift::shr_real<Raw>(val, w - Fxd::frac_bits);
-    const Raw shifted_val = utils::shift::shl_real<Raw>(val, Fxd::frac_bits);
+    const Raw top = impl::shr_real<Raw>(val, w - Fxd::frac_bits);
+    const Raw shifted_val = impl::shl_real<Raw>(val, Fxd::frac_bits);
 
     // ensure top is only either 0 or -1
     if (top > 0)
-        return handler<Fxd>(error::overflow);
+        return handler<Fxd>(impl::error::overflow);
     if (std::cmp_less(top, -1))
-        return handler<Fxd>(error::underflow);
+        return handler<Fxd>(impl::error::underflow);
 
     // ensure shifted_val and top have the same sign
     if ((shifted_val < 0) != (top < 0))
         return handler<Fxd>(top < 0
-                            ? error::underflow
-                            : error::overflow);
+                            ? impl::error::underflow
+                            : impl::error::overflow);
 
     return from_raw<Fxd>(shifted_val);
 }
@@ -96,17 +96,17 @@ make_fixed(Flt val)
 
     if (!std::isfinite(val)) {
         if (std::isnan(val))
-            return handler<Fxd>(error::not_a_number);
+            return handler<Fxd>(impl::error::not_a_number);
         return handler<Fxd>(val < 0
-                            ? error::underflow
-                            : error::overflow);
+                            ? impl::error::underflow
+                            : impl::error::overflow);
     }
 
     if (val < static_cast<Flt>(Lim::lowest()))
-        return handler<Fxd>(error::underflow);
+        return handler<Fxd>(impl::error::underflow);
 
     if (val > static_cast<Flt>(Lim::max()))
-        return handler<Fxd>(error::overflow);
+        return handler<Fxd>(impl::error::overflow);
 
     return val;
 }
@@ -158,16 +158,18 @@ fixed_cast(Src src)
 
     if constexpr (DstLim::is_signed != SrcLim::is_signed)
         if (src < 0)
-            return handler<Dst>(error::underflow);
+            return handler<Dst>(impl::error::underflow);
 
     constexpr int diff = Dst::fractional_bits - Src::fractional_bits;
     if constexpr (diff > 0) {
-        auto [raw, overflow] = utils::shift::overflow::shl_real<Raw>(src.raw_value, diff);
+        auto [raw, overflow] = impl::overflow::shl_real<Raw>(src.raw_value, diff);
         if (overflow)
-            return handler<Dst>(src < 0 ? error::underflow : error::overflow);
+            return handler<Dst>(src < 0
+                                ? impl::error::underflow
+                                : impl::error::overflow);
         return from_raw<Dst>(raw);
     } else {
-        const Raw raw = utils::shift::shr_real(src.raw_value, -diff);
+        const Raw raw = impl::shr_real(src.raw_value, -diff);
         return from_raw<Dst>(raw);
     }
 
@@ -217,24 +219,24 @@ to_int(Fxd f)
 
     if constexpr (!LimI::is_signed && LimR::is_signed) {
         if (raw < 0)
-            return handler<Fxd>(error::underflow);
+            return handler<Fxd>(impl::error::underflow);
     }
 
     if constexpr (Fxd::frac_bits > 0) {
         if (raw < 0) // if negative, add a bias before shifting
-            raw += utils::shift::make_bias_for(Fxd::frac_bits, raw);
-        raw = utils::shift::shr_real(raw, Fxd::frac_bits);
+            raw += impl::make_bias_for(Fxd::frac_bits, raw);
+        raw = impl::shr_real(raw, Fxd::frac_bits);
         if (std::cmp_less(raw, LimI::min()))
-            return handler<Fxd>(error::underflow);
+            return handler<Fxd>(impl::error::underflow);
         if (std::cmp_greater(raw, LimI::max()))
-            return handler<Fxd>(error::overflow);
+            return handler<Fxd>(impl::error::overflow);
         return raw;
     } else {
         // Allow left-shifting to happen on a wider type
         using Common = std::common_type_t<Raw, I>;
-        auto [result, ovf] = utils::shift::overflow::shl_real<Common>(raw, -Fxd::frac_bits);
+        auto [result, ovf] = impl::overflow::shl_real<Common>(raw, -Fxd::frac_bits);
         if (ovf)
-            return handler<Fxd>(raw < 0 ? error::underflow : error::overflow);
+            return handler<Fxd>(raw < 0 ? impl::error::underflow : impl::error::overflow);
         return result;
     }
 
@@ -264,16 +266,16 @@ inc(Fxd& f)
 {
     // if no integral bit, it always overflows
     if constexpr (Fxd::int_bits < 1)
-        return f = handler<Fxd>(error::overflow);
+        return f = handler<Fxd>(impl::error::overflow);
 
-    auto [result, carry] = utils::add::overflow::add(f.raw_value, Fxd{1}.raw_value);
+    auto [result, carry] = impl::overflow::add(f.raw_value, Fxd{1}.raw_value);
     if (carry)
-        return f = handler<Fxd>(error::overflow);
+        return f = handler<Fxd>(impl::error::overflow);
 
     f.raw_value = result;
 
     if (f.raw_value != result)
-        return f = handler<Fxd>(error::overflow);
+        return f = handler<Fxd>(impl::error::overflow);
 
     return f;
 }
@@ -297,16 +299,16 @@ dec(Fxd& f)
 {
     // if no integral bit, it always underflows
     if constexpr (Fxd::int_bits < 1)
-        return f = handler<Fxd>(error::underflow);
+        return f = handler<Fxd>(impl::error::underflow);
 
-    auto [result, overflow] = utils::sub::overflow::sub(f.raw_value, Fxd{1}.raw_value);
+    auto [result, overflow] = impl::overflow::sub(f.raw_value, Fxd{1}.raw_value);
     if (overflow)
-        return f = handler<Fxd>(error::underflow);
+        return f = handler<Fxd>(impl::error::underflow);
 
     f.raw_value = result;
 
     if (f.raw_value != result)
-        return f = handler<Fxd>(error::underflow);
+        return f = handler<Fxd>(impl::error::underflow);
 
     return f;
 }
@@ -333,10 +335,10 @@ negate(Fxd f)
     if constexpr (!Lim::is_signed)
         return f.raw_value == 0
             ? f
-            : handler<Fxd>(error::underflow);
+            : handler<Fxd>(impl::error::underflow);
 
     if (f == Lim::lowest())
-        return handler<Fxd>(error::overflow);
+        return handler<Fxd>(impl::error::overflow);
 
     return -f;
 }
@@ -348,15 +350,15 @@ Fxd
 add(Fxd a,
     Fxd b)
 {
-    auto [result, overflow] = utils::add::overflow::add(a.raw_value, b.raw_value);
+    auto [result, overflow] = impl::overflow::add(a.raw_value, b.raw_value);
 
     if (overflow) {
         if constexpr (std::numeric_limits<Fxd>::is_signed)
             return handler<Fxd>(a.raw_value < 0
-                                ? error::underflow
-                                : error::overflow);
+                                ? impl::error::underflow
+                                : impl::error::overflow);
         else
-            return handler<Fxd>(error::overflow);
+            return handler<Fxd>(impl::error::overflow);
     }
 
     return from_raw<Fxd>(result);
@@ -369,28 +371,28 @@ Fxd
 sub(Fxd a,
     Fxd b)
 {
-    auto [result, overflow] = utils::sub::overflow::sub(a.raw_value, b.raw_value);
+    auto [result, overflow] = impl::overflow::sub(a.raw_value, b.raw_value);
 
     if (overflow) {
         if constexpr (std::numeric_limits<Fxd>::is_signed)
             return handler<Fxd>(a.raw_value < 0
-                                ? error::underflow
-                                : error::overflow);
+                                ? impl::error::underflow
+                                : impl::error::overflow);
         else
-            return handler<Fxd>(error::underflow);
+            return handler<Fxd>(impl::error::underflow);
     }
 
     return from_raw<Fxd>(result);
 }
 
 
-#include "utils-safe-mul.hpp"
+#include "safe-mul.hpp"
 
 
-#include "utils-safe-div.hpp"
+#include "safe-div.hpp"
 
 
-using namespace round::zero;
+using namespace zero;
 
 
 template<fixed_point Fxd>

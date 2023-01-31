@@ -14,7 +14,8 @@
 #include <type_traits>
 
 #include "fixed.hpp"
-#include "utils-shift.hpp"
+
+#include "impl/shift.hpp"
 
 
 namespace fxd {
@@ -27,7 +28,7 @@ namespace fxd {
     constexpr
     fixed<Int, Frac, Raw>::fixed(I i)
         noexcept :
-        raw_value{utils::shift::shl<raw_type>(i, frac_bits)}
+        raw_value{impl::shl<raw_type>(i, frac_bits)}
     {}
 
 

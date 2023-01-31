@@ -105,7 +105,7 @@ results, or throw `std::overflow_error`/`std::underflow_error`, respectively, if
 result would be outside the valid range.
 
 Controlled rounding for multiplication and division can be found in the
-`fxd::round::zero`, `fxd::round::up` and `fxd::round::down` namespaces.
+`fxd::zero`, `fxd::up` and `fxd::down` namespaces.
 
 Concepts are provided:
 
@@ -128,7 +128,7 @@ Specializations in the `std` namespace are provided for:
   - `common_type<>` (every arithmetic type is converted to a fixed-point)
 
 Other standard-like elements are provided in the namespace `fxd`, because the standard
-disallow specializations in `std`:
+disallow specializations/overloads in `std`:
 
   - `fxd::uniform_real_distribution<>`
   - `fxd::abs()`, `fxd::fdim()`, `fxd::nextafter()`, `fxd::sqrt()`

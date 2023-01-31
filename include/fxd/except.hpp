@@ -12,8 +12,8 @@
 #include <stdexcept>
 
 #include "concepts.hpp"
-#include "error.hpp"
-#include "utils-safe-includes.hpp"
+#include "impl/error.hpp"
+#include "impl/safe-includes.hpp"
 
 
 namespace fxd::except {
@@ -22,24 +22,24 @@ namespace fxd::except {
     template<fxd::fixed_point Fxd>
     [[noreturn]]
     Fxd
-    handler(error e)
+    handler(impl::error e)
     {
         switch (e) {
-            case error::underflow:
+            case impl::error::underflow:
                 throw std::underflow_error{"underflow"};
-            case error::overflow:
+            case impl::error::overflow:
                 throw std::overflow_error{"overflow"};
-            case error::not_a_number:
+            case impl::error::not_a_number:
                 throw std::invalid_argument{"not a number"};
             default:
-                std::abort();
+                throw std::logic_error{"unknown error"};
         }
     }
 
 
-#define LIBFXD_INCLUDING_UTILS_SAFE_HPP_IMPL
-#include "utils-safe.hpp"
-#undef LIBFXD_INCLUDING_UTILS_SAFE_HPP_IMPL
+#define LIBFXD_INCLUDING_IMPL_SAFE_HPP
+#include "impl/safe.hpp"
+#undef LIBFXD_INCLUDING_IMPL_SAFE_HPP
 
 
 } // namespace fxd::except

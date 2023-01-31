@@ -5,17 +5,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_UTILS_TUPLE_HPP
-#define LIBFXD_UTILS_TUPLE_HPP
+#ifndef LIBFXD_IMPL_TUPLE_HPP
+#define LIBFXD_IMPL_TUPLE_HPP
 
 #include <concepts>
 #include <tuple>
 #include <utility>
 
-#include "types.hpp"
+#include "../types.hpp"
 
 
-namespace fxd::utils::tuple {
+namespace fxd {
+
+
+    template<template<typename...> typename Tuple,
+             std::integral... I>
+    constexpr inline
+    int type_width<Tuple<I...>> = (0 + ... + type_width<I>);
+
+
+}
+
+
+namespace fxd::impl {
 
 
     template<typename T>
@@ -40,6 +52,13 @@ namespace fxd::utils::tuple {
     template<tuple_like Tup>
     using last_element_t = typename last_element<Tup>::type;
 
+
+
+    template<template<typename...> typename Tuple,
+             typename... I>
+    concept tuple_of_similar_ints = tuple_like<Tuple<I...>> &&
+        (std::integral<I> && ...) &&
+        ((sizeof(I) == sizeof(first_element_t<Tuple<I...>>)) && ...);
 
 
 
@@ -138,20 +157,7 @@ namespace fxd::utils::tuple {
     }
 
 
-} // namespace fxd::utils::tuple
-
-
-
-namespace fxd {
-
-
-    template<template<typename...> typename Tuple,
-             std::integral... I>
-    constexpr inline
-    int type_width<Tuple<I...>> = (0 + ... + type_width<I>);
-
-
-}
+} // namespace fxd::impl
 
 
 #endif

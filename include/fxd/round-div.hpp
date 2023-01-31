@@ -13,25 +13,24 @@
 #include "fixed.hpp"
 
 #include "concepts.hpp"
-#include "utils-div.hpp"
-#include "utils-shift.hpp"
-#include "utils.hpp"
+
+#include "impl/div.hpp"
+#include "impl/shift.hpp"
 
 
-namespace fxd::round {
+namespace fxd {
 
     namespace zero {
 
         template<fixed_point Fxd>
-        ALWAYS_INLINE
         constexpr
         Fxd
         div(Fxd a,
             Fxd b)
             noexcept
         {
-            const auto r = utils::div::div<Fxd::frac_bits>(a.raw_value,
-                                                           b.raw_value);
+            const auto r = impl::div<Fxd::frac_bits>(a.raw_value,
+                                                     b.raw_value);
             if (!r)
                 std::raise(SIGFPE);
 
@@ -42,9 +41,9 @@ namespace fxd::round {
 
             // Right-shifting a negative number would round it down, not to zero.
             if (c < 0 && offset < 0)
-                c += utils::shift::make_bias_for(-offset, c);
+                c += impl::make_bias_for(-offset, c);
 
-            const auto d = utils::shift::shl(c, offset);
+            const auto d = impl::shl(c, offset);
 
             return Fxd::from_raw(d);
         }
@@ -56,15 +55,14 @@ namespace fxd::round {
     namespace up {
 
         template<fixed_point Fxd>
-        ALWAYS_INLINE
         constexpr
         Fxd
         div(Fxd a,
             Fxd b)
             noexcept
         {
-            const auto r = utils::div::div<Fxd::frac_bits>(a.raw_value,
-                                                           b.raw_value);
+            const auto r = impl::div<Fxd::frac_bits>(a.raw_value,
+                                                     b.raw_value);
             if (!r)
                 std::raise(SIGFPE);
 
@@ -83,9 +81,9 @@ namespace fxd::round {
 
             // Right-shifting will always round down.
             if (offset < 0)
-                c += utils::shift::make_bias_for(-offset, c);
+                c += impl::make_bias_for(-offset, c);
 
-            const auto d = utils::shift::shl(c, offset);
+            const auto d = impl::shl(c, offset);
 
             return Fxd::from_raw(d);
         }
@@ -97,15 +95,14 @@ namespace fxd::round {
     namespace down {
 
         template<fixed_point Fxd>
-        ALWAYS_INLINE
         constexpr
         Fxd
         div(Fxd a,
             Fxd b)
             noexcept
         {
-            const auto r = utils::div::div<Fxd::frac_bits>(a.raw_value,
-                                                           b.raw_value);
+            const auto r = impl::div<Fxd::frac_bits>(a.raw_value,
+                                                     b.raw_value);
             if (!r)
                 std::raise(SIGFPE);
 
@@ -122,7 +119,7 @@ namespace fxd::round {
 
             // Right-shifting always rounds down, so we don't need to bias it.
 
-            const auto d = utils::shift::shl(c, offset);
+            const auto d = impl::shl(c, offset);
 
             return Fxd::from_raw(d);
         }
@@ -130,7 +127,7 @@ namespace fxd::round {
     } // namespace down
 
 
-} // namespace fxd::round
+} // namespace fxd
 
 
 #endif

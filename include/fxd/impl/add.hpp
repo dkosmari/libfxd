@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_UTILS_ADD_HPP
-#define LIBFXD_UTILS_ADD_HPP
+#ifndef LIBFXD_IMPL_ADD_HPP
+#define LIBFXD_IMPL_ADD_HPP
 
 #include <concepts>
 #include <limits>
@@ -14,10 +14,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "utils-tuple.hpp"
+#include "tuple.hpp"
 
 
-namespace fxd::utils::add {
+namespace fxd::impl {
 
 
     namespace overflow {
@@ -278,7 +278,7 @@ namespace fxd::utils::add {
 #endif
 
 
-        template<tuple::tuple_like Tup>
+        template<tuple_like Tup>
         constexpr
         std::pair<Tup, bool>
         add(const Tup& a,
@@ -286,13 +286,13 @@ namespace fxd::utils::add {
             bool carry_in = false)
             noexcept
         {
-            const auto [head_sum, head_ovf] = add(tuple::first(a),
-                                                  tuple::first(b),
+            const auto [head_sum, head_ovf] = add(impl::first(a),
+                                                  impl::first(b),
                                                   carry_in);
 
             if constexpr (std::tuple_size_v<Tup> > 1) {
-                const auto [tail_sum, tail_ovf] = add(tuple::tail(a),
-                                                      tuple::tail(b),
+                const auto [tail_sum, tail_ovf] = add(impl::tail(a),
+                                                      impl::tail(b),
                                                       head_ovf);
                 return {
                     std::tuple_cat(std::tuple{head_sum}, tail_sum),
@@ -307,7 +307,7 @@ namespace fxd::utils::add {
 
 
 
-    template<tuple::tuple_like Tup>
+    template<tuple_like Tup>
     constexpr
     Tup
     add(const Tup& a,
@@ -315,13 +315,13 @@ namespace fxd::utils::add {
         bool carry_in = false)
         noexcept
     {
-        auto [sum, ovf] = overflow::add(tuple::first(a),
-                                        tuple::first(b),
+        auto [sum, ovf] = overflow::add(impl::first(a),
+                                        impl::first(b),
                                         carry_in);
         if constexpr (std::tuple_size_v<Tup> > 1)
             return std::tuple_cat(std::tuple{sum},
-                                  add(tuple::tail(a),
-                                      tuple::tail(b),
+                                  add(impl::tail(a),
+                                      impl::tail(b),
                                       ovf));
         else
             return { sum };
@@ -340,7 +340,7 @@ namespace fxd::utils::add {
 
 
 
-} // namespace fxd::utils::add
+} // namespace fxd::impl
 
 
 #endif

@@ -9,57 +9,52 @@
 #define LIBFXD_ROUND_MUL_HPP
 
 #include "concepts.hpp"
-#include "utils-add.hpp"
-#include "utils-mul.hpp"
-#include "utils-shift.hpp"
-#include "utils.hpp"
+
+#include "impl/add.hpp"
+#include "impl/mul.hpp"
+#include "impl/shift.hpp"
 
 
-namespace fxd::round {
+namespace fxd {
 
 
     namespace zero {
 
         template<fixed_point Fxd>
-        ALWAYS_INLINE
         constexpr
         Fxd
         mul(Fxd a,
             Fxd b)
             noexcept
         {
-
-            using utils::tuple::last;
-            using utils::shift::shl;
-
             constexpr int w = type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = utils::mul::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto c = impl::mul<Fxd::bits>(a.raw_value, b.raw_value);
 
             if constexpr (Fxd::frac_bits <= 0) {
 
                 // no lower bits will be lost, no rounding is needed
-                const auto d = shl(c, offset);
-                return Fxd::from_raw(last(d));
+                const auto d = impl::shl(c, offset);
+                return Fxd::from_raw(impl::last(d));
 
             } else {
 
                 // will lose lower bits
-                if (utils::tuple::is_negative(c)) {
+                if (impl::is_negative(c)) {
 
                     // negative numbers need a bias to zero to round up
-                    const auto bias = utils::shift::make_bias_for(Fxd::frac_bits, c);
-                    const auto biased_c = utils::add::add(c, bias);
-                    const auto d = shl(biased_c, offset);
-                    return Fxd::from_raw(last(d));
+                    const auto bias = impl::make_bias_for(Fxd::frac_bits, c);
+                    const auto biased_c = impl::add(c, bias);
+                    const auto d = impl::shl(biased_c, offset);
+                    return Fxd::from_raw(impl::last(d));
 
                 } else {
 
-                    const auto d = shl(c, offset);
-                    return Fxd::from_raw(last(d));
+                    const auto d = impl::shl(c, offset);
+                    return Fxd::from_raw(impl::last(d));
 
                 }
 
@@ -74,35 +69,31 @@ namespace fxd::round {
     namespace up {
 
         template<fixed_point Fxd>
-        ALWAYS_INLINE
         constexpr
         Fxd
         mul(Fxd a,
             Fxd b)
             noexcept
         {
-            using utils::tuple::last;
-            using utils::shift::shl;
-
             constexpr int w = type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = utils::mul::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto c = impl::mul<Fxd::bits>(a.raw_value, b.raw_value);
 
             if constexpr (Fxd::frac_bits <= 0) {
 
-                const auto d = shl(c, offset);
-                return Fxd::from_raw(last(d));
+                const auto d = impl::shl(c, offset);
+                return Fxd::from_raw(impl::last(d));
 
             } else {
 
-                const auto bias = utils::shift::make_bias_for(Fxd::frac_bits, c);
-                const auto biased_c = utils::add::add(c, bias);
-                const auto d = shl(biased_c, offset);
+                const auto bias = impl::make_bias_for(Fxd::frac_bits, c);
+                const auto biased_c = impl::add(c, bias);
+                const auto d = impl::shl(biased_c, offset);
 
-                return Fxd::from_raw(last(d));
+                return Fxd::from_raw(impl::last(d));
 
             }
 
@@ -117,7 +108,6 @@ namespace fxd::round {
         // rounding down is the default behavior of >>, so no special handling is needed
 
         template<fixed_point Fxd>
-        ALWAYS_INLINE
         constexpr
         Fxd
         mul(Fxd a,
@@ -129,17 +119,17 @@ namespace fxd::round {
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = utils::mul::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto c = impl::mul<Fxd::bits>(a.raw_value, b.raw_value);
 
-            const auto d = utils::shift::shl(c, offset);
+            const auto d = impl::shl(c, offset);
 
-            return Fxd::from_raw(utils::tuple::last(d));
+            return Fxd::from_raw(impl::last(d));
         }
 
     } // namespace down
 
 
-} // namespace fxd::round
+} // namespace fxd
 
 
 #endif

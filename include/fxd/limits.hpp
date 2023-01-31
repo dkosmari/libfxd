@@ -14,8 +14,8 @@
 #include "fixed.hpp"
 
 
-#define FXD_LOG10_2(x)      ((x) * 643L / 2136)
-#define FXD_LOG10_2_CEIL(x) (((x) * 643L + 2135) / 2136)
+#define LIBFXD_LOG10_2(x)      ((x) * 643L / 2136)
+#define LIBFXD_LOG10_2_CEIL(x) (((x) * 643L + 2135) / 2136)
 
 namespace std {
 
@@ -45,13 +45,13 @@ namespace std {
         static constexpr bool is_modulo = numeric_limits<Raw>::is_modulo;
         static constexpr int radix = numeric_limits<Raw>::radix;
         static constexpr int digits = fxd::fixed<Int, Frac, Raw>::bits - is_signed;
-        static constexpr int digits10 = FXD_LOG10_2(Frac - 1);
-        static constexpr int max_digits10 =  max<int>(0, 1 + FXD_LOG10_2_CEIL(Frac));
+        static constexpr int digits10 = LIBFXD_LOG10_2(Frac - 1);
+        static constexpr int max_digits10 =  max<int>(0, 1 + LIBFXD_LOG10_2_CEIL(Frac));
 
         static constexpr int min_exponent = 1 - Frac;
-        static constexpr int min_exponent10 = FXD_LOG10_2(min_exponent);
+        static constexpr int min_exponent10 = LIBFXD_LOG10_2(min_exponent);
         static constexpr int max_exponent = Int - is_signed;
-        static constexpr int max_exponent10 = FXD_LOG10_2(max_exponent);
+        static constexpr int max_exponent10 = LIBFXD_LOG10_2(max_exponent);
         static constexpr bool traps = numeric_limits<Raw>::traps;
         static constexpr bool tinyness_before = false;
 
@@ -156,8 +156,8 @@ namespace std {
 }
 
 
-#undef FXD_LOG10_2
-#undef FXD_LOG10_2_CEIL
+#undef LIBFXD_LOG10_2
+#undef LIBFXD_LOG10_2_CEIL
 
 
 #endif

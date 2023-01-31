@@ -8,6 +8,8 @@
 #ifndef LIBFXD_MATH_HPP
 #define LIBFXD_MATH_HPP
 
+#include <cerrno>
+
 #include "concepts.hpp"
 #include "limits.hpp"
 #include "round-div.hpp"
@@ -61,10 +63,17 @@ namespace fxd {
 
     // Babylonian/Heron/Newton-Raphson method
 
-    template<fxd::fixed_point Fxd>
+    template<fixed_point Fxd>
     Fxd
     sqrt(Fxd x)
     {
+        if constexpr (std::numeric_limits<Fxd>::is_signed) {
+            if (x < 0) {
+                errno = EDOM;
+                return std::numeric_limits<Fxd>::quiet_NaN();
+            }
+        }
+
         if (!x)
             return x;
 
@@ -76,7 +85,7 @@ namespace fxd {
             if (++i > Fxd::bits)
                 return a;
 
-            Fxd b = round::up::div(x, a);
+            Fxd b = up::div(x, a);
 
             old_a = a;
 

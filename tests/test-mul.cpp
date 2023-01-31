@@ -243,7 +243,7 @@ TEMPLATE_LIST_TEST_CASE("random-up",
         Fxd b = rng.get();
         CAPTURE(a);
         CAPTURE(b);
-        Fxd sc = fxd::saturate::round::up::mul(a, b);
+        Fxd sc = fxd::saturate::up::mul(a, b);
         CAPTURE(sc);
 
         auto fa = to_float(a);
@@ -253,15 +253,15 @@ TEMPLATE_LIST_TEST_CASE("random-up",
 
         if (fc < flo) {
             REQUIRE(sc == lo);
-            REQUIRE_THROWS_AS(fxd::except::round::up::mul(a, b), std::underflow_error);
+            REQUIRE_THROWS_AS(fxd::except::up::mul(a, b), std::underflow_error);
         } else if (fc > fhi) {
             REQUIRE(sc == hi);
-            REQUIRE_THROWS_AS(fxd::except::round::up::mul(a, b), std::overflow_error);
+            REQUIRE_THROWS_AS(fxd::except::up::mul(a, b), std::overflow_error);
         } else {
-            Fxd c = fxd::round::up::mul(a, b);
+            Fxd c = fxd::up::mul(a, b);
             REQUIRE(c == Fxd{fc});
             REQUIRE(c == sc);
-            REQUIRE_NOTHROW(fxd::except::round::up::mul(a, b));
+            REQUIRE_NOTHROW(fxd::except::up::mul(a, b));
         }
 
     }
@@ -294,7 +294,7 @@ TEMPLATE_LIST_TEST_CASE("random-down",
         Fxd b = rng.get();
         CAPTURE(a);
         CAPTURE(b);
-        Fxd sc = fxd::saturate::round::down::mul(a, b);
+        Fxd sc = fxd::saturate::down::mul(a, b);
         CAPTURE(sc);
 
         auto fa = to_float(a);
@@ -304,15 +304,15 @@ TEMPLATE_LIST_TEST_CASE("random-down",
 
         if (fc < flo) {
             REQUIRE(sc == lo);
-            REQUIRE_THROWS_AS(fxd::except::round::down::mul(a, b), std::underflow_error);
+            REQUIRE_THROWS_AS(fxd::except::down::mul(a, b), std::underflow_error);
         } else if (fc > fhi) {
             REQUIRE(sc == hi);
-            REQUIRE_THROWS_AS(fxd::except::round::down::mul(a, b), std::overflow_error);
+            REQUIRE_THROWS_AS(fxd::except::down::mul(a, b), std::overflow_error);
         } else {
-            Fxd c = fxd::round::down::mul(a, b);
+            Fxd c = fxd::down::mul(a, b);
             REQUIRE(c == Fxd{fc});
             REQUIRE(c == sc);
-            REQUIRE_NOTHROW(c == fxd::except::round::down::mul(a, b));
+            REQUIRE_NOTHROW(c == fxd::except::down::mul(a, b));
         }
 
     }
@@ -349,7 +349,7 @@ TEST_CASE("special-2")
 
     I a = 0xfff99a67f370c65a;
     I b = 0x0002bd0e4b41fb2d;
-    auto c = fxd::utils::mul::mul<64>(a, b);
+    auto c = fxd::impl::mul<64>(a, b);
     CHECK(get<0>(c) == 0x814a34a018271bd2ULL);
     CHECK(get<1>(c) == static_cast<I>(0xffffffee7b7335e1LL));
 }
@@ -389,7 +389,7 @@ TEST_CASE("special-5", "[up]")
 
     Fxd a = Fxd::from_raw(2832);
     Fxd b = Fxd::from_raw(14248059);
-    Fxd c = fxd::round::up::mul(a, b);
+    Fxd c = fxd::up::mul(a, b);
     auto fa = to_float(a);
     auto fb = to_float(b);
     auto fc = fa * fb;
@@ -411,7 +411,7 @@ TEST_CASE("special-6", "[up]")
 
     Fxd a = Fxd::from_raw(8775);
     Fxd b = Fxd::from_raw(88974);
-    Fxd c = fxd::round::up::mul(a, b);
+    Fxd c = fxd::up::mul(a, b);
     auto fa = to_float(a);
     auto fb = to_float(b);
     auto fc = fa * fb;
@@ -433,7 +433,7 @@ TEST_CASE("special-7", "[down]")
 
     Fxd a = Fxd::from_raw(-1014032);
     Fxd b = Fxd::from_raw(-4055);
-    Fxd c = fxd::round::down::mul(a, b);
+    Fxd c = fxd::down::mul(a, b);
     auto fa = to_float(a);
     auto fb = to_float(b);
     auto fc = fa * fb;
@@ -467,9 +467,9 @@ TEST_CASE("special-9", "[up]")
 
     Fxd a = Fxd::from_raw(-11328730);
     Fxd b = Fxd::from_raw(-6663961);
-    Fxd sc = fxd::saturate::round::up::mul(a, b);
+    Fxd sc = fxd::saturate::up::mul(a, b);
     CAPTURE(a);
     CAPTURE(b);
     CHECK(sc == std::numeric_limits<Fxd>::max());
-    CHECK_THROWS_AS(fxd::except::round::up::mul(a, b), std::overflow_error);
+    CHECK_THROWS_AS(fxd::except::up::mul(a, b), std::overflow_error);
 }

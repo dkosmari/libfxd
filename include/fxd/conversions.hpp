@@ -14,8 +14,10 @@
 #include <type_traits>
 
 #include "concepts.hpp"
-#include "utils-opacify.hpp"
-#include "utils-shift.hpp"
+#include "impl/bias.hpp"
+#include "impl/opacify.hpp"
+#include "impl/shift.hpp"
+
 
 namespace fxd {
 
@@ -43,12 +45,12 @@ namespace fxd {
         Raw raw = f.raw_value;
         if constexpr (Fxd::frac_bits > 0) {
             if (raw < 0)
-                raw += utils::shift::make_bias_for(Fxd::frac_bits, raw);
-            return utils::shift::shr_real(raw, Fxd::frac_bits);
+                raw += impl::make_bias_for(Fxd::frac_bits, raw);
+            return impl::shr_real(raw, Fxd::frac_bits);
         } else {
             // Allow left-shifting to happen on a wider type
             using Common = std::common_type_t<Raw, I>;
-            return utils::shift::shl_real<Common>(raw, -Fxd::frac_bits);
+            return impl::shl_real<Common>(raw, -Fxd::frac_bits);
         }
     }
 
@@ -85,7 +87,7 @@ namespace fxd {
         const Flt fraw = static_cast<Flt>(r);
 #else
         // This version kills optimizations to ensure correct code.
-        const Flt fraw = static_cast<Flt>(utils::opacify(r));
+        const Flt fraw = static_cast<Flt>(impl::opacify(r));
 #endif
 
         return std::ldexp(fraw, -Fxd::frac_bits);

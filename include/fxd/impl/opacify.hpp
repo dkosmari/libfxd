@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_UTILS_OPACIFY_HPP
-#define LIBFXD_UTILS_OPACIFY_HPP
+#ifndef LIBFXD_IMPL_OPACIFY_HPP
+#define LIBFXD_IMPL_OPACIFY_HPP
 
 #include <new> // launder()
 
-namespace fxd::utils {
+namespace fxd::impl {
 
 
     // helper function to kill constant propagation optimizations
