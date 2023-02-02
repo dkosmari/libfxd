@@ -16,6 +16,10 @@ config.h.in
 config.status
 configure
 
+doc/Doxyfile
+doc/doxyfile.stamp
+doc/html
+
 examples/basic
 examples/closest-pair
 examples/matrix-mul

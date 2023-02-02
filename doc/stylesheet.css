@@ -1,0 +1,7 @@
+html {
+    --font-family-monospace: Fira Code,monospace,fixed;
+}
+
+code {
+    font-family: var(--font-family-monospace);
+}

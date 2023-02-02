@@ -5,17 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_TYPES_HPP
-#define LIBFXD_TYPES_HPP
+#ifndef LIBFXD_IMPL_TYPES_HPP
+#define LIBFXD_IMPL_TYPES_HPP
 
 #include <cstdint>
 #include <limits>
 #include <type_traits>
 
 
-namespace fxd {
+namespace fxd::impl {
 
-
+    // How many bits a given integral type has.
     template<typename T>
     requires (std::numeric_limits<T>::is_specialized)
     constexpr inline
@@ -23,12 +23,13 @@ namespace fxd {
                      (std::numeric_limits<T>::is_signed ? 1 : 0);
 
 
+    // Select a signed integer by its bit size.
     template<int>
     struct select_int { using type = void; };
 
+    // Select an unsigned integer by its bit size.
     template<int>
     struct select_uint { using type = void; };
-
 
 
     template<int bits>
@@ -77,7 +78,7 @@ namespace fxd {
 
 
 
-    // select int that matches signedness of argument
+    // Select int that matches signedness of argument
 
     template<int bits,
              typename I>
@@ -95,7 +96,7 @@ namespace fxd {
 
 
 
-    // check if specialization is available
+    // Check if specialization is available.
 
     template<int bits>
     constexpr inline
@@ -115,9 +116,7 @@ namespace fxd {
 
 
 
-    // select floating point type by the mantissa size
-
-
+    // Select a floating point by the mantissa size.
     template<int>
     struct select_float {
         using type = void;
@@ -147,6 +146,7 @@ namespace fxd {
     };
 
 
+    // Helper alias for select_float.
     template<int bits>
     using select_float_t = typename select_float<bits>::type;
 

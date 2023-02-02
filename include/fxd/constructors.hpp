@@ -21,6 +21,11 @@
 namespace fxd {
 
 
+    /**
+     * The `i` value will be shifted (and rounded to zero, if negative)
+     * if needed.
+     */
+    // TODO: should round negative values correctly.
     template<int Int,
              int Frac,
              typename Raw>
@@ -32,6 +37,9 @@ namespace fxd {
     {}
 
 
+    /**
+     * Note: This is subject to the current floating-point rounding mode.
+     */
     template<int Int,
              int Frac,
              typename Raw>
@@ -48,6 +56,10 @@ namespace fxd {
     }
 
 
+    /**
+     * All excess bits of `val` will be truncated. Use this when you know the exact
+     * bit representation needed for the `fixed` object.
+     */
     template<int Int,
              int Frac,
              typename Raw>

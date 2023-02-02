@@ -5,14 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_INCLUDING_IMPL_SAFE_HPP
-#error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
-#endif
+// #ifndef LIBFXD_INCLUDING_IMPL_SAFE_HPP
+// #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
+// #endif
+
+/**
+ * @file impl/safe.hpp
+ */
 
 
 // Constructors
 
-
+/// Safe constructor; checks if argument is representable.
 template<fxd::fixed_point Fxd,
          std::integral I>
 constexpr
@@ -48,7 +52,7 @@ make_fixed(I val)
 }
 
 
-
+// TODO: should round negative values correctly.
 template<fxd::fixed_point Fxd,
          std::integral I>
 requires (Fxd::frac_bits >= 0)
@@ -58,7 +62,7 @@ make_fixed(I val)
 {
     using Raw = typename Fxd::raw_type;
     using Lim = std::numeric_limits<Raw>;
-    constexpr int w = type_width<Raw>;
+    constexpr int w = impl::type_width<Raw>;
 
     // ensure val can be represented as raw_type
     if (std::cmp_less(val, Lim::min()))
@@ -115,7 +119,7 @@ make_fixed(Flt val)
 
 template<int Int,
          int Frac,
-         typename I = fxd::select_int_t<Int + Frac>,
+         typename I = impl::select_int_t<Int + Frac>,
          std::convertible_to<fxd::fixed<Int, Frac, I>> Src>
 constexpr
 fxd::fixed<Int, Frac, I>
@@ -129,7 +133,7 @@ make_fixed(Src src)
 
 template<int Int,
          int Frac,
-         typename U = fxd::select_uint_t<Int + Frac>,
+         typename U = impl::select_uint_t<Int + Frac>,
          std::convertible_to<fxd::fixed<Int, Frac, U>> Src>
 constexpr
 fxd::fixed<Int, Frac, U>
@@ -178,7 +182,7 @@ fixed_cast(Src src)
 
 template<int Int,
          int Frac,
-         typename Raw = select_int_t<Int + Frac>,
+         typename Raw = impl::select_int_t<Int + Frac>,
          fixed_point Src>
 constexpr
 fixed<Int, Frac, Raw>
@@ -191,7 +195,7 @@ fixed_cast(Src src)
 
 template<int Int,
          int Frac,
-         typename Raw = select_uint_t<Int + Frac>,
+         typename Raw = impl::select_uint_t<Int + Frac>,
          fixed_point Src>
 constexpr
 fixed<Int, Frac, Raw>

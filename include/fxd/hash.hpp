@@ -15,9 +15,11 @@
 
 namespace std {
 
+    /// Specialization: `std::hash<fxd::fixed>`.
     template<fxd::fixed_point Fxd>
     struct hash<Fxd> {
 
+        /// Calculate a hash value.
         constexpr
         size_t
         operator ()(Fxd f)

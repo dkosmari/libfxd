@@ -6,5 +6,10 @@ EXTRA_DIST = \
 
 SUBDIRS = \
 	include/fxd \
+	doc \
 	examples \
 	tests
+
+.PHONY: doc
+doc:
+	cd doc && $(MAKE) $(AM_MAKEFLAGS) clean html

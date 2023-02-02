@@ -19,8 +19,7 @@
 
 namespace std {
 
-    // Note: these are analogous to floating point
-
+    /// Specialization: fxd::fixed is similar to floating-point.
     template<int Int,
              int Frac,
              typename Raw>
@@ -30,35 +29,79 @@ namespace std {
         static_assert(numeric_limits<Raw>::radix == 2);
         static_assert(Frac < 2136); // the approximations fail after this
 
+        /// This is a valid specialization.
         static constexpr bool is_specialized = true;
+
+        /// Sign depends on the underlying integer type.
         static constexpr bool is_signed = numeric_limits<Raw>::is_signed;
-        static constexpr bool is_integer = false;
-        static constexpr bool is_exact = false;
+
+        /// If this represents integers only.
+        static constexpr bool is_integer = Frac <= 0;
+
+        /// All arithmetic is done with integers, so `fxd::fixed` is exact.
+        static constexpr bool is_exact = true;
+
+        /// No representation for @b ∞ .
         static constexpr bool has_infinity = false;
+
+        /// No NaN.
         static constexpr bool has_quiet_NaN = false;
+
+        /// No NaN.
         static constexpr bool has_signaling_NaN = false;
+
+        /// No denormals.
         static constexpr float_denorm_style has_denorm = denorm_absent;
+
+        /// No denormals.
         static constexpr bool has_denorm_loss = false;
+
+        /// Default rounding is towards zero, just like with integers.
         static constexpr float_round_style round_style = round_toward_zero;
+
+        /// Not a standard floating point type.
         static constexpr bool is_iec559 = false;
-        static constexpr bool is_bounded = true;
+
+        /// It's bounded by the underlying integer type.
+        static constexpr bool is_bounded = numeric_limits<Raw>::is_bounded;
+
+        /// It's modulo if the underlying integer is modulo.
         static constexpr bool is_modulo = numeric_limits<Raw>::is_modulo;
+
+        /// Same radix as the underlying integer.
         static constexpr int radix = numeric_limits<Raw>::radix;
+
+        /// `fxd::fixed::bits` - `is_signed`. @hideinitializer
         static constexpr int digits = fxd::fixed<Int, Frac, Raw>::bits - is_signed;
+
+        /// Same estimation used for floating-point. @hideinitializer
         static constexpr int digits10 = LIBFXD_LOG10_2(Frac - 1);
+
+        /// Same estimation used for floating-point. @hideinitializer
         static constexpr int max_digits10 =  max<int>(0, 1 + LIBFXD_LOG10_2_CEIL(Frac));
 
+        /// Minimum power-of-two that can be stored.
         static constexpr int min_exponent = 1 - Frac;
+
+        /// Same estimation used for floating-point. @hideinitializer
         static constexpr int min_exponent10 = LIBFXD_LOG10_2(min_exponent);
+
+        /// Maximum power-of-two that can be stored.
         static constexpr int max_exponent = Int - is_signed;
+
+        /// Same estimation used for floating-point. @hideinitializer
         static constexpr int max_exponent10 = LIBFXD_LOG10_2(max_exponent);
+
+        /// Depends on the underlying integer.
         static constexpr bool traps = numeric_limits<Raw>::traps;
+
+        /// Not meaningful.
         static constexpr bool tinyness_before = false;
 
 
 
 
-        // smallest positive value
+        /// Smallest positive value; same semantics as floating-point.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         min()
@@ -68,7 +111,7 @@ namespace std {
         }
 
 
-        // this is the closest value to -infinity
+        /// Closest value to @b -∞.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         lowest()
@@ -82,6 +125,7 @@ namespace std {
         }
 
 
+        /// Maximum value.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         max()
@@ -96,6 +140,7 @@ namespace std {
         }
 
 
+        /// Smallest increment.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         epsilon()
@@ -105,6 +150,7 @@ namespace std {
         }
 
 
+        /// Maximum possible error.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         round_error()
@@ -114,6 +160,7 @@ namespace std {
         }
 
 
+        /// Not meaningful, `has_infinity` is false.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         infinity()
@@ -123,6 +170,7 @@ namespace std {
         }
 
 
+        /// Not meaningful, `has_quiet_NaN` is false.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         quiet_NaN()
@@ -132,6 +180,7 @@ namespace std {
         }
 
 
+        /// Not meaningful, `has_signaling_NaN` is false.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         signaling_NaN()
@@ -141,6 +190,7 @@ namespace std {
         }
 
 
+        /// Same as `min()` since there are no denormalized values.
         static constexpr
         fxd::fixed<Int, Frac, Raw>
         denorm_min()

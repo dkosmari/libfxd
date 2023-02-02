@@ -13,7 +13,7 @@
 #include <concepts>
 #include <type_traits>
 
-#include "../types.hpp"
+#include "types.hpp"
 
 #include "error.hpp"
 #include "expected.hpp"

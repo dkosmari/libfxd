@@ -23,6 +23,7 @@ nobase_fxd_HEADERS = \
 	impl/shift.hpp \
 	impl/sub.hpp \
 	impl/tuple.hpp \
+	impl/types.hpp \
 	limits.hpp \
 	math.hpp \
 	numbers.hpp \
@@ -31,8 +32,7 @@ nobase_fxd_HEADERS = \
 	round-div.hpp \
 	round-mul.hpp \
 	saturate.hpp \
-	traits.hpp \
-	types.hpp
+	traits.hpp
 
 
 .PHONY: company

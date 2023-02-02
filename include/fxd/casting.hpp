@@ -18,6 +18,7 @@
 namespace fxd {
 
 
+    /// Convert a fixed point to a different type of fixed point.
     template<fixed_point Dst,
              fixed_point Src>
     constexpr
@@ -35,9 +36,10 @@ namespace fxd {
     }
 
 
+    /// Convert a fixed point to a different type of fixed point.
     template<int Int,
              int Frac,
-             typename Raw = select_int_t<Int + Frac>,
+             typename Raw = impl::select_int_t<Int + Frac>,
              fixed_point Src>
     constexpr
     fixed<Int, Frac, Raw>
@@ -48,10 +50,10 @@ namespace fxd {
     }
 
 
-
+    /// Convert a fixed point to a different type of fixed point (unsigned version.)
     template<int Int,
              int Frac,
-             typename Raw = select_uint_t<Int + Frac>,
+             typename Raw = impl::select_uint_t<Int + Frac>,
              fixed_point Src>
     constexpr
     fixed<Int, Frac, Raw>

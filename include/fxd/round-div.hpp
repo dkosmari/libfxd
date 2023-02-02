@@ -22,6 +22,7 @@ namespace fxd {
 
     namespace zero {
 
+        /// Divide rounding to zero.
         template<fixed_point Fxd>
         constexpr
         Fxd
@@ -54,6 +55,7 @@ namespace fxd {
 
     namespace up {
 
+        /// Divide rounding up.
         template<fixed_point Fxd>
         constexpr
         Fxd
@@ -94,6 +96,7 @@ namespace fxd {
 
     namespace down {
 
+        /// Divide rounding down.
         template<fixed_point Fxd>
         constexpr
         Fxd

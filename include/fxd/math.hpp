@@ -17,7 +17,7 @@
 
 namespace fxd {
 
-
+    /// Same as `std::abs()`.
     template<fixed_point Fxd>
     constexpr
     Fxd
@@ -28,7 +28,7 @@ namespace fxd {
     }
 
 
-
+    /// Same as `std::fdim()`.
     template<fixed_point Fxd>
     constexpr
     Fxd
@@ -43,7 +43,7 @@ namespace fxd {
     }
 
 
-
+    /// Same as `std::nextafter()`.
     template<fixed_point Fxd>
     constexpr
     Fxd
@@ -61,8 +61,11 @@ namespace fxd {
 
 
 
-    // Babylonian/Heron/Newton-Raphson method
-
+    /**
+     * @brief Same as `std::sqrt()`.
+     *
+     * @note If the argument `x` is negative, `errno` is set to `EDOM`.
+     */
     template<fixed_point Fxd>
     Fxd
     sqrt(Fxd x)
@@ -70,12 +73,14 @@ namespace fxd {
         if constexpr (std::numeric_limits<Fxd>::is_signed) {
             if (x < 0) {
                 errno = EDOM;
-                return std::numeric_limits<Fxd>::quiet_NaN();
+                return 0;
             }
         }
 
         if (!x)
             return x;
+
+        // Babylonian/Heron/Newton-Raphson method
 
         int i = 0;
         Fxd a = x;

@@ -33,7 +33,7 @@ namespace fxd {
     }
 
 
-
+    /// Convert to integer.
     template<std::integral I,
              fixed_point Fxd>
     constexpr
@@ -69,7 +69,7 @@ namespace fxd {
 
 
 
-
+    /// Converts a fixed-point to a floating-point type.
     template<std::floating_point Flt,
              fixed_point Fxd>
     constexpr
@@ -94,6 +94,7 @@ namespace fxd {
     }
 
 
+    /// Converts a fixed-point to its natural floating-point type (with no losses/rounding).
     template<fixed_point Fxd>
     constexpr
     typename Fxd::float_type
@@ -107,12 +108,12 @@ namespace fxd {
     template<int Int,
              int Frac,
              typename Raw>
-    template<std::floating_point Flt>
+    template<std::floating_point F>
     constexpr
-    fixed<Int, Frac, Raw>::operator Flt()
+    fixed<Int, Frac, Raw>::operator F()
         const noexcept
     {
-        return to_float<Flt>(*this);
+        return to_float<F>(*this);
     }
 
 

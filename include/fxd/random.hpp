@@ -18,14 +18,15 @@
 
 namespace fxd {
 
-
+    /// Analogous to `std::uniform_real_distribution`.
     template<fixed_point Fxd>
     struct uniform_real_distribution :
         private std::uniform_int_distribution<typename Fxd::raw_type> {
 
+        /// The type that will be generated.
         using result_type = Fxd;
 
-
+        /// Analogous to `std::uniform_real_distribution::param_type`
         struct param_type {
 
             constexpr
@@ -33,6 +34,11 @@ namespace fxd {
                 param_type{std::numeric_limits<result_type>::lowest()}
             {}
 
+            /**
+             * @brief Construct from min and max range.
+             * @param a_ minimum value.
+             * @param b_ maximum value (inclusive).
+             */
             explicit
             constexpr
             param_type(result_type a_,
@@ -41,12 +47,15 @@ namespace fxd {
                 b_{b_}
             {}
 
+            /// Minimum value.
             [[nodiscard]]
             constexpr result_type a() const noexcept { return a_; }
 
+            /// Maximum value.
             [[nodiscard]]
             constexpr result_type b() const noexcept { return b_; }
 
+            /// Defaulted `==` operator.
             bool operator ==(const param_type& other) const noexcept = default;
 
         private:
@@ -61,6 +70,11 @@ namespace fxd {
         {}
 
 
+        /**
+         * @brief Constructor with min and max values.
+         * @param a_ Minimum value.
+         * @param b_ Maximum value (inclusive).
+         */
         explicit
         uniform_real_distribution(result_type a_,
                                   result_type b_ = std::numeric_limits<result_type>::max()) :
@@ -68,15 +82,18 @@ namespace fxd {
         {}
 
 
+        /// Constructor from a `param_type` object.
         explicit
         uniform_real_distribution(const param_type& p) :
             parent{typename parent::param_type{p.a().raw_value, p.b().raw_value}}
         {}
 
 
+        /// Reset distribution state.
         void reset() noexcept {}
 
 
+        /// Same as `min()`.
         result_type
         a()
             const noexcept
@@ -85,6 +102,7 @@ namespace fxd {
         }
 
 
+        /// Same as `max()`.
         result_type
         b()
             const noexcept
@@ -93,6 +111,7 @@ namespace fxd {
         }
 
 
+        /// Obtain distribution parameters.
         [[nodiscard]]
         param_type
         param()
@@ -102,6 +121,7 @@ namespace fxd {
         }
 
 
+        /// Set distribution parameters.
         void
         param(const param_type& p)
         {
@@ -109,6 +129,7 @@ namespace fxd {
         }
 
 
+        /// Return lower bound of distribution.
         [[nodiscard]]
         result_type
         min()
@@ -118,6 +139,7 @@ namespace fxd {
         }
 
 
+        /// Return upper bound of distribution.
         [[nodiscard]]
         result_type
         max()
@@ -127,6 +149,7 @@ namespace fxd {
         }
 
 
+        /// Generate a random value.
         template<typename Gen>
         [[nodiscard]]
         result_type
@@ -136,6 +159,7 @@ namespace fxd {
         }
 
 
+        /// Generate a random value from a specific parameters object.
         template<typename Gen>
         [[nodiscard]]
         result_type
@@ -146,9 +170,11 @@ namespace fxd {
         }
 
 
+        /// Defaulted `==` operator.
         bool operator ==(const uniform_real_distribution&) const = default;
 
 
+        /// @cond
         template<typename CharT,
                  typename Traits>
         friend
@@ -203,6 +229,7 @@ namespace fxd {
                 throw;
             }
         }
+        /// @endcond
 
 
 

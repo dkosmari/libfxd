@@ -20,6 +20,7 @@ namespace fxd {
 
     namespace zero {
 
+        /// Multiply rounding to zero.
         template<fixed_point Fxd>
         constexpr
         Fxd
@@ -27,7 +28,7 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            constexpr int w = type_width<typename Fxd::raw_type>;
+            constexpr int w = impl::type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
@@ -68,6 +69,7 @@ namespace fxd {
 
     namespace up {
 
+        /// Multiply rounding up.
         template<fixed_point Fxd>
         constexpr
         Fxd
@@ -75,7 +77,7 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            constexpr int w = type_width<typename Fxd::raw_type>;
+            constexpr int w = impl::type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
@@ -105,8 +107,7 @@ namespace fxd {
 
     namespace down {
 
-        // rounding down is the default behavior of >>, so no special handling is needed
-
+        /// Multiply rounding down.
         template<fixed_point Fxd>
         constexpr
         Fxd
@@ -114,7 +115,7 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            constexpr int w = type_width<typename Fxd::raw_type>;
+            constexpr int w = impl::type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;

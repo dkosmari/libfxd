@@ -15,10 +15,26 @@
 #include "impl/error.hpp"
 #include "impl/safe-includes.hpp"
 
+/**
+ * @file except.hpp
+ *
+ * @brief Defines range-checked functions that throw exceptions on error.
+ *
+ */
 
+
+/// Provides throwing range-checked functions.
 namespace fxd::except {
 
 
+    /**
+     * @brief Error handler that throws exceptions on error.
+     *
+     * Possible exceptions are:
+     * @li `std::underflow_error` on underflows;
+     * @li `std::overflow_error` on overflows;
+     * @li `std::invalid_argument` when NaN would be generated;
+     */
     template<fxd::fixed_point Fxd>
     [[noreturn]]
     Fxd
@@ -37,10 +53,14 @@ namespace fxd::except {
     }
 
 
+
 #define LIBFXD_INCLUDING_IMPL_SAFE_HPP
 #include "impl/safe.hpp"
 #undef LIBFXD_INCLUDING_IMPL_SAFE_HPP
 
+    /**
+     * @include impl/safe.hpp
+     */
 
 } // namespace fxd::except
 

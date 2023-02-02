@@ -9,8 +9,10 @@
 #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
 #endif
 
+// Range-checked rounding to zero.
 namespace zero {
-    // multiplication when no fractional bits
+
+    /// Multiply rounding to zero, when no fractional bits, with range check.
     template<fixed_point Fxd>
     requires (Fxd::frac_bits <= 0)
         constexpr
@@ -18,7 +20,7 @@ namespace zero {
         mul(Fxd a,
             Fxd b)
     {
-        constexpr int w = type_width<typename Fxd::raw_type>;
+        constexpr int w = impl::type_width<typename Fxd::raw_type>;
         // offset used for shifting left.
         constexpr int offset = w - Fxd::frac_bits;
         const auto c = impl::mul<Fxd::bits>(a.raw_value, b.raw_value);
@@ -37,7 +39,7 @@ namespace zero {
 
 
 
-    // multiplication when there are fractional bits
+    /// Multiply rounding to zero, when there are fractional bits, with range check.
     template<fixed_point Fxd>
     requires (Fxd::frac_bits > 0)
         constexpr
@@ -45,7 +47,7 @@ namespace zero {
         mul(Fxd a,
             Fxd b)
     {
-        constexpr int w = type_width<typename Fxd::raw_type>;
+        constexpr int w = impl::type_width<typename Fxd::raw_type>;
         // offset used for shifting left.
         constexpr int offset = w - Fxd::frac_bits;
 
@@ -71,6 +73,7 @@ namespace zero {
 } // namespace zero
 
 
+// Range-checked rounding up.
 namespace up {
 
     template<fixed_point Fxd>
@@ -79,7 +82,7 @@ namespace up {
     mul(Fxd a,
         Fxd b)
     {
-        constexpr int w = type_width<typename Fxd::raw_type>;
+        constexpr int w = impl::type_width<typename Fxd::raw_type>;
 
         // offset used for shifting left
         constexpr int offset = w - Fxd::frac_bits;
@@ -129,7 +132,7 @@ namespace down {
     mul(Fxd a,
         Fxd b)
     {
-        constexpr int w = type_width<typename Fxd::raw_type>;
+        constexpr int w = impl::type_width<typename Fxd::raw_type>;
 
         // offset used for shifting left
         constexpr int offset = w - Fxd::frac_bits;

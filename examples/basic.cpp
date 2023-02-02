@@ -1,16 +1,14 @@
 #include <iostream>
 
-#include <fxd/fxd.hpp>
+#include <fxd/fxd.hpp> // include everything
 
 int main()
 {
     using F = fxd::fixed<20, 12>;
 
-    F a = 5;
-    a = 6;
-    F b = 2.5;
-    b = 3.5;
-    F c;
+    F a = 5;   // construct from integer
+    F b = 2.5; // construct from floating point
+    F c;       // uninitialized
 
     std::cout << "Enter a value: ";
     std::cin >> c;

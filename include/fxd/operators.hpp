@@ -40,6 +40,8 @@
 namespace fxd {
 
 
+    /// @cond
+
     // ---------- //
     // Assignment //
     // ---------- //
@@ -258,6 +260,9 @@ namespace fxd {
         return in;
     }
 
+
+
+    /// @endcond
 
 }
 

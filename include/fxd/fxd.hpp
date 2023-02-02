@@ -27,5 +27,27 @@
 #include "saturate.hpp"
 #include "traits.hpp"
 
+/**
+ * @file fxd.hpp
+ *
+ * @brief Includes all of libfxd headers.
+ */
+
+
+/**
+ * \namespace fxd::zero
+ * Namespace for functions that round to zero.
+ */
+
+/**
+ * \namespace fxd::up
+ * Namespace for functions that round up.
+ */
+
+/**
+ * \namespace fxd::down
+ * Namespace for functions that round down.
+ */
+
 
 #endif

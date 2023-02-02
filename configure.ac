@@ -28,9 +28,19 @@ AX_APPEND_COMPILE_FLAGS([-std=c++20], [CXX])
 
 # Checks for library functions.
 
+
+AC_CHECK_PROGS([DOXYGEN],
+               [doxygen],
+               [FOUND_DOXYGEN=no])
+AM_CONDITIONAL([HAVE_DOXYGEN], [test "x$FOUND_DOXYGEN" != "xno"])
+
+
+
 AC_CONFIG_FILES([Makefile
-                 include/fxd/Makefile
+                 doc/Doxyfile
+                 doc/Makefile
                  examples/Makefile
+                 include/fxd/Makefile
                  tests/Makefile
                  tests/catch2/Makefile])
 AC_OUTPUT

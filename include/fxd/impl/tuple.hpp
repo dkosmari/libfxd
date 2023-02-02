@@ -12,22 +12,17 @@
 #include <tuple>
 #include <utility>
 
-#include "../types.hpp"
+#include "types.hpp"
 
 
-namespace fxd {
+namespace fxd::impl {
 
 
+    // add a tuple specialization
     template<template<typename...> typename Tuple,
              std::integral... I>
     constexpr inline
     int type_width<Tuple<I...>> = (0 + ... + type_width<I>);
-
-
-}
-
-
-namespace fxd::impl {
 
 
     template<typename T>

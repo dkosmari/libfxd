@@ -57,7 +57,7 @@ std::string
 bin(T val)
     noexcept
 {
-    constexpr int w = fxd::type_width<T>;
+    constexpr int w = 8 * sizeof(T);
     std::string result;
     for (int i = 0; i < w; ++i)
         result += (val & (T{1} << (w - i - 1))) ? '1' : '0';
@@ -81,7 +81,7 @@ print(F f)
     auto old_prec = std::cout.precision();
 
     auto rbin = bin(f.raw_value);
-    auto sbin = rbin.substr(fxd::type_width<typename F::raw_type> - F::bits);
+    auto sbin = rbin.substr(8 * sizeof(typename F::raw_type) - F::bits);
     auto bin_int = F::int_bits > 0
         ? sbin.substr(0, std::min(F::bits, F::int_bits))
         : ""s;
