@@ -9,10 +9,9 @@
 #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
 #endif
 
-// Range-checked rounding to zero.
 namespace zero {
 
-    /// Multiply rounding to zero, when no fractional bits, with range check.
+    // Multiply rounding to zero, when no fractional bits, with range check.
     template<fixed_point Fxd>
     requires (Fxd::frac_bits <= 0)
         constexpr
@@ -39,7 +38,7 @@ namespace zero {
 
 
 
-    /// Multiply rounding to zero, when there are fractional bits, with range check.
+    // Multiply rounding to zero, when there are fractional bits, with range check.
     template<fixed_point Fxd>
     requires (Fxd::frac_bits > 0)
         constexpr

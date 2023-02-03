@@ -5,18 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// #ifndef LIBFXD_INCLUDING_IMPL_SAFE_HPP
-// #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
-// #endif
-
-/**
- * @file impl/safe.hpp
- */
+#ifndef LIBFXD_INCLUDING_IMPL_SAFE_HPP
+#error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
+#endif
 
 
 // Constructors
 
-/// Safe constructor; checks if argument is representable.
 template<fxd::fixed_point Fxd,
          std::integral I>
 constexpr
@@ -187,7 +182,6 @@ template<int Int,
 constexpr
 fixed<Int, Frac, Raw>
 fixed_cast(Src src)
-    noexcept
 {
     return fixed_cast<fixed<Int, Frac, Raw>>(src);
 }
@@ -200,7 +194,6 @@ template<int Int,
 constexpr
 fixed<Int, Frac, Raw>
 ufixed_cast(Src src)
-    noexcept
 {
     return fixed_cast<fixed<Int, Frac, Raw>>(src);
 }
