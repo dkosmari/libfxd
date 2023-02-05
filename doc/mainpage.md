@@ -1,5 +1,5 @@
-libfxd - a fixed-point library for C++
-======================================
+Introduction
+============
 
 This library defines a `fxd::fixed` templated type, with helper operators and functions.
 

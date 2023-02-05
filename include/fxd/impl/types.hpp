@@ -114,6 +114,11 @@ namespace fxd::impl {
     bool has_int_for = !std::is_void_v<select_int_for<bits, I>>;
 
 
+    template<typename I>
+    using max_int_for = std::conditional_t<std::numeric_limits<I>::is_signed,
+                                           std::intmax_t,
+                                           std::uintmax_t>;
+
 
 
     // Select a floating point by the mantissa size.

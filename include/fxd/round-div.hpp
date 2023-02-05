@@ -20,6 +20,7 @@
 
 namespace fxd {
 
+    /// Round to zero.
     namespace zero {
 
         /// Divide rounding to zero.
@@ -52,7 +53,7 @@ namespace fxd {
     } // namespace zero
 
 
-
+    /// Round up.
     namespace up {
 
         /// Divide rounding up.
@@ -93,7 +94,7 @@ namespace fxd {
     } // namespace up
 
 
-
+    /// Round down.
     namespace down {
 
         /// Divide rounding down.

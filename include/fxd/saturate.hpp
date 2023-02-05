@@ -16,17 +16,18 @@
 #include "impl/safe-includes.hpp"
 
 
-/// Provides clamping range-checked functions.
+/// Clamp on overflow.
 namespace fxd::saturate {
 
 
     /**
      * @brief Error handler that clamps the value on error.
      *
-     * All functions in `fxd::saturate` return this as an error handler. The returned
-     * value will always be clamped between `std::numeric_limits<Fxd>::lowest()` and
-     * `std::numeric_limits<Fxd>::max()` when it makes sense.
-     * The operation `0/0` will not return a value, it will raise the `SIGFPE` signal.
+     * All functions in `fxd::saturate` that return `fxd::fixed` use this to handle
+     * errors. The returned value will always be clamped between
+     * `std::numeric_limits<Fxd>::lowest()` and `std::numeric_limits<Fxd>::max()` when it
+     * makes sense.  The operation `0/0` will not return a value, it will raise the
+     * `SIGFPE` signal.
      */
     template<fxd::fixed_point Fxd>
     [[nodiscard]]
@@ -45,6 +46,30 @@ namespace fxd::saturate {
         return 0;
     }
 
+    /**
+     * @brief Error handler that clamps the value on error.
+     *
+     * All functions in `fxd::saturate` that return integers use this to handle errors.
+     * The returned value will always be clamped between `std::numeric_limits<I>::min()`
+     * and `std::numeric_limits<I>::max()` when it makes sense, or raise `SIGFPE`
+     * otherwise.
+     */
+    template<std::integral I>
+    [[nodiscard]]
+    I
+    handler(impl::error e)
+    {
+        switch (e) {
+            case impl::error::underflow:
+                return std::numeric_limits<I>::min();
+            case impl::error::overflow:
+                return std::numeric_limits<I>::max();
+            case impl::error::not_a_number:
+                std::raise(SIGFPE);
+        }
+        return 0;
+    }
+
 
 #define LIBFXD_INCLUDING_IMPL_SAFE_HPP
 #include "impl/safe.hpp"
@@ -53,7 +78,12 @@ namespace fxd::saturate {
 
 #ifdef LIBFXD_DOXYGEN_DOCUMENTATION
 
-    /// Construct from raw value, clamp on overflow.
+    /**
+     * @brief Construct from raw value, clamp on overflow.
+     *
+     * Overflow happens if the represented value does not convert back to the argument's
+     * value.
+     */
     template<fxd::fixed_point Fxd, std::integral I>
     constexpr Fxd from_raw(I val);
 
@@ -131,7 +161,7 @@ namespace fxd::saturate {
     template<fixed_point Fxd>
     constexpr Fxd sub(Fxd a, Fxd b);
 
-    /// Functions that round to zero, and clamp on overflow.
+    /// Round to zero, and clamp on overflow.
     namespace zero {
 
         /// Divide rounding to zero, clamp on overflow.
@@ -144,7 +174,7 @@ namespace fxd::saturate {
 
     }
 
-    /// Range-checked functions that round up.
+    /// Round up, and clamp on overflow.
     namespace up {
 
         /// Divide rounding up, clamp on overflow.
@@ -158,7 +188,7 @@ namespace fxd::saturate {
     }
 
 
-    /// Range-checked functions that round down.
+    /// Round down, and clamp on overflow.
     namespace down {
 
         /// Divide rounding down, clamp on overflow.
@@ -186,7 +216,7 @@ namespace fxd::saturate {
     constexpr Fxd nextafter(Fxd from, Fxd to);
 
 
-#endif LIBFXD_DOXYGEN_DOCUMENTATION
+#endif // LIBFXD_DOXYGEN_DOCUMENTATION
 
 
 } // namespace fxd::saturate

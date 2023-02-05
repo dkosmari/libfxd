@@ -94,9 +94,9 @@ TEST_CASE("raw2", "[u8.4]")
 }
 
 
-TEST_CASE("raw3", "[s8.4]")
+TEST_CASE("raw3", "[s4.4]")
 {
-    using F = fxd::fixed<8, 4>;
+    using F = fxd::fixed<4, 4>;
     using Lim = std::numeric_limits<F>;
     namespace exc = fxd::except;
 
@@ -122,9 +122,9 @@ TEST_CASE("raw3", "[s8.4]")
 }
 
 
-TEST_CASE("raw4", "[u8.4]")
+TEST_CASE("raw4", "[u4.4]")
 {
-    using F = fxd::ufixed<8, 4>;
+    using F = fxd::ufixed<4, 4>;
     using Lim = std::numeric_limits<F>;
     namespace exc = fxd::except;
 

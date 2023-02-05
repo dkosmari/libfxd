@@ -19,12 +19,12 @@ namespace fxd {
     concept fixed_point = is_fixed_point_v<T>;
 
 
-    /// Concept to match only unsigned `fxd::fixed`
+    /// Concept to match only `unsigned fxd::fixed`
     template<typename T>
     concept unsigned_fixed_point = is_unsigned_fixed_point_v<T>;
 
 
-    /// Concept to match only signed `fxd::fixed`
+    /// Concept to match only `signed fxd::fixed`
     template<typename T>
     concept signed_fixed_point = is_signed_fixed_point_v<T>;
 

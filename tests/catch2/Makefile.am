@@ -2,11 +2,11 @@
 
 EXTRA_DIST = COPYING.BSL
 
-check_LIBRARIES = libcatch2.a
+noinst_LTLIBRARIES = libcatch2.la
 
 BUILT_SOURCES = catch_amalgamated.cpp catch_amalgamated.hpp
 
-libcatch2_a_SOURCES = $(BUILT_SOURCES)
+libcatch2_la_SOURCES = $(BUILT_SOURCES)
 
 
 CATCH2_URL = "https://github.com/catchorg/Catch2/releases/latest/download"

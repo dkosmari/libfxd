@@ -25,6 +25,7 @@ namespace fxd {
     template<int Int,
              int Frac,
              typename Raw>
+    [[nodiscard]]
     constexpr
     fixed<Int, Frac, Raw>::operator bool()
         const noexcept
@@ -36,6 +37,7 @@ namespace fxd {
     /// Convert to integer.
     template<std::integral I,
              fixed_point Fxd>
+    [[nodiscard]]
     constexpr
     I
     to_int(Fxd f)
@@ -43,14 +45,18 @@ namespace fxd {
     {
         using Raw = typename Fxd::raw_type;
         Raw raw = f.raw_value;
-        if constexpr (Fxd::frac_bits > 0) {
+        if constexpr (Fxd::frac_bits >= 0) {
+
             if (raw < 0)
                 raw += impl::make_bias_for(Fxd::frac_bits, raw);
             return impl::shr_real(raw, Fxd::frac_bits);
+
         } else {
-            // Allow left-shifting to happen on a wider type
-            using Common = std::common_type_t<Raw, I>;
-            return impl::shl_real<Common>(raw, -Fxd::frac_bits);
+
+            // Allow left-shifting to happen on a wider type.
+            using RawWide = impl::max_int_for<Raw>;
+            return impl::shl_real<RawWide>(raw, -Fxd::frac_bits);
+
         }
     }
 
@@ -59,6 +65,7 @@ namespace fxd {
              int Frac,
              typename Raw>
     template<std::integral I>
+    [[nodiscard]]
     constexpr
     fixed<Int, Frac, Raw>::operator I()
         const noexcept

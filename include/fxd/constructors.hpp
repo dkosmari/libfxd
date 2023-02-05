@@ -15,6 +15,7 @@
 
 #include "fixed.hpp"
 
+#include "impl/bias.hpp"
 #include "impl/shift.hpp"
 
 
@@ -25,16 +26,34 @@ namespace fxd {
      * The `i` value will be shifted (and rounded to zero, if negative)
      * if needed.
      */
-    // TODO: should round negative values correctly.
     template<int Int,
              int Frac,
              typename Raw>
     template<std::integral I>
+    [[nodiscard]]
     constexpr
     fixed<Int, Frac, Raw>::fixed(I i)
-        noexcept :
-        raw_value{impl::shl<raw_type>(i, frac_bits)}
-    {}
+        noexcept
+    {
+        if constexpr (frac_bits < 0) {
+
+            // Shifting right.
+            // Bias negative values.
+            if (i < 0)
+                i += impl::make_bias_for(-frac_bits, i);
+
+            raw_value = impl::shr_real(i, frac_bits);
+
+        } else {
+
+            // Shifting left.
+            // Use max bits to minimize spurious overflows.
+            using IWide = impl::max_int_for<raw_type>;
+            raw_value = impl::shl_real<IWide>(i, frac_bits);
+
+        }
+
+    }
 
 
     /**
@@ -52,7 +71,7 @@ namespace fxd {
         if (std::is_constant_evaluated())
             raw_value = static_cast<raw_type>(scaled_f);
         else
-            raw_value = static_cast<raw_type>(std::rint(scaled_f));
+            raw_value = static_cast<raw_type>(std::nearbyint(scaled_f));
     }
 
 
@@ -63,13 +82,14 @@ namespace fxd {
     template<int Int,
              int Frac,
              typename Raw>
+    [[nodiscard]]
     constexpr
     fixed<Int, Frac, Raw>
     fixed<Int, Frac, Raw>::from_raw(Raw val)
         noexcept
     {
         fixed result;
-        result.raw_value = val;
+        result.raw_value = static_cast<Raw>(val);
         return result;
     }
 

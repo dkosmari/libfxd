@@ -1,10 +1,17 @@
 # doc/Makefile.am
 
-EXTRA_DIST = Doxyfile.in
+EXTRA_DIST = \
+	Doxyfile.in \
+	custom.css \
+	doxygen-awesome-css-2.1.0 \
+	mainpage.md
+
 
 if HAVE_DOXYGEN
 
 BUILT_SOURCES = html
+
+EXTRA_DIST += html
 
 html: doxyfile.stamp
 

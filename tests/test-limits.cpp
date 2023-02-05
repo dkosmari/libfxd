@@ -1,4 +1,5 @@
-#include <climits>
+#include <cfloat>
+#include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <type_traits>
@@ -42,10 +43,29 @@ TEMPLATE_LIST_TEST_CASE("limits",
     CHECK(LimFxd::digits == LimFlt::digits);
     CHECK(LimFxd::digits10 == LimFlt::digits10);
     CHECK(LimFxd::max_digits10 == LimFlt::max_digits10);
+
+    using fxd::except::make_fixed;
+    using fxd::except::from_raw;
+
+    Fxd lowest = LimFxd::lowest();
+    Fxd max = LimFxd::max();
+    CAPTURE(lowest);
+    CAPTURE(max);
+
+    CHECK_NOTHROW(from_raw<Fxd>(lowest.raw_value));
+    CHECK_NOTHROW(from_raw<Fxd>(max.raw_value));
+
+    Flt too_low = std::nextafter(static_cast<Flt>(LimFxd::lowest()),
+                                 -LimFlt::infinity());
+    CHECK_THROWS_AS(make_fixed<Fxd>(too_low), std::underflow_error);
+
+    Flt too_high = std::nextafter(static_cast<Flt>(LimFxd::max()),
+                                  LimFlt::infinity());
+    CHECK_THROWS_AS(make_fixed<Fxd>(too_high), std::overflow_error);
 }
 
 
-TEST_CASE("limits-special")
+TEST_CASE("limits-float_type")
 {
     CHECK(std::is_same_v<typename fxd:: fixed<1, 25>::float_type, double>);
     CHECK(std::is_same_v<typename fxd::ufixed<1, 24>::float_type, double>);

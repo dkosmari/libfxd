@@ -8,6 +8,7 @@
 #ifndef LIBFXD_EXCEPT_HPP
 #define LIBFXD_EXCEPT_HPP
 
+#include <concepts>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -16,7 +17,7 @@
 #include "impl/safe-includes.hpp"
 
 
-/// Provides throwing range-checked functions.
+/// Throw on overflow.
 namespace fxd::except {
 
 
@@ -27,7 +28,7 @@ namespace fxd::except {
      * Possible exceptions are:
      * @li `std::underflow_error` on underflows;
      * @li `std::overflow_error` on overflows;
-     * @li `std::invalid_argument` when NaN would be generated;
+     * @li `std::invalid_argument` when `NaN` would be generated;
      */
     template<fxd::fixed_point Fxd>
     [[noreturn]]
@@ -47,6 +48,24 @@ namespace fxd::except {
     }
 
 
+    /// @copydoc handler()
+    template<std::integral I>
+    [[noreturn]]
+    I
+    handler(impl::error e)
+    {
+        switch (e) {
+            case impl::error::underflow:
+                throw std::underflow_error{"underflow"};
+            case impl::error::overflow:
+                throw std::overflow_error{"overflow"};
+            case impl::error::not_a_number:
+                throw std::invalid_argument{"not a number"};
+            default:
+                throw std::logic_error{"unknown error"};
+        }
+    }
+
 
 #define LIBFXD_INCLUDING_IMPL_SAFE_HPP
 #include "impl/safe.hpp"
@@ -56,7 +75,12 @@ namespace fxd::except {
 
 #ifdef LIBFXD_DOXYGEN_DOCUMENTATION
 
-    /// Construct from raw value, throw on overflow.
+    /**
+     * @brief Construct from raw value, throw on overflow.
+     *
+     * Overflow happens if the represented value does not convert back to the argument's
+     * value.
+     */
     template<fxd::fixed_point Fxd, std::integral I>
     constexpr Fxd from_raw(I val);
 
@@ -134,7 +158,7 @@ namespace fxd::except {
     template<fixed_point Fxd>
     constexpr Fxd sub(Fxd a, Fxd b);
 
-    /// Functions that round to zero, and throw on overflow.
+    /// Round to zero, and throw on overflow.
     namespace zero {
 
         /// Divide rounding to zero, throw on overflow.
@@ -147,7 +171,7 @@ namespace fxd::except {
 
     }
 
-    /// Range-checked functions that round up.
+    /// Round up, and throw on overflow.
     namespace up {
 
         /// Divide rounding up, throw on overflow.
@@ -161,7 +185,7 @@ namespace fxd::except {
     }
 
 
-    /// Range-checked functions that round down.
+    /// Round down, and throw on overflow.
     namespace down {
 
         /// Divide rounding down, throw on overflow.
@@ -189,7 +213,7 @@ namespace fxd::except {
     constexpr Fxd nextafter(Fxd from, Fxd to);
 
 
-#endif LIBFXD_DOXYGEN_DOCUMENTATION
+#endif // LIBFXD_DOXYGEN_DOCUMENTATION
 
 
 } // namespace fxd::except

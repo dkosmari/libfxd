@@ -29,6 +29,15 @@ examples/square-root
 
 Makefile
 Makefile.in
+
+libtool
+
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4
+
 stamp-h1
 
 tests/*.py
@@ -37,5 +46,6 @@ tests/test-conv
 tests/test-div
 tests/test-limits
 tests/test-mul
+tests/test-safe
 tests/test-sub
 

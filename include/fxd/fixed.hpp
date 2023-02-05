@@ -23,10 +23,17 @@ namespace fxd {
      * This class encapsulates an integer so it supports the arithmetic operations.  It
      * mimics floating-point types, but direct access to the internal integer can be done
      * through the `.raw_value` member variable.
+     *
+     * @tparam Int How many integral bits to use.
+     * @tparam Frac How many fractional bits to use.
+     * @tparam Raw The integral type that will be used to store the value. By
+     * default, it's a signed integer with at least `Int + Frac` bits.
+     *
+     * @sa `ufixed`.
      */
-    template<int Int, /// How many integral bits to use.
-             int Frac, /// How many fractional bits to use.
-             typename Raw = impl::select_int_t<Int + Frac> /// The integral type that will be used.
+    template<int Int,
+             int Frac,
+             typename Raw = impl::select_int_t<Int + Frac>
              >
     struct fixed {
 
@@ -44,7 +51,7 @@ namespace fxd {
         /// How many bits were requested in total.
         static constexpr int bits = int_bits + frac_bits;
 
-        /// How many bits are used (can be larger than `bits`).
+        /// How many bits are used for storage (can be larger than `bits`).
         static constexpr int raw_bits =
             impl::type_width<raw_type>;
 
@@ -124,7 +131,7 @@ namespace fxd {
     };
 
 
-    /// Alias for creating unsigned `fxd::fixed`.
+    /// Alias for creating `unsigned fxd::fixed`.
     template<int Int,
              int Frac>
     using ufixed = fixed<Int, Frac, impl::select_uint_t<Int + Frac>>;

@@ -17,7 +17,6 @@
 
 namespace fxd {
 
-
     namespace zero {
 
         /// Multiply rounding to zero.
