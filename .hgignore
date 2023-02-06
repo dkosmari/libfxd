@@ -1,6 +1,11 @@
 syntax: glob
 
 *.a
+*.gcda
+*.gcno
+*.info
+*.la
+*.lo
 *.log
 *.o
 *.tar.gz
@@ -40,7 +45,7 @@ m4/lt~obsolete.m4
 
 stamp-h1
 
-tests/*.py
+tests/html
 tests/test-add
 tests/test-conv
 tests/test-div

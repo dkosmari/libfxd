@@ -9,10 +9,14 @@
 #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
 #endif
 
+#ifndef LIBFXD_HERE
+#error "Current namespace name not defined."
+#endif
+
 
 // Constructors
 
-template<fxd::fixed_point Fxd,
+template<fixed_point Fxd,
          std::integral I>
 constexpr
 Fxd
@@ -32,7 +36,7 @@ from_raw(I val)
 
 
 
-template<fxd::fixed_point Fxd,
+template<fixed_point Fxd,
          std::integral I>
 constexpr
 Fxd
@@ -68,7 +72,7 @@ make_fixed(I val)
 }
 
 
-template<fxd::fixed_point Fxd,
+template<fixed_point Fxd,
          std::floating_point Flt>
 Fxd
 make_fixed(Flt val)
@@ -93,6 +97,16 @@ make_fixed(Flt val)
 }
 
 
+template<fxd::unsigned_fixed_point Fxd,
+         std::convertible_to<Fxd> Src>
+constexpr
+Fxd
+make_ufixed(Src src)
+{
+    return LIBFXD_HERE::make_fixed<Fxd>(src);
+}
+
+
 template<int Int,
          int Frac,
          typename I = impl::select_int_t<Int + Frac>,
@@ -102,7 +116,7 @@ fxd::fixed<Int, Frac, I>
 make_fixed(Src src)
 {
     using Fxd = fxd::fixed<Int, Frac, I>;
-    return make_fixed<Fxd>(src);
+    return LIBFXD_HERE::make_fixed<Fxd>(src);
 }
 
 
@@ -115,7 +129,7 @@ fxd::fixed<Int, Frac, U>
 make_ufixed(Src src)
 {
     using Fxd = fxd::fixed<Int, Frac, U>;
-    return make_fixed<Fxd>(src);
+    return LIBFXD_HERE::make_fixed<Fxd>(src);
 }
 
 
@@ -167,6 +181,16 @@ fixed_cast(Src src)
 }
 
 
+template<unsigned_fixed_point Dst,
+         fixed_point Src>
+constexpr
+Dst
+ufixed_cast(Src src)
+{
+    return LIBFXD_HERE::fixed_cast<Dst>(src);
+}
+
+
 template<int Int,
          int Frac,
          typename Raw = impl::select_int_t<Int + Frac>,
@@ -175,7 +199,7 @@ constexpr
 fixed<Int, Frac, Raw>
 fixed_cast(Src src)
 {
-    return fixed_cast<fixed<Int, Frac, Raw>>(src);
+    return LIBFXD_HERE::fixed_cast<fixed<Int, Frac, Raw>>(src);
 }
 
 
@@ -187,7 +211,7 @@ constexpr
 fixed<Int, Frac, Raw>
 ufixed_cast(Src src)
 {
-    return fixed_cast<fixed<Int, Frac, Raw>>(src);
+    return LIBFXD_HERE::fixed_cast<fixed<Int, Frac, Raw>>(src);
 }
 
 

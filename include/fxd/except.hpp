@@ -68,7 +68,9 @@ namespace fxd::except {
 
 
 #define LIBFXD_INCLUDING_IMPL_SAFE_HPP
+#define LIBFXD_HERE except
 #include "impl/safe.hpp"
+#undef LIBFXD_HERE
 #undef LIBFXD_INCLUDING_IMPL_SAFE_HPP
 
 
@@ -81,34 +83,42 @@ namespace fxd::except {
      * Overflow happens if the represented value does not convert back to the argument's
      * value.
      */
-    template<fxd::fixed_point Fxd, std::integral I>
+    template<fixed_point Fxd, std::integral I>
     constexpr Fxd from_raw(I val);
 
     /// Construct from integer, throw on overflow.
-    template<fxd::fixed_point Fxd, std::integral I>
+    template<fixed_point Fxd, std::integral I>
     requires (Fxd::frac_bits < 0)
     constexpr Fxd make_fixed(I val);
 
     /// Construct from floating-point, throw on overflow.
-    template<fxd::fixed_point Fxd, std::floating_point Flt>
+    template<fixed_point Fxd, std::floating_point Flt>
     Fxd make_fixed(Flt val);
+
+    /// Construct ufixed, throw on overflow.
+    template<fxd::unsigned_fixed_point Fxd, std::convertible_to<Fxd> Src>
+    Fxd make_ufixed(Src src);
 
     /// Convenience overload.
     template<int Int, int Frac,
              typename I = impl::select_int_t<Int + Frac>,
-             std::convertible_to<fxd::fixed<Int, Frac, I>> Src>
-    constexpr fxd::fixed<Int, Frac, I> make_fixed(Src src);
+             std::convertible_to<fixed<Int, Frac, I>> Src>
+    constexpr fixed<Int, Frac, I> make_fixed(Src src);
 
     /// Convenience overload (unsigned version).
     template<int Int,
              int Frac,
              typename U = impl::select_uint_t<Int + Frac>,
-             std::convertible_to<fxd::fixed<Int, Frac, U>> Src>
-    constexpr fxd::fixed<Int, Frac, U> make_ufixed(Src src);
+             std::convertible_to<fixed<Int, Frac, U>> Src>
+    constexpr fixed<Int, Frac, U> make_ufixed(Src src);
 
     /// Convert between fxd::fixed types, throw on overflow.
     template<fixed_point Dst, fixed_point Src>
     constexpr Dst fixed_cast(Src src);
+
+    /// Convert between fxd::fixed types, throw on overflow.
+    template<unsigned_fixed_point Dst, fixed_point Src>
+    constexpr Dst ufixed_cast(Src src);
 
     /// Convenience overload.
     template<int Int, int Frac,

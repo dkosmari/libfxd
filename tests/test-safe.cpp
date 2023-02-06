@@ -111,6 +111,9 @@ TEST_CASE("make_ufixed<int>")
     CHECK_THROWS_AS((make_ufixed<8, 4>(  -1)), underflow_error);
     CHECK_THROWS_AS((make_ufixed<8, 4>(-128)), underflow_error);
     CHECK_THROWS_AS((make_ufixed<8, 4>(static_cast<std::int8_t>(-128))), underflow_error);
+
+    // test a huge shift
+    CHECK_THROWS_AS((make_ufixed<0, 64>(1)), overflow_error);
 }
 
 
@@ -202,4 +205,17 @@ TEST_CASE("fixed_cast")
     // error when losing most significant bits
     UB ub = make_fixed<UB>(0xff.ff'ff'ffp0);
     CHECK_THROWS_AS(fxd::except::fixed_cast<SA>(ub), overflow_error);
+
+    // check that overloads compile
+    CHECK(fxd::except::fixed_cast<SB>(sa) == fxd::except::fixed_cast<24, 8>(sa));
+    CHECK(fxd::except::ufixed_cast<UB>(ua) == fxd::except::ufixed_cast<24, 8>(ua));
+
+    // force an overflow by doing a huge shift
+    CHECK_THROWS_AS((fxd::except::fixed_cast<-63, 127>(fxd::fixed<127, -63>::from_raw(1))),
+                    overflow_error);
+}
+
+
+TEST_CASE("to_int")
+{
 }

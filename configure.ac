@@ -14,12 +14,13 @@ LT_INIT
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_CXX
+AC_CHECK_PROGS([LCOV], [lcov], [MISSING_LCOV=yes])
+AC_CHECK_PROGS([GENHTML], [genhtml], [MISSING_LCOV=yes])
 
 AC_LANG([C++])
-
 AX_APPEND_COMPILE_FLAGS([-std=c++20], [CXX])
-# AX_APPEND_COMPILE_FLAGS([-std=gnu++20], [CXXFLAGS])
 
 # Checks for libraries.
 
@@ -32,9 +33,26 @@ AX_APPEND_COMPILE_FLAGS([-std=c++20], [CXX])
 
 AC_CHECK_PROGS([DOXYGEN],
                [doxygen],
-               [FOUND_DOXYGEN=no])
-AM_CONDITIONAL([HAVE_DOXYGEN], [test "x$FOUND_DOXYGEN" != "xno"])
+               [MISSING_DOXYGEN=yes])
+AM_CONDITIONAL([USE_DOXYGEN], [test "x${MISSING_DOXYGEN}" != "xyes"])
 
+
+AC_ARG_ENABLE([coverage],
+              [AS_HELP_STRING([--enable-coverage],
+              [enable coverage tests (useful for developers)])])
+AS_VAR_IF([MISSING_LCOV], [yes],
+          [
+                AS_VAR_IF([enable_coverage], [yes],
+                          [AC_MSG_WARN([Can't enable coverage because LCOV is missing.])])
+                enable_coverage=no
+          ])
+AM_CONDITIONAL([USE_COVERAGE], [test "x${enable_coverage}" = "xyes"])
+
+
+AC_ARG_ENABLE([sanitize],
+              [AS_HELP_STRING([--enable-sanitize],
+                              [build tests with sanitization (useful for developers)])])
+AM_CONDITIONAL([USE_SANITIZE], [test "x${enable_sanitize}" = "xyes"])
 
 
 AC_CONFIG_FILES([Makefile

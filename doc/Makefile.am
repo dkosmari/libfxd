@@ -3,11 +3,12 @@
 EXTRA_DIST = \
 	Doxyfile.in \
 	custom.css \
-	doxygen-awesome-css-2.1.0 \
+	doxygen-awesome.css \
+	COPYING.MIT \
 	mainpage.md
 
 
-if HAVE_DOXYGEN
+if USE_DOXYGEN
 
 BUILT_SOURCES = html
 
@@ -32,4 +33,4 @@ clean-local:
 	$(RM) -rf html
 
 
-endif
+endif USE_DOXYGEN

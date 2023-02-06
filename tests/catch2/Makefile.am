@@ -2,7 +2,7 @@
 
 EXTRA_DIST = COPYING.BSL
 
-noinst_LTLIBRARIES = libcatch2.la
+check_LTLIBRARIES = libcatch2.la
 
 BUILT_SOURCES = catch_amalgamated.cpp catch_amalgamated.hpp
 
