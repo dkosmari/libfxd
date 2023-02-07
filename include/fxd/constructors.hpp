@@ -42,7 +42,7 @@ namespace fxd {
             if (i < 0)
                 i += impl::make_bias_for(-frac_bits, i);
 
-            raw_value = impl::shr_real(i, frac_bits);
+            raw_value = impl::shr_real(i, -frac_bits);
 
         } else {
 

@@ -35,6 +35,15 @@ from_raw(I val)
 }
 
 
+template<fixed_point Fxd>
+Fxd
+make_fixed(Fxd src)
+    noexcept
+{
+    return src;
+}
+
+
 
 template<fixed_point Fxd,
          std::integral I>
@@ -50,7 +59,7 @@ make_fixed(I val)
             val += impl::make_bias_for(-Fxd::frac_bits, val);
 
         auto raw = impl::shr_real(val, -Fxd::frac_bits);
-        return from_raw<Fxd>(raw);
+        return LIBFXD_HERE::from_raw<Fxd>(raw);
 
     } else {
 
@@ -65,7 +74,7 @@ make_fixed(I val)
                                 ? impl::error::underflow
                                 : impl::error::overflow);
 
-        return from_raw<Fxd>(raw);
+        return LIBFXD_HERE::from_raw<Fxd>(raw);
 
     }
 
@@ -161,7 +170,7 @@ fixed_cast(Src src)
 
         auto draw = impl::shr_real(sraw, -diff);
 
-        return from_raw<Dst>(draw);
+        return LIBFXD_HERE::from_raw<Dst>(draw);
 
     } else {
 
@@ -174,7 +183,7 @@ fixed_cast(Src src)
             return handler<Dst>(sraw < 0
                                 ? impl::error::underflow
                                 : impl::error::overflow);
-        return from_raw<Dst>(draw);
+        return LIBFXD_HERE::from_raw<Dst>(draw);
 
     }
 
@@ -295,7 +304,7 @@ Fxd&
 assign(Fxd& dst,
        Src src)
 {
-    return dst = make_fixed<Fxd>(src);
+    return dst = LIBFXD_HERE::make_fixed<Fxd>(src);
 }
 
 
@@ -313,12 +322,7 @@ inc(Fxd& f)
     if (carry)
         return f = handler<Fxd>(impl::error::overflow);
 
-    f.raw_value = result;
-
-    if (f.raw_value != result)
-        return f = handler<Fxd>(impl::error::overflow);
-
-    return f;
+    return f = LIBFXD_HERE::from_raw<Fxd>(result);
 }
 
 
@@ -328,7 +332,7 @@ Fxd
 post_inc(Fxd& f)
 {
     Fxd old = f;
-    inc(f);
+    LIBFXD_HERE::inc(f);
     return old;
 }
 
@@ -346,12 +350,7 @@ dec(Fxd& f)
     if (overflow)
         return f = handler<Fxd>(impl::error::underflow);
 
-    f.raw_value = result;
-
-    if (f.raw_value != result)
-        return f = handler<Fxd>(impl::error::underflow);
-
-    return f;
+    return f = LIBFXD_HERE::from_raw<Fxd>(result);
 }
 
 
@@ -361,7 +360,7 @@ Fxd
 post_dec(Fxd& f)
 {
     Fxd old = f;
-    dec(f);
+    LIBFXD_HERE::dec(f);
     return old;
 }
 
@@ -402,7 +401,7 @@ add(Fxd a,
             return handler<Fxd>(impl::error::overflow);
     }
 
-    return from_raw<Fxd>(result);
+    return LIBFXD_HERE::from_raw<Fxd>(result);
 }
 
 
@@ -423,7 +422,7 @@ sub(Fxd a,
             return handler<Fxd>(impl::error::underflow);
     }
 
-    return from_raw<Fxd>(result);
+    return LIBFXD_HERE::from_raw<Fxd>(result);
 }
 
 
@@ -443,7 +442,7 @@ abs(Fxd f)
 {
     if (f.raw_value >= 0)
         return f;
-    return negate(f);
+    return LIBFXD_HERE::negate(f);
 }
 
 
@@ -455,7 +454,7 @@ fdim(Fxd a,
      Fxd b)
 {
     if (a > b)
-        return sub(a, b);
+        return LIBFXD_HERE::sub(a, b);
     else
         return 0;
 }
@@ -469,8 +468,8 @@ nextafter(Fxd from,
 {
     constexpr Fxd e = std::numeric_limits<Fxd>::epsilon();
     if (from < to)
-        return add(from, e);
+        return LIBFXD_HERE::add(from, e);
     if (from > to)
-        return sub(from, e);
+        return LIBFXD_HERE::sub(from, e);
     return to;
 }

@@ -86,6 +86,10 @@ namespace fxd::except {
     template<fixed_point Fxd, std::integral I>
     constexpr Fxd from_raw(I val);
 
+    /// Construct from identical fixed-point type.
+    template<fixed_point Fxd>
+    Fxd make_fixed(Fxd src) noexcept;
+
     /// Construct from integer, throw on overflow.
     template<fixed_point Fxd, std::integral I>
     requires (Fxd::frac_bits < 0)

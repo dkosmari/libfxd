@@ -77,10 +77,12 @@ TEST_CASE("make_fixed<int>")
     using Fxd = fxd::fixed<8, 4>;
 
     CHECK_NOTHROW(make_fixed<Fxd>(127));
+    CHECK(make_fixed<Fxd>(127) == 127);
     CHECK_NOTHROW(make_fixed<Fxd>(127u));
     CHECK_NOTHROW(make_fixed<Fxd, std::int8_t>(127));
     CHECK_NOTHROW((make_fixed<Fxd, std::uint8_t>(127u)));
     CHECK_NOTHROW((make_fixed<Fxd, std::uint64_t>(127u)));
+    CHECK_NOTHROW((make_fixed<8, 4>(127)));
 
     CHECK_THROWS_AS(make_fixed<Fxd>(128), overflow_error);
     CHECK_THROWS_AS(make_fixed<Fxd>(128u), overflow_error);
@@ -89,8 +91,17 @@ TEST_CASE("make_fixed<int>")
     CHECK_THROWS_AS((make_fixed<Fxd, std::uint64_t>(128u)), overflow_error);
 
     CHECK_NOTHROW(make_fixed<Fxd>(-128));
+    CHECK(make_fixed<Fxd>(-128) == -128);
     CHECK_NOTHROW(make_fixed<Fxd, std::int8_t>(-128));
     CHECK_THROWS_AS(make_fixed<Fxd>(-129), underflow_error);
+
+    using Fxd2 = fxd::fixed<20, -4>;
+    CHECK_NOTHROW(make_fixed<Fxd2>(1024));
+    CHECK(make_fixed<Fxd2>(1024) == 1024);
+    CHECK_NOTHROW(make_fixed<Fxd2>(-1024));
+    CHECK(make_fixed<Fxd2>(-1024) == -1024);
+    CHECK_NOTHROW(make_fixed<Fxd2>(-1023));
+    CHECK(make_fixed<Fxd2>(-1023) == -1008);
 }
 
 
@@ -100,6 +111,7 @@ TEST_CASE("make_ufixed<int>")
     CHECK_NOTHROW((make_ufixed<8, 4>(255u)));
     CHECK_NOTHROW((make_ufixed<8, 4>(static_cast<std::uint8_t >(255u))));
     CHECK_NOTHROW((make_ufixed<8, 4>(static_cast<std::uint64_t>(255u))));
+    CHECK_NOTHROW((make_ufixed<fxd::ufixed<8, 4>>(255 )));
 
     CHECK_THROWS_AS((make_ufixed<8, 4>(256 )), overflow_error);
     CHECK_THROWS_AS((make_ufixed<8, 4>(256u)), overflow_error);
@@ -256,4 +268,169 @@ TEST_CASE("to_int")
         Fxd b = std::numeric_limits<Fxd>::lowest();
         CHECK_THROWS_AS(fxd::except::to_int<std::int64_t>(b), underflow_error);
     }
+}
+
+
+TEST_CASE("assign")
+{
+    using Fxd = fxd::fixed<8, 24>;
+
+    Fxd a;
+    CHECK_NOTHROW(fxd::except::assign(a, 5));
+    CHECK_NOTHROW(fxd::except::assign(a, 2.5));
+    CHECK_NOTHROW(fxd::except::assign(a, 3.5f));
+    Fxd b;
+    CHECK_NOTHROW(fxd::except::assign(b, a));
+
+    CHECK_THROWS_AS(fxd::except::assign(a, 128), overflow_error);
+    CHECK_THROWS_AS(fxd::except::assign(a, -129), underflow_error);
+}
+
+
+TEST_CASE("inc")
+{
+    using SFxd = fxd::fixed<8, 24>;
+
+    SFxd a = 126;
+    CHECK_NOTHROW(fxd::except::inc(a));
+    CHECK(a == 127);
+    CHECK_THROWS_AS(fxd::except::inc(a), overflow_error);
+    CHECK(a == 127);
+
+    using UFxd = fxd::ufixed<8, 24>;
+    UFxd b = 254;
+    CHECK_NOTHROW(fxd::except::inc(b));
+    CHECK(b == 255);
+    CHECK_THROWS_AS(fxd::except::inc(b), overflow_error);
+    CHECK(b == 255);
+
+    using UFxd2 = fxd::ufixed<8, 1>;
+    UFxd2 c = 254;
+    CHECK_NOTHROW(fxd::except::inc(c));
+    CHECK(c == 255);
+    CHECK_THROWS_AS(fxd::except::inc(c), overflow_error);
+    CHECK(c == 255);
+}
+
+
+TEST_CASE("post_inc")
+{
+    using SFxd = fxd::fixed<8, 24>;
+
+    SFxd a = 126;
+    CHECK_NOTHROW(fxd::except::post_inc(a));
+    CHECK(a == 127);
+    CHECK_THROWS_AS(fxd::except::post_inc(a), overflow_error);
+    CHECK(a == 127);
+
+    using UFxd = fxd::ufixed<8, 24>;
+    UFxd b = 254;
+    CHECK_NOTHROW(fxd::except::post_inc(b));
+    CHECK(b == 255);
+    CHECK_THROWS_AS(fxd::except::post_inc(b), overflow_error);
+    CHECK(b == 255);
+
+    using UFxd2 = fxd::ufixed<8, 1>;
+    UFxd2 c = 254;
+    CHECK_NOTHROW(fxd::except::post_inc(c));
+    CHECK(c == 255);
+    CHECK_THROWS_AS(fxd::except::post_inc(c), overflow_error);
+    CHECK(c == 255);
+}
+
+
+TEST_CASE("dec")
+{
+    using SFxd = fxd::fixed<8, 24>;
+
+    SFxd a = -127;
+    CHECK_NOTHROW(fxd::except::dec(a));
+    CHECK(a == -128);
+    CHECK_THROWS_AS(fxd::except::dec(a), underflow_error);
+    CHECK(a == -128);
+
+    using UFxd = fxd::ufixed<8, 24>;
+    UFxd b = 1;
+    CHECK_NOTHROW(fxd::except::dec(b));
+    CHECK(b == 0);
+    CHECK_THROWS_AS(fxd::except::dec(b), underflow_error);
+    CHECK(b == 0);
+}
+
+
+TEST_CASE("post_dec")
+{
+    using SFxd = fxd::fixed<8, 24>;
+
+    SFxd a = -127;
+    CHECK_NOTHROW(fxd::except::post_dec(a));
+    CHECK(a == -128);
+    CHECK_THROWS_AS(fxd::except::post_dec(a), underflow_error);
+    CHECK(a == -128);
+
+    using UFxd = fxd::ufixed<8, 24>;
+    UFxd b = 1;
+    CHECK_NOTHROW(fxd::except::post_dec(b));
+    CHECK(b == 0);
+    CHECK_THROWS_AS(fxd::except::post_dec(b), underflow_error);
+    CHECK(b == 0);
+}
+
+
+TEST_CASE("negate")
+{
+    using SFxd = fxd::fixed<8, 24>;
+
+    SFxd a = 127;
+    CHECK(fxd::except::negate(a) == -127);
+    a = -128;
+    CHECK_THROWS_AS(fxd::except::negate(a), overflow_error);
+
+    using UFxd = fxd::ufixed<8, 24>;
+    UFxd b = 0;
+    CHECK(fxd::except::negate(b) == 0);
+    b = 1;
+    CHECK_THROWS_AS(fxd::except::negate(b), underflow_error);
+}
+
+
+TEST_CASE("abs")
+{
+    using Fxd = fxd::fixed<8, 24>;
+    Fxd a = 5;
+    CHECK(fxd::except::abs(a) == 5);
+
+    Fxd b = -5;
+    CHECK(fxd::except::abs(b) == 5);
+
+    Fxd c = std::numeric_limits<Fxd>::lowest();
+    CHECK_THROWS_AS(fxd::except::abs(c), overflow_error);
+}
+
+
+TEST_CASE("fdim")
+{
+    using Fxd = fxd::fixed<8, 24>;
+
+    Fxd a = 5;
+    Fxd b = 3;
+    CHECK(fxd::except::fdim(a, b) == 2);
+    CHECK(fxd::except::fdim(b, a) == 0);
+
+    Fxd c = std::numeric_limits<Fxd>::max();
+    Fxd d = -1;
+    CHECK_THROWS_AS(fxd::except::fdim(c, d), overflow_error);
+}
+
+
+TEST_CASE("nextafter")
+{
+    using Fxd = fxd::fixed<8, 24>;
+
+    Fxd eps = std::numeric_limits<Fxd>::epsilon();
+    Fxd a = 5;
+    Fxd b = 6;
+    CHECK(fxd::except::nextafter(a, b) == a + eps);
+    CHECK(fxd::except::nextafter(b, a) == b - eps);
+    CHECK(fxd::except::nextafter(a, a) == a);
 }
