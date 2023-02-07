@@ -218,4 +218,42 @@ TEST_CASE("fixed_cast")
 
 TEST_CASE("to_int")
 {
+    {
+        using Fxd = fxd::fixed<24, 8>;
+
+        Fxd a = 1;
+        CHECK(fxd::except::to_int(a) == 1);
+
+        Fxd b = fxd::except::make_fixed<Fxd>(0x7fffff);
+        CHECK_THROWS_AS(fxd::except::to_int<std::int16_t>(b), overflow_error);
+
+        Fxd c = -10;
+        CHECK(fxd::except::to_int(c) == -10);
+        CHECK_THROWS_AS(fxd::except::to_int<std::uint32_t>(c), underflow_error);
+
+        Fxd d = fxd::except::make_fixed<Fxd>(-0x800000);
+        CHECK(fxd::except::to_int(d) == -0x800000);
+        CHECK_THROWS_AS(fxd::except::to_int<std::int16_t>(d), underflow_error);
+    }
+
+    {
+        using Fxd = fxd::fixed<20, -4>;
+
+        Fxd a = fxd::except::make_fixed<Fxd>(0x7fff0);
+        CHECK(fxd::except::to_int(a) == 0x7fff0);
+        CHECK_THROWS_AS(fxd::except::to_int<std::int16_t>(a), overflow_error);
+
+        Fxd b = fxd::except::make_fixed<Fxd>(-0x80000);
+        CHECK_THROWS_AS(fxd::except::to_int<std::int16_t>(b), underflow_error);
+    }
+
+    {
+        using Fxd = fxd::fixed<65, -1>;
+
+        Fxd a = std::numeric_limits<Fxd>::max();
+        CHECK_THROWS_AS(fxd::except::to_int<std::int64_t>(a), overflow_error);
+
+        Fxd b = std::numeric_limits<Fxd>::lowest();
+        CHECK_THROWS_AS(fxd::except::to_int<std::int64_t>(b), underflow_error);
+    }
 }

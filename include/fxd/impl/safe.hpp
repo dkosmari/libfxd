@@ -26,7 +26,7 @@ from_raw(I val)
 
     if constexpr (impl::type_width<I> > Fxd::bits) {
         // check if significant bits got chopped off
-        if (std::cmp_not_equal(result.raw_value,val))
+        if (std::cmp_not_equal(result.raw_value, val))
             return handler<Fxd>(val < 0
                                 ? impl::error::underflow
                                 : impl::error::overflow);
@@ -221,6 +221,7 @@ ufixed_cast(Src src)
 
 template<std::integral I,
          fixed_point Fxd>
+constexpr
 I
 to_int(Fxd f)
 {
@@ -269,6 +270,17 @@ to_int(Fxd f)
 
     }
 
+}
+
+
+template<fixed_point Fxd>
+requires impl::has_int_for<Fxd::int_bits, typename Fxd::raw_type>
+constexpr
+impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
+to_int(Fxd f)
+{
+    using I = impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>;
+    return LIBFXD_HERE::to_int<I>(f);
 }
 
 

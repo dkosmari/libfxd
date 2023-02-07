@@ -61,6 +61,20 @@ namespace fxd {
     }
 
 
+    /// Convert to the "natural integer" for this fixed-point type.
+    template<fixed_point Fxd>
+    requires impl::has_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    [[nodiscard]]
+    constexpr
+    impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    to_int(Fxd f)
+        noexcept
+    {
+        using I = impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>;
+        return to_int<I>(f);
+    }
+
+
     template<int Int,
              int Frac,
              typename Raw>
@@ -74,9 +88,7 @@ namespace fxd {
     }
 
 
-
-
-    /// Converts a fixed-point to a floating-point type.
+    /// Convert a fixed-point to a floating-point type.
     template<std::floating_point Flt,
              fixed_point Fxd>
     constexpr

@@ -106,6 +106,8 @@ coverage: coverage-init.info coverage-tests.info
 	$(RM) -r html
 	mkdir html
 	$(GENHTML) \
+		--title "$(PACKAGE_STRING)" \
+		--legend \
 		--demangle-cpp \
 		--output-directory html \
 		$^

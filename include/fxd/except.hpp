@@ -136,6 +136,11 @@ namespace fxd::except {
     template<std::integral I, fixed_point Fxd>
     I to_int(Fxd f);
 
+    /// Convert to the natural integer type, throw on overflow.
+    template<fixed_point Fxd>
+    constexpr impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    to_int(Fxd f);
+
     /// Assignment, throw on overflow.
     template<fixed_point Fxd, std::convertible_to<Fxd> Src>
     constexpr Fxd& assign(Fxd& dst, Src src);
