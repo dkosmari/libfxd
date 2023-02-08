@@ -12,6 +12,7 @@
 
 #include "concepts.hpp"
 #include "limits.hpp"
+#include "operators.hpp"
 #include "round-div.hpp"
 
 
@@ -67,6 +68,7 @@ namespace fxd {
      * @note If the argument `x` is negative, `errno` is set to `EDOM`.
      */
     template<fixed_point Fxd>
+    constexpr
     Fxd
     sqrt(Fxd x)
     {
@@ -87,20 +89,24 @@ namespace fxd {
         Fxd old_a;
 
         do {
-            if (++i > Fxd::bits)
-                return a;
+
+            if (++i > Fxd::bits) [[unlikely]]
+                break;
 
             Fxd b = up::div(x, a);
 
             old_a = a;
 
             a = (a + b);
-            a.raw_value /= 2;
+            a.raw_value >>= 1;
 
-            if (!a)
-                return a;
+            if (!a) [[unlikely]]
+                break;
 
         } while (old_a != a);
+
+        while (a * a > x)
+            --a.raw_value;
 
         return a;
     }

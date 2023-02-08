@@ -50,6 +50,7 @@ tests/test-add
 tests/test-conv
 tests/test-div
 tests/test-limits
+tests/test-math
 tests/test-mul
 tests/test-safe
 tests/test-sub

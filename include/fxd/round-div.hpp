@@ -14,6 +14,7 @@
 
 #include "concepts.hpp"
 
+#include "impl/bias.hpp"
 #include "impl/div.hpp"
 #include "impl/shift.hpp"
 

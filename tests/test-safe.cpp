@@ -7,7 +7,6 @@
 #include <fxd/fixed.hpp>
 #include <fxd/except.hpp>
 
-#include "rng.hpp"
 #include "setup.hpp"
 
 

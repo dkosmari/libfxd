@@ -12,6 +12,7 @@
 #include <limits>
 
 #include "fixed.hpp"
+#include "constructors.hpp"
 
 
 #define LIBFXD_LOG10_2(x)      ((x) * 643L / 2136)

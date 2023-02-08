@@ -42,6 +42,7 @@ check_PROGRAMS = \
 	test-conv \
 	test-div \
 	test-limits \
+	test-math \
 	test-mul \
 	test-safe \
 	test-sub
