@@ -45,6 +45,7 @@ check_PROGRAMS = \
 	test-math \
 	test-mul \
 	test-safe \
+	test-sqrt \
 	test-sub
 
 

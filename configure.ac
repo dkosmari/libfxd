@@ -38,6 +38,7 @@ AC_CHECK_PROGS([DOXYGEN],
 AM_CONDITIONAL([USE_DOXYGEN], [test "x${MISSING_DOXYGEN}" != "xyes"])
 
 
+# --enable-coverage option
 AC_ARG_ENABLE([coverage],
               [AS_HELP_STRING([--enable-coverage],
               [enable coverage tests (useful for developers)])])
@@ -47,13 +48,28 @@ AS_VAR_IF([MISSING_LCOV], [yes],
                           [AC_MSG_WARN([Can't enable coverage because LCOV is missing.])])
                 enable_coverage=no
           ])
-AM_CONDITIONAL([USE_COVERAGE], [test "x${enable_coverage}" = "xyes"])
+AS_VAR_IF([enable_coverage], [yes],
+          [],
+          [AS_VAR_SET([enable_coverage], [no])])
+
+AM_CONDITIONAL([USE_COVERAGE], [test ${enable_coverage} = "yes"])
 
 
+# --enable-sanitize option
 AC_ARG_ENABLE([sanitize],
               [AS_HELP_STRING([--enable-sanitize],
                               [build tests with sanitization (useful for developers)])])
+AS_VAR_IF([enable_sanitize], [yes],
+          [],
+          [AS_VAR_SET([enable_sanitize], [no])])
+
 AM_CONDITIONAL([USE_SANITIZE], [test "x${enable_sanitize}" = "xyes"])
+
+
+# report options
+AC_MSG_NOTICE([The following options will be used for tests (when `make check`):])
+AC_MSG_NOTICE([    coverage: ${enable_coverage}])
+AC_MSG_NOTICE([    sanitize: ${enable_sanitize}])
 
 
 AC_CONFIG_FILES([Makefile

@@ -53,5 +53,5 @@ tests/test-limits
 tests/test-math
 tests/test-mul
 tests/test-safe
+tests/test-sqrt
 tests/test-sub
-

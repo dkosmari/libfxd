@@ -18,6 +18,12 @@ struct RNG {
 
     fxd::uniform_real_distribution<Fxd> distribution;
 
+    RNG() = default;
+
+    RNG(Fxd min) :
+        distribution{min}
+    {}
+
     Fxd
     get()
         noexcept

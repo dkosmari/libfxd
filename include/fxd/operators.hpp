@@ -40,12 +40,11 @@
 namespace fxd {
 
 
-    /// @cond
-
     // ---------- //
     // Assignment //
     // ---------- //
 
+    /// In-place addition.
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
     constexpr
@@ -59,6 +58,7 @@ namespace fxd {
     }
 
 
+    /// In-place subtraction.
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
     constexpr
@@ -72,6 +72,7 @@ namespace fxd {
     }
 
 
+    /// In-place multiplication.
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
     constexpr
@@ -84,6 +85,7 @@ namespace fxd {
     }
 
 
+    /// In-place division.
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
     constexpr
@@ -102,6 +104,7 @@ namespace fxd {
     // ------------------- //
 
 
+    /// Pre-increment.
     template<fixed_point Fxd>
     constexpr
     Fxd&
@@ -113,6 +116,7 @@ namespace fxd {
     }
 
 
+    /// Pre-decrement.
     template<fixed_point Fxd>
     constexpr
     Fxd&
@@ -124,6 +128,7 @@ namespace fxd {
     }
 
 
+    /// Post-increment.
     template<fixed_point Fxd>
     constexpr
     Fxd
@@ -136,6 +141,7 @@ namespace fxd {
     }
 
 
+    /// Post-decrement.
     template<fixed_point Fxd>
     constexpr
     Fxd
@@ -154,6 +160,7 @@ namespace fxd {
     // ---------- //
 
 
+    /// Unary `+`.
     template<fixed_point Fxd>
     constexpr
     Fxd
@@ -164,6 +171,7 @@ namespace fxd {
     }
 
 
+    /// Negation.
     template<fixed_point Fxd>
     constexpr
     Fxd
@@ -174,6 +182,7 @@ namespace fxd {
     }
 
 
+    /// Addition.
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
@@ -188,6 +197,7 @@ namespace fxd {
     }
 
 
+    /// Subtraction.
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
@@ -202,6 +212,7 @@ namespace fxd {
     }
 
 
+    /// Multiplication.
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
@@ -216,6 +227,7 @@ namespace fxd {
     }
 
 
+    /// Division.
     template<typename A,
              typename B>
     requires (fixed_point<A> || fixed_point<B>)
@@ -236,6 +248,7 @@ namespace fxd {
     // --- //
 
 
+    /// Output (by converting to a floating-point value).
     template<typename CharT,
              typename Traits,
              fixed_point Fxd>
@@ -247,6 +260,7 @@ namespace fxd {
     }
 
 
+    /// Input (by converting from a floatiung-point value).
     template<typename CharT,
              typename Traits,
              fixed_point Fxd>
@@ -261,8 +275,6 @@ namespace fxd {
     }
 
 
-
-    /// @endcond
 
 }
 

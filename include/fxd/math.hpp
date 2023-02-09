@@ -8,15 +8,34 @@
 #ifndef LIBFXD_MATH_HPP
 #define LIBFXD_MATH_HPP
 
+#include <cassert>
 #include <cerrno>
+#include <numeric>
+#include <utility>
 
 #include "concepts.hpp"
 #include "limits.hpp"
 #include "operators.hpp"
 #include "round-div.hpp"
+#include "round-mul.hpp"
+
+#include "impl/add.hpp"
 
 
 namespace fxd {
+
+    /// Same as `std::midpoint()`
+    template<fixed_point Fxd>
+    constexpr
+    Fxd
+    midpoint(Fxd a,
+             Fxd b)
+        noexcept
+    {
+        auto mid = std::midpoint(a.raw_value, b.raw_value);
+        return Fxd::from_raw(mid);
+    }
+
 
     /// Same as `std::abs()`.
     template<fixed_point Fxd>
@@ -68,6 +87,9 @@ namespace fxd {
      * @note If the argument `x` is negative, `errno` is set to `EDOM`.
      */
     template<fixed_point Fxd>
+    requires (Fxd::int_bits > std::numeric_limits<Fxd>::is_signed
+              &&
+              Fxd::frac_bits >= 0)
     constexpr
     Fxd
     sqrt(Fxd x)
@@ -85,28 +107,36 @@ namespace fxd {
         // Babylonian/Heron/Newton-Raphson method
 
         int i = 0;
-        Fxd a = x;
-        Fxd old_a;
+        Fxd old_b;
+        Fxd a = x < 1 ? x : 1;
+        Fxd b = x < 1 ? 1 : x;
 
         do {
 
             if (++i > Fxd::bits) [[unlikely]]
                 break;
 
-            Fxd b = up::div(x, a);
+            a = down::div(x, b);
+            assert(a >= 0);
+            assert(a <= b);
 
-            old_a = a;
+            old_b = b;
+            b = midpoint(b, a);
+            assert(b >= 0);
 
-            a = (a + b);
-            a.raw_value >>= 1;
-
-            if (!a) [[unlikely]]
+            if (!b) [[unlikely]]
                 break;
 
-        } while (old_a != a);
+        } while (old_b != b);
 
-        while (a * a > x)
+        a = down::div(x, b);
+
+        while (up::mul(a, a) <= x)
+            ++a.raw_value;
+
+        while (up::mul(a, a) > x)
             --a.raw_value;
+
 
         return a;
     }

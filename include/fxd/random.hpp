@@ -20,14 +20,22 @@ namespace fxd {
 
     /// Analogous to `std::uniform_real_distribution`.
     template<fixed_point Fxd>
-    struct uniform_real_distribution :
+    class uniform_real_distribution :
         private std::uniform_int_distribution<typename Fxd::raw_type> {
+
+        using parent = std::uniform_int_distribution<typename Fxd::raw_type>;
+
+    public:
 
         /// The type that will be generated.
         using result_type = Fxd;
 
         /// Analogous to `std::uniform_real_distribution::param_type`
-        struct param_type {
+        class param_type {
+
+            result_type a_, b_;
+
+        public:
 
             constexpr
             param_type() :
@@ -58,13 +66,10 @@ namespace fxd {
             /// Defaulted `==` operator.
             bool operator ==(const param_type& other) const noexcept = default;
 
-        private:
-
-            result_type a_, b_;
-
         };
 
 
+        /// Default constructor.
         uniform_real_distribution() :
             uniform_real_distribution{std::numeric_limits<result_type>::lowest()}
         {}
@@ -125,7 +130,8 @@ namespace fxd {
         void
         param(const param_type& p)
         {
-            parent::param(p.a().raw_value, p.b().raw_value);
+            parent::param(typename parent::param_type{p.a().raw_value,
+                                                      p.b().raw_value});
         }
 
 
@@ -174,7 +180,7 @@ namespace fxd {
         bool operator ==(const uniform_real_distribution&) const = default;
 
 
-        /// @cond
+        /// Output operator.
         template<typename CharT,
                  typename Traits>
         friend
@@ -207,6 +213,7 @@ namespace fxd {
         }
 
 
+        /// Input operator.
         template<typename CharT,
                  typename Traits>
         friend
@@ -229,13 +236,6 @@ namespace fxd {
                 throw;
             }
         }
-        /// @endcond
-
-
-
-    private:
-
-        using parent = std::uniform_int_distribution<typename Fxd::raw_type>;
 
 
     };
