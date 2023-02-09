@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <tuple>
 
+#include <fxd/except.hpp>
 #include <fxd/limits.hpp>
 #include <fxd/math.hpp>
 

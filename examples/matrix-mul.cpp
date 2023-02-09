@@ -22,7 +22,8 @@ struct Matrix {
     {}
 
 
-    Matrix(const Matrix<auto>& other) :
+    template<typename U>
+    Matrix(const Matrix<U>& other) :
         rows{other.rows},
         columns{other.columns},
         data(rows * columns)
@@ -50,8 +51,9 @@ struct Matrix {
     }
 
 
+    template<typename U>
     Matrix&
-    operator =(const Matrix<auto>& other)
+    operator =(const Matrix<U>& other)
     {
         if (rows != other.rows || columns != other.columns)
             throw std::domain_error{"invalid dimmensions in assignment"};

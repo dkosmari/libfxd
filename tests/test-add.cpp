@@ -2,8 +2,6 @@
 
 #include <fxd/fxd.hpp>
 
-#include "catch2/catch_amalgamated.hpp"
-
 #include "rng.hpp"
 #include "setup.hpp"
 #include "test-types.hpp"

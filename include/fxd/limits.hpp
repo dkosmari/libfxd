@@ -120,7 +120,7 @@ namespace std {
         {
             using Fxd = fxd::fixed<Int, Frac, Raw>;
             if constexpr (is_signed)
-                return Fxd::from_raw(Raw{1} << (Fxd::bits - 1));
+                return Fxd::from_raw(Raw{-1} << (Fxd::bits - 1));
             else
                 return Fxd::from_raw(0);
         }

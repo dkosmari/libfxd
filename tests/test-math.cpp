@@ -1,3 +1,4 @@
+#include <cerrno>
 #include <cmath>
 
 #include <fxd/limits.hpp>
@@ -11,10 +12,10 @@ TEST_CASE("abs")
     using Fxd = fxd::fixed<8, 10>;
 
     Fxd a = 3;
-    CHECK(abs(a) == 3);
-
     Fxd b = -3;
+    CHECK(abs(a) == 3);
     CHECK(abs(b) == 3);
+    CHECK(abs(a) == abs(b));
 }
 
 

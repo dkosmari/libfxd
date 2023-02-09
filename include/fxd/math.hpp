@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "concepts.hpp"
+#include "constructors.hpp"
 #include "limits.hpp"
 #include "operators.hpp"
 #include "round-div.hpp"
@@ -44,7 +45,7 @@ namespace fxd {
     abs(Fxd f)
         noexcept
     {
-        return f < 0 ? -f : f;
+        return f.raw_value < 0 ? -f : +f;
     }
 
 

@@ -108,7 +108,17 @@ namespace fxd {
         /// Defaulted `<=>` operator.
         constexpr
         std::strong_ordering operator <=>(const fixed& other)
-            const noexcept = default;
+            const noexcept
+#if 0
+            = default;
+#else
+        // BUG: to avoid ICE on GCC 10.4.0, we can't use the defaulted one.
+        {
+            raw_type a = raw_value;
+            raw_type b = other.raw_value;
+            return a <=> b;
+        }
+#endif
 
 
         // conversion
@@ -138,7 +148,5 @@ namespace fxd {
 
 
 }
-
-
 
 #endif
