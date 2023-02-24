@@ -38,6 +38,9 @@ AC_CHECK_PROGS([DOXYGEN],
 AM_CONDITIONAL([USE_DOXYGEN], [test "x${MISSING_DOXYGEN}" != "xyes"])
 
 
+PKG_CHECK_MODULES([BENCHMARK], [benchmark >= 1.7.1],
+                  [BENCHMARK_LIBS="${BENCHMARK_LIBS} -lbenchmark_main"])
+
 # --enable-coverage option
 AC_ARG_ENABLE([coverage],
               [AS_HELP_STRING([--enable-coverage],
@@ -73,6 +76,7 @@ AC_MSG_NOTICE([    sanitize: ${enable_sanitize}])
 
 
 AC_CONFIG_FILES([Makefile
+                 benchmarks/Makefile
                  doc/Doxyfile
                  doc/Makefile
                  examples/Makefile

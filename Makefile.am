@@ -5,9 +5,10 @@ EXTRA_DIST = \
 	COPYING.APL
 
 SUBDIRS = \
-	include/fxd \
+	benchmarks \
 	doc \
 	examples \
+	include/fxd \
 	tests
 
 .PHONY: doc
