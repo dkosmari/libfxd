@@ -6,6 +6,7 @@
 #include <concepts>
 #include <ostream>
 #include <iomanip>
+#include <cassert>
 
 
 template<typename T>
@@ -92,7 +93,50 @@ public:
         return num_cols;
     }
 
+
+    Matrix<T>
+    row(std::size_t r)
+        const
+    {
+        Matrix<T> row{1, cols()};
+        for (std::size_t c = 0; c < cols(); ++c)
+            row(0, c) = (*this)(r, c);
+        return row;
+    }
+
 };
+
+
+template<typename T>
+Matrix<T>
+operator +(const Matrix<T>& a,
+           const Matrix<T>& b)
+{
+    assert(a.rows() == b.rows());
+    assert(a.cols() == b.cols());
+
+    Matrix<T> c{a.rows(), a.cols()};
+    for (std::size_t row = 0; row < a.rows(); ++row)
+        for (std::size_t col = 0; col < a.cols(); ++col)
+            c(row, col) = a(row, col) + b(row, col);
+    return c;
+}
+
+
+template<typename T>
+Matrix<T>
+operator -(const Matrix<T>& a,
+           const Matrix<T>& b)
+{
+    assert(a.rows() == b.rows());
+    assert(a.cols() == b.cols());
+
+    Matrix<T> c{a.rows(), a.cols()};
+    for (std::size_t row = 0; row < a.rows(); ++row)
+        for (std::size_t col = 0; col < a.cols(); ++col)
+            c(row, col) = a(row, col) - b(row, col);
+    return c;
+}
 
 
 template<typename T>
@@ -100,6 +144,8 @@ Matrix<T>
 operator *(const Matrix<T>& a,
            const Matrix<T>& b)
 {
+    assert(a.cols() == b.rows());
+
     Matrix<T> c{a.rows(), b.cols()};
 
     for (std::size_t row = 0; row < c.rows(); ++row)

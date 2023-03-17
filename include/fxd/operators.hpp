@@ -8,11 +8,13 @@
 #ifndef LIBFXD_OPERATORS_HPP
 #define LIBFXD_OPERATORS_HPP
 
+#include <compare>
 #include <concepts>
 #include <ostream>
 #include <istream>
 
 #include "concepts.hpp"
+#include "limits.hpp"
 #include "round-div.hpp"
 #include "round-mul.hpp"
 #include "traits.hpp"
@@ -75,6 +77,7 @@ namespace fxd {
     /// In-place multiplication.
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
+    requires (!std::integral<T>)
     constexpr
     Fxd&
     operator *=(Fxd& a,
@@ -85,9 +88,24 @@ namespace fxd {
     }
 
 
+    /// In-place multiplication by integer.
+    template<fixed_point Fxd,
+             std::integral I>
+    constexpr
+    Fxd&
+    operator *=(Fxd& a,
+                I b)
+        noexcept
+    {
+        a.raw_value *= b;
+        return a;
+    }
+
+
     /// In-place division.
     template<fixed_point Fxd,
              std::convertible_to<Fxd> T>
+    requires (!std::integral<T>)
     constexpr
     Fxd&
     operator /=(Fxd& a,
@@ -97,6 +115,19 @@ namespace fxd {
         return a = zero::div<Fxd>(a, b);
     }
 
+
+    /// In-place division by integer.
+    template<fixed_point Fxd,
+             std::integral I>
+    constexpr
+    Fxd&
+    operator /=(Fxd& a,
+                I b)
+        noexcept
+    {
+        a.raw_value /= b;
+        return a;
+    }
 
 
     // ------------------- //
@@ -193,7 +224,9 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        return Fxd::from_raw(Fxd{a}.raw_value + Fxd{b}.raw_value);
+        return Fxd::from_raw(Fxd{a}.raw_value
+                             +
+                             Fxd{b}.raw_value);
     }
 
 
@@ -208,14 +241,55 @@ namespace fxd {
         noexcept
     {
         using Fxd = std::common_type_t<A, B>;
-        return Fxd::from_raw(Fxd{a}.raw_value - Fxd{b}.raw_value);
+        return Fxd::from_raw(Fxd{a}.raw_value
+                             -
+                             Fxd{b}.raw_value);
     }
 
 
-    /// Multiplication.
+    /// Multiply: `fxd::fixed` * `fxd::fixed`
+    template<fixed_point Fxd>
+    constexpr
+    Fxd
+    operator *(Fxd a,
+               Fxd b)
+        noexcept
+    {
+        return zero::mul(a, b);
+    }
+
+
+    /// Multiply: `fxd::fixed` * @e `std::integral`
+    template<fixed_point Fxd,
+             std::integral I>
+    constexpr
+    Fxd
+    operator *(Fxd a,
+               I b)
+        noexcept
+    {
+        return Fxd::from_raw(a.raw_value * b);
+    }
+
+
+    /// Multiply: @e `std::integral` * `fxd::fixed`
+    template<std::integral I,
+             fixed_point Fxd>
+    constexpr
+    Fxd
+    operator *(I a,
+               Fxd b) noexcept
+    {
+        return Fxd::from_raw(a * b.raw_value);
+    }
+
+
+    /// Multiply: first convert the other argument to `fxd::fixed`.
     template<typename A,
              typename B>
-    requires (fixed_point<A> || fixed_point<B>)
+    requires ((fixed_point<A> || fixed_point<B>)
+              &&
+              !(std::integral<A> || std::integral<B>))
     constexpr
     std::common_type_t<A, B>
     operator *(A a,
@@ -227,20 +301,56 @@ namespace fxd {
     }
 
 
-    /// Division.
-    template<typename A,
-             typename B>
-    requires (fixed_point<A> || fixed_point<B>)
+    /// Divide: `fxd::fixed` / `fxd::fixed`
+    template<fixed_point Fxd>
     constexpr
-    std::common_type_t<A, B>
-    operator /(A a,
-               B b)
+    Fxd
+    operator /(Fxd a,
+               Fxd b)
         noexcept
     {
-        using Fxd = std::common_type_t<A, B>;
+        return zero::div(a, b);
+    }
+
+
+    /// Divide: `fxd::fixed` / `std::integral`
+    template<fixed_point Fxd,
+             std::integral I>
+    constexpr
+    Fxd
+    operator /(Fxd a,
+               I b)
+        noexcept
+    {
+        return Fxd::from_raw(a.raw_value / b);
+    }
+
+
+    /// Divide: `fxd::fixed` / `!std::integral`
+    template<fixed_point Fxd,
+             std::convertible_to<Fxd> T>
+    requires (!std::integral<T>)
+    constexpr
+    Fxd
+    operator /(Fxd a,
+               T b)
+        noexcept
+    {
         return zero::div<Fxd>(a, b);
     }
 
+
+    /// Divide: convert first argument to `fxd::fixed`.
+    template<fixed_point Fxd,
+             std::convertible_to<Fxd> T>
+    constexpr
+    Fxd
+    operator /(T a,
+               Fxd b)
+        noexcept
+    {
+        return zero::div<Fxd>(a, b);
+    }
 
 
     // --- //
@@ -268,7 +378,7 @@ namespace fxd {
     operator >>(std::basic_istream<CharT, Traits>& in,
                 Fxd& f)
     {
-        typename Fxd::float_type ff;
+        typename std::numeric_limits<Fxd>::float_type ff;
         in >> ff;
         f = ff;
         return in;

@@ -8,7 +8,7 @@
 #ifndef LIBFXD_FIXED_HPP
 #define LIBFXD_FIXED_HPP
 
-#include <compare>
+//#include <compare>
 #include <concepts>
 #include <limits>
 
@@ -61,11 +61,6 @@ namespace fxd {
         static_assert(int_bits <= 2 * raw_bits);
         static_assert(frac_bits <= 2 * raw_bits);
 
-
-        /// A floating-point type that can fully represent this fixed-point.
-        using float_type =
-            impl::select_float_t<bits - std::numeric_limits<raw_type>::is_signed>;
-
         /// The raw value, stored as a bitfield.
         raw_type raw_value : bits;
 
@@ -96,29 +91,6 @@ namespace fxd {
 
         /// Defaulted copy assignment.
         constexpr fixed& operator =(const fixed&) noexcept = default;
-
-
-        // Comparison
-
-        /// Defaulted `==` operator.
-        constexpr
-        bool operator ==(const fixed& other)
-            const noexcept = default;
-
-        /// Defaulted `<=>` operator.
-        constexpr
-        std::strong_ordering operator <=>(const fixed& other)
-            const noexcept
-#if 0
-            = default;
-#else
-        // BUG: to avoid ICE on GCC 10.4.0, we can't use the defaulted one.
-        {
-            raw_type a = raw_value;
-            raw_type b = other.raw_value;
-            return a <=> b;
-        }
-#endif
 
 
         // conversion

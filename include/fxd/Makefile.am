@@ -2,6 +2,7 @@ fxddir = $(includedir)/fxd
 
 nobase_fxd_HEADERS = \
 	casting.hpp \
+	compare.hpp \
 	concepts.hpp \
 	constructors.hpp \
 	conversions.hpp \

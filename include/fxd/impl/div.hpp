@@ -127,7 +127,8 @@ namespace fxd::impl {
         noexcept
     {
 
-#if __SIZEOF_INT128__ == 16
+#ifdef LIBFXD_PARTIAL_INT128
+
         if constexpr (type_width<U> + frac_bits <= 128) {
 
             if constexpr (safe) {
@@ -137,7 +138,7 @@ namespace fxd::impl {
                     return div_result<U>{ 0, 0, false };
             }
 
-            using UU = __uint128_t;
+            using UU = uint128_t;
             const UU aa = static_cast<UU>(a) << frac_bits;
             const UU bb = b;
             UU q = aa / bb;
@@ -154,7 +155,8 @@ namespace fxd::impl {
                 r != 0
             };
         }
-#endif
+
+#endif // LIBFXD_PARTIAL_INT128
 
         if (!b)
             return unexpected{!a ? error::not_a_number : error::overflow};
@@ -210,7 +212,8 @@ namespace fxd::impl {
         noexcept
     {
 
-#if __SIZEOF_INT128__ == 16
+#ifdef LIBFXD_PARTIAL_INT128
+
         if constexpr (type_width<S> + frac_bits <= 128) {
 
             if constexpr (safe) {
@@ -228,7 +231,7 @@ namespace fxd::impl {
                     return unexpected{error::overflow};
             }
 
-            using SS = __int128_t;
+            using SS = int128_t;
             const SS aa = static_cast<SS>(a) << frac_bits;
             const SS bb = b;
             SS q = aa / bb;
@@ -248,7 +251,7 @@ namespace fxd::impl {
                 r != 0
             };
         }
-#endif
+#endif // LIBFXD_PARTIAL_INT128
 
         if (!b)
             return unexpected{!a

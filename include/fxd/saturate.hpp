@@ -91,7 +91,7 @@ namespace fxd::saturate {
 
     /// Construct from identical fixed-point type.
     template<fixed_point Fxd>
-    Fxd make_fixed(Fxd src) noexcept;
+    constexpr Fxd make_fixed(Fxd src) noexcept;
 
     /// Construct from integer, clamp on overflow.
     template<fixed_point Fxd, std::integral I>

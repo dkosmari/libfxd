@@ -33,44 +33,6 @@ namespace fxd::impl {
         return static_cast<II>(a) * static_cast<II>(b);
     }
 
-
-
-#if __SIZEOF_INT128__ == 16
-#define LIBFXD_HAVE_MUL128
-
-    template<int bits,
-    std::integral I>
-    requires (!has_int_for<2 * bits, I>)
-    constexpr
-    std::tuple<std::make_unsigned_t<I>, I>
-    mul(I a,
-        I b)
-        noexcept
-    {
-        using U = std::make_unsigned_t<I>;
-
-        using II = std::conditional_t<std::numeric_limits<I>::is_signed,
-                                      __int128_t,
-                                      __uint128_t>;
-
-        static_assert(sizeof(II) > sizeof(I));
-
-        const II cc = static_cast<II>(a) * static_cast<II>(b);
-
-        return {
-            static_cast<U>(cc),
-            static_cast<I>(cc >> type_width<U>)
-        };
-    }
-
-#endif
-
-
-
-#ifndef LIBFXD_HAVE_MUL128
-
-    // fallback implementation using only standard C++
-
     // returns low, high parts of the full multiplication a * b
     // without using larger arithmetic than I
     template<int bits,
@@ -82,6 +44,28 @@ namespace fxd::impl {
         I b)
         noexcept
     {
+
+#ifdef LIBFXD_PARTIAL_INT128
+
+        using U = std::make_unsigned_t<I>;
+
+        using II = std::conditional_t<std::numeric_limits<I>::is_signed,
+                                      int128_t,
+                                      uint128_t>;
+
+        static_assert(sizeof(II) > sizeof(I));
+
+        const II cc = static_cast<II>(a) * static_cast<II>(b);
+
+        return {
+            static_cast<U>(cc),
+            static_cast<I>(cc >> type_width<U>)
+        };
+
+#else
+
+        // fallback implementation using only standard C++
+
         constexpr int k = type_width<I> / 2;
         using U = std::make_unsigned_t<I>;
         constexpr U mask = (U{1} << k) - 1;
@@ -109,9 +93,27 @@ namespace fxd::impl {
             + carry1 + carry2;
 
         return { c01, c23 };
+
+#endif // LIBFXD_PARTIAL_INT128
+
     }
 
-#endif // LIBFXD_HAVE_MUL128
+
+    namespace overflow {
+
+        template<std::integral I>
+        constexpr
+        std::pair<I, bool>
+        mul(I a,
+            I b)
+            noexcept
+        {
+            I res;
+            bool ovf = __builtin_mul_overflow(a, b, &res);
+            return { res, ovf };
+        }
+    }
+
 
 }
 

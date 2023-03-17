@@ -12,6 +12,7 @@
 #include "fixed.hpp"
 
 #include "casting.hpp"
+#include "compare.hpp"
 #include "concepts.hpp"
 #include "constructors.hpp"
 #include "conversions.hpp"

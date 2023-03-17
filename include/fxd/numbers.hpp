@@ -25,7 +25,7 @@ namespace std::numbers {
 #define LIBFXD_NUMBER(c)                                                \
     template<fxd::fixed_point Fxd>                                      \
     inline LIBFXD_CONSTEXPR                                             \
-    Fxd c<Fxd> = Fxd{std::numbers:: c <typename Fxd::float_type>}
+    Fxd c<Fxd> = Fxd{std::numbers:: c <typename std::numeric_limits<Fxd>::float_type>}
 
     /// Fixed-point constant for @f$e@f$. @hideinitializer
     LIBFXD_NUMBER(e_v);

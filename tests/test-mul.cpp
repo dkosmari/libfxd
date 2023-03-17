@@ -24,6 +24,12 @@ TEST_CASE("basic_s16.16", "[s16.16]")
     F a2 = 2;
     F a3 = 6;
     CHECK(a1 * a2 == a3);
+
+    F a4 = a1;
+    a4 *= 2;
+    CHECK(a4 == a3);
+    CHECK(a1 * 2 == a3);
+    CHECK(2 * a1 == a3);
 }
 
 

@@ -39,6 +39,7 @@ AM_CXXFLAGS = \
 
 check_PROGRAMS = \
 	test-add \
+	test-compare \
 	test-conv \
 	test-div \
 	test-limits \

@@ -15,9 +15,9 @@ AM_LDFLAGS = $(BENCHMARK_LIBS)
 
 
 check_PROGRAMS = \
+	bench-gauss-seidel \
 	bench-matrix-invert \
 	bench-sqrt
 
 
 AM_DEFAULT_SOURCE_EXT = .cpp
-

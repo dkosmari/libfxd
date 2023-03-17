@@ -10,36 +10,34 @@
 #include "setup.hpp"
 
 
-const int max_iterations = 1000;
+const int max_iterations = 10000;
 
 
 using sqrt_test_types = std::tuple<
 
-#if FLT_MANT_DIG >= 24
-
     fxd::fixed<13, 12>,
     fxd::fixed<24, 1>,
     fxd::fixed<25, 0>,
+    fxd::fixed<2, 23>,
 
     fxd::ufixed<12, 12>,
+    fxd::ufixed<2, 22>,
     fxd::ufixed<1, 23>,
     fxd::ufixed<23, 1>,
     fxd::ufixed<24, 0>,
 
-#endif
-
-#if DBL_MANT_DIG >= 53
 
     fxd::fixed<34, 20>,
     fxd::fixed<53, 1>,
     fxd::fixed<54, 0>,
+    fxd::fixed<2, 52>,
 
     fxd::ufixed<21, 32>,
     fxd::ufixed<52, 1>,
     fxd::ufixed<53, 0>,
+    fxd::ufixed<2, 51>,
     fxd::ufixed<1, 52>,
 
-#endif
 
 #if LDBL_MANT_DIG >= 64
 
@@ -88,6 +86,24 @@ TEMPLATE_LIST_TEST_CASE("random",
             Fxd ye = y + eps;
             Fxd yye = fxd::except::up::mul(ye, ye);
             CHECK(yye > x);
+        }
+        catch (std::overflow_error&) {
+            continue;
+        }
+
+
+        Fxd z = fxd::sqrt_bin(x);
+        CAPTURE(z);
+
+        try  {
+            // ensure it's not larger than the actual square root
+            Fxd zz = fxd::except::mul(z, z);
+            CHECK(zz <= x);
+
+            // ensure the very next larger value exceeds the square root
+            Fxd ze = z + eps;
+            Fxd zze = fxd::except::up::mul(ze, ze);
+            CHECK(zze > x);
         }
         catch (std::overflow_error&) {
             continue;

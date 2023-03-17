@@ -237,7 +237,7 @@ namespace fxd::impl {
             noexcept
         {
             const T result = impl::shr_real(a, b);
-            const bool ovf = a != impl::shl_real(a, b);
+            const bool ovf = a != impl::shl_real(result, b);
             return { result, ovf };
         }
 

@@ -116,11 +116,11 @@ namespace fxd {
     /// Converts a fixed-point to its natural floating-point type (with no losses/rounding).
     template<fixed_point Fxd>
     constexpr
-    typename Fxd::float_type
+    typename std::numeric_limits<Fxd>::float_type
     to_float(Fxd f)
         noexcept
     {
-        return to_float<typename Fxd::float_type>(f);
+        return to_float<typename std::numeric_limits<Fxd>::float_type>(f);
     }
 
 

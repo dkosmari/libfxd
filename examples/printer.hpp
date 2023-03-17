@@ -73,7 +73,7 @@ print(F f)
     using namespace std::literals;
     using std::string;
 
-    constexpr int p = 5 + std::numeric_limits<F>::max_digits10;
+    constexpr int p = std::numeric_limits<F>::max_digits10;
     const int w = std::ceil(std::log10(2) * F::int_bits)
                   + p + 3;
 
@@ -99,8 +99,7 @@ print(F f)
     }
 
 
-    std::cout << std::fixed
-              << std::setprecision(p)
+    std::cout << std::setprecision(p)
               << std::setw(w)
               << f
               << "  0x"

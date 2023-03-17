@@ -71,6 +71,8 @@ TEST_CASE("special-1", "[s16.16]")
     F a2 = 2;
     F a3 = 3;
     CHECK(a1 + a2 == a3);
+    CHECK(a1 + 2 == a3);
+    CHECK(1 + a2 == a3);
 
 
     F b1 = -1;

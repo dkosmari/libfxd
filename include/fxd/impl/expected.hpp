@@ -9,7 +9,6 @@
 #define LIBFXD_IMPL_EXPECTED_HPP
 
 #include <exception>
-#include <initializer_list>
 #include <type_traits>
 #include <utility> // in_place_t, forward()
 #include <variant>
@@ -94,17 +93,6 @@ namespace fxd::impl {
         constexpr
         explicit unexpected(std::in_place_t, Args&&... args) :
             value(std::forward<Args>(args)...)
-        {}
-
-
-        template<typename U,
-                 typename... Args>
-        requires (std::is_constructible_v<E, std::initializer_list<U>, Args...>)
-        constexpr
-        explicit unexpected(std::in_place_t,
-                            std::initializer_list<U> il,
-                            Args&&... args) :
-            value(il, std::forward<Args>(args)...)
         {}
 
 
@@ -230,33 +218,12 @@ namespace fxd::impl {
         {}
 
 
-        template<typename U,
-                 typename... Args>
-        constexpr
-        explicit expected(std::in_place_t,
-                          std::initializer_list<U> il,
-                          Args&&... args) :
-            data(value_idx{}, il, std::forward<Args>(args)...)
-        {}
-
-
         template<typename... Args>
         constexpr
         explicit expected(unexpect_t,
                           Args&&... args) :
             data(error_idx{}, std::forward<Args>(args)...)
         {}
-
-
-        template<typename U,
-                 typename... Args>
-        constexpr
-        explicit expected(unexpect_t,
-                          std::initializer_list<U> il,
-                          Args&&... args) :
-            data(error_idx{}, il, std::forward<Args>(args)...)
-        {}
-
 
 
 

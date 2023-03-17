@@ -8,12 +8,45 @@
 #ifndef LIBFXD_IMPL_TYPES_HPP
 #define LIBFXD_IMPL_TYPES_HPP
 
+#include <concepts>
 #include <cstdint>
 #include <limits>
 #include <type_traits>
 
 
+#if (__SIZEOF_INT128__ == 16)
+// __int128 exists
+#define LIBFXD_PARTIAL_INT128
+
+#if defined(__GLIBCXX_TYPE_INT_N_0) && (__GLIBCXX_BITSIZE_INT_N_0 == 128)
+// With -std=gnu++*, __int128 is fully supported by the standard library.
+#define LIBFXD_FULL_INT128
+#endif
+
+#endif
+
+// TODO: detect __float128 and include a numeric_limits specialization for it.
+
+
 namespace fxd::impl {
+
+
+
+#ifdef LIBFXD_PARTIAL_INT128
+
+    using int128_t = __int128;
+    using uint128_t = unsigned __int128;
+
+#endif
+
+
+#ifdef LIBFXD_FULL_INT128
+
+    static_assert(std::integral<int128_t>);
+    static_assert(std::integral<uint128_t>);
+
+#endif
+
 
     // How many bits a given integral type has.
     template<typename T>
@@ -68,6 +101,19 @@ namespace fxd::impl {
     struct select_uint<bits> { using type = std::uint64_t; };
 
 
+#ifdef LIBFXD_FULL_INT128
+
+    template<int bits>
+    requires (bits > 64 && bits <= 128)
+    struct select_int<bits> { using type = int128_t; };
+
+    template<int bits>
+    requires (bits > 64 && bits <= 128)
+    struct select_uint<bits> { using type = uint128_t; };
+
+#endif
+
+
     template<int bits>
     using select_int_t = typename select_int<bits>::type;
 
@@ -114,10 +160,18 @@ namespace fxd::impl {
     bool has_int_for = !std::is_void_v<select_int_for<bits, I>>;
 
 
+#ifdef LIBFXD_FULL_INT128
+    using intmax_t = int128_t;
+    using uintmax_t = uint128_t;
+#else
+    using std::intmax_t;
+    using std::uintmax_t;
+#endif
+
     template<typename I>
     using max_int_for = std::conditional_t<std::numeric_limits<I>::is_signed,
-                                           std::intmax_t,
-                                           std::uintmax_t>;
+                                           intmax_t,
+                                           uintmax_t>;
 
 
 
@@ -149,6 +203,18 @@ namespace fxd::impl {
     struct select_float<bits>  {
         using type = long double;
     };
+
+
+#ifdef LIBFXD_HAVE_FLOAT128
+    template<int bits>
+    requires(bits > std::numeric_limits<long double>::digits &&
+             bits <= std::numeric_limits<float128_t>::digits)
+    struct select_float<bits> {
+        using type = float128_t;
+    };
+
+#endif
+
 
 
     // Helper alias for select_float.

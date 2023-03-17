@@ -80,3 +80,57 @@ TEST_CASE("sqrt")
     CHECK(r == 0);
     CHECK(e == EDOM);
 }
+
+
+TEST_CASE("ilogb")
+{
+    using Fxd = fxd::fixed<16, 16>;
+
+    CHECK(ilogb(Fxd{0.25}) == -2);
+    CHECK(ilogb(Fxd{0.5}) == -1);
+    CHECK(ilogb(Fxd{1.0}) == 0);
+    CHECK(ilogb(Fxd{1.1}) == 0);
+    CHECK(ilogb(Fxd{1.9999}) == 0);
+    CHECK(ilogb(Fxd{2.0}) == 1);
+    CHECK(ilogb(Fxd{2.9999}) == 1);
+    CHECK(ilogb(Fxd{3.0}) == 1);
+    CHECK(ilogb(Fxd{3.999}) == 1);
+    CHECK(ilogb(Fxd{4.0}) == 2);
+    CHECK(ilogb(Fxd{4.0}) == 2);
+    CHECK(ilogb(Fxd{5.0}) == 2);
+    CHECK(ilogb(Fxd{7.999}) == 2);
+    CHECK(ilogb(Fxd{8.0}) == 3);
+    CHECK(ilogb(Fxd{15.9999}) == 3);
+    CHECK(ilogb(Fxd{16}) == 4);
+    CHECK(ilogb(Fxd{255}) == 7);
+    CHECK(ilogb(Fxd{256}) == 8);
+    CHECK(ilogb(Fxd{-256}) == 8);
+    CHECK(ilogb(Fxd{32767}) == 14);
+    CHECK(ilogb(Fxd{-32767}) == 14);
+    CHECK(ilogb(Fxd{-32768}) == 15);
+
+    using UFxd = fxd::ufixed<16, 16>;
+
+    CHECK(ilogb(UFxd{0.25}) == -2);
+    CHECK(ilogb(UFxd{0.5}) == -1);
+    CHECK(ilogb(UFxd{1.0}) == 0);
+    CHECK(ilogb(UFxd{1.1}) == 0);
+    CHECK(ilogb(UFxd{1.9999}) == 0);
+    CHECK(ilogb(UFxd{2.0}) == 1);
+    CHECK(ilogb(UFxd{2.9999}) == 1);
+    CHECK(ilogb(UFxd{3.0}) == 1);
+    CHECK(ilogb(UFxd{3.999}) == 1);
+    CHECK(ilogb(UFxd{4.0}) == 2);
+    CHECK(ilogb(UFxd{4.0}) == 2);
+    CHECK(ilogb(UFxd{5.0}) == 2);
+    CHECK(ilogb(UFxd{7.999}) == 2);
+    CHECK(ilogb(UFxd{8.0}) == 3);
+    CHECK(ilogb(UFxd{15.9999}) == 3);
+    CHECK(ilogb(UFxd{16}) == 4);
+    CHECK(ilogb(UFxd{255}) == 7);
+    CHECK(ilogb(UFxd{256}) == 8);
+    CHECK(ilogb(UFxd{32767}) == 14);
+    CHECK(ilogb(UFxd{32768}) == 15);
+    CHECK(ilogb(UFxd{65535}) == 15);
+
+}

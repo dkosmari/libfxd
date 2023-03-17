@@ -210,7 +210,7 @@ TEST_CASE("make3", "[s1.31]")
     round_down guard;
 
     using Fxd = fxd::fixed<1, 31>; // range is [-1, 1)
-    using Flt = Fxd::float_type;
+    using Flt = typename std::numeric_limits<Fxd>::float_type;
     namespace exc = fxd::except;
     using std::nextafter;
     using over = std::overflow_error;
@@ -262,7 +262,7 @@ TEST_CASE("make4", "[u1.31]")
     round_down guard;
 
     using Fxd = fxd::ufixed<1, 31>; // range is [0, 2)
-    using Flt = Fxd::float_type;
+    using Flt = typename std::numeric_limits<Fxd>::float_type;
     namespace exc = fxd::except;
     using std::nextafter;
     using over = std::overflow_error;

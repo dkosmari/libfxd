@@ -14,12 +14,18 @@ syntax: glob
 .deps
 aclocal.m4
 autom4te.cache
+
+benchmarks/bench-gauss-seidel
+benchmarks/bench-matrix-invert
+benchmarks/bench-sqrt
+
 build-aux
 compile_flags.txt
 config.h
 config.h.in
 config.status
 configure
+
 
 doc/Doxyfile
 doc/doxyfile.stamp
@@ -47,6 +53,7 @@ stamp-h1
 
 tests/html
 tests/test-add
+tests/test-compare
 tests/test-conv
 tests/test-div
 tests/test-limits

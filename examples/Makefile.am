@@ -24,6 +24,7 @@ noinst_PROGRAMS = \
 
 
 matrix_mul_CXXFLAGS = $(AM_CXXFLAGS) -frounding-math
+matrix_square_root_CXXFLAGS = $(AM_CXXFLAGS) -frounding-math
 
 
 .PHONY: company

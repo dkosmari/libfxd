@@ -11,8 +11,10 @@
 #include <algorithm>
 #include <limits>
 
-#include "fixed.hpp"
 #include "constructors.hpp"
+#include "fixed.hpp"
+
+#include "impl/types.hpp"
 
 
 #define LIBFXD_LOG10_2(x)      ((x) * 643L / 2136)
@@ -99,7 +101,14 @@ namespace std {
         /// Not meaningful.
         static constexpr bool tinyness_before = false;
 
+        /// Extension: maximum logical bit.
+        static constexpr int max_bit = Int - is_signed;
 
+        /// Extension: minimum logical bit.
+        static constexpr int min_bit = - Frac;
+
+        /// Extension: lossless conversion to a floating-point type.
+        using float_type = fxd::impl::select_float_t<digits>;
 
 
         /// Smallest positive value; same semantics as floating-point.
@@ -134,8 +143,8 @@ namespace std {
         {
             using Fxd = fxd::fixed<Int, Frac, Raw>;
             if constexpr (is_signed) {
-                using U = make_unsigned_t<Raw>;
-                return Fxd::from_raw((U{1} << (Fxd::bits - 1)) - U{1});
+                using URaw = make_unsigned_t<Raw>;
+                return Fxd::from_raw((URaw{1} << (Int + Frac - 1)) - URaw{1});
             } else
                 return Fxd::from_raw(~Raw{0});
         }
@@ -200,6 +209,15 @@ namespace std {
             return min();
         }
 
+
+        /// Extension: maximum power of two.
+        static constexpr
+        fxd::fixed<Int, Frac, Raw>
+        max_pow2()
+        noexcept
+        {
+            return fxd::fixed<Int, Frac, Raw>::from_raw(1 << (Int+Frac - is_signed));
+        }
 
     };
 

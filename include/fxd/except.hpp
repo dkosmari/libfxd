@@ -88,7 +88,7 @@ namespace fxd::except {
 
     /// Construct from identical fixed-point type.
     template<fixed_point Fxd>
-    Fxd make_fixed(Fxd src) noexcept;
+    constexpr Fxd make_fixed(Fxd src) noexcept;
 
     /// Construct from integer, throw on overflow.
     template<fixed_point Fxd, std::integral I>

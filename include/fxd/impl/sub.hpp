@@ -16,11 +16,11 @@
 
 namespace fxd::impl::overflow {
 
-
 #ifdef __amd64__
 #define LIBFXD_HAVE_SUB_OVERFLOW_ASM
 
     template<std::unsigned_integral U>
+    requires (type_width<U> <= 64)
     std::pair<U, bool>
     sub_asm(U a,
             U b,
@@ -46,6 +46,7 @@ namespace fxd::impl::overflow {
 
 
     template<std::signed_integral S>
+    requires (type_width<S> <= 64)
     std::pair<S, bool>
     sub_asm(S a,
             S b,
@@ -69,7 +70,6 @@ namespace fxd::impl::overflow {
         return { a, borrow };
     }
 
-
 #endif
 
 
@@ -87,7 +87,8 @@ namespace fxd::impl::overflow {
     {
 #ifdef LIBFXD_HAVE_SUB_OVERFLOW_ASM
             if (!std::is_constant_evaluated())
-                return sub_asm(a, b, borrow);
+                if constexpr (requires { sub_asm<I>(a, b, borrow); })
+                    return sub_asm(a, b, borrow);
 #endif
         I r1;
         const bool o1 = __builtin_sub_overflow(a, b, &r1);

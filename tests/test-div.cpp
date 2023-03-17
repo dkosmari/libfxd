@@ -26,6 +26,8 @@ TEST_CASE("basic", "[s16.16]")
         F b = 1;
         F c = 0;
         CHECK(a / b == c);
+        CHECK(0 / b == c);
+        CHECK(a / 1 == c);
     }
 
     {
@@ -33,6 +35,8 @@ TEST_CASE("basic", "[s16.16]")
         F b = 1;
         F c = 1;
         CHECK(a / b == c);
+        CHECK(1 / b == c);
+        CHECK(a / 1 == c);
     }
 
     {
@@ -40,6 +44,8 @@ TEST_CASE("basic", "[s16.16]")
         F b = 1;
         F c = -1;
         CHECK(a / b == c);
+        CHECK(-1 / b == c);
+        CHECK(a / 1 == c);
     }
 
     {
@@ -47,6 +53,8 @@ TEST_CASE("basic", "[s16.16]")
         F b = -1;
         F c = 1;
         CHECK(a / b == c);
+        CHECK(-1 / b == c);
+        CHECK(a / -1 == c);
     }
 
     {
@@ -54,6 +62,7 @@ TEST_CASE("basic", "[s16.16]")
         F b = 0.5L;
         F c = 2;
         CHECK(a / b == c);
+        CHECK(a / 0.5L == c);
     }
 
     {

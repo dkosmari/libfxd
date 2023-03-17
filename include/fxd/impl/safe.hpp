@@ -36,6 +36,7 @@ from_raw(I val)
 
 
 template<fixed_point Fxd>
+constexpr
 Fxd
 make_fixed(Fxd src)
     noexcept
@@ -146,8 +147,19 @@ make_ufixed(Src src)
 // Casting (fixed -> fixed)
 
 
+template<fixed_point Fxd>
+constexpr
+Fxd
+fixed_cast(Fxd src)
+    noexcept
+{
+    return src;
+}
+
+
 template<fixed_point Dst,
          fixed_point Src>
+requires (!std::same_as<Src, Dst>)
 constexpr
 Dst
 fixed_cast(Src src)

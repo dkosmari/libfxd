@@ -22,11 +22,11 @@ namespace fxd::impl {
 
     namespace overflow {
 
-
 #ifdef __amd64__
 #define LIBFXD_HAVE_ADD_OVERFLOW_ASM
 
         template<std::unsigned_integral U>
+        requires (type_width<U> <= 64)
         std::pair<U, bool>
         add_asm(U a,
                 U b,
@@ -53,6 +53,7 @@ namespace fxd::impl {
 
 
         template<std::signed_integral S>
+        requires (type_width<S> <= 64)
         std::pair<S, bool>
         add_asm(S a,
                 S b,
@@ -94,7 +95,8 @@ namespace fxd::impl {
         {
 #ifdef LIBFXD_HAVE_ADD_OVERFLOW_ASM
             if (!std::is_constant_evaluated())
-                return add_asm(a, b, carry);
+                if constexpr (requires { add_asm<I>(a, b, carry); })
+                    return add_asm(a, b, carry);
 #endif
             I r1;
             const bool o1 = __builtin_add_overflow(a, b, &r1);
@@ -164,13 +166,13 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<std::uintmax_t, bool>
-        add(std::uintmax_t a,
-            std::uintmax_t b,
+        std::pair<impl::uintmax_t, bool>
+        add(impl::uintmax_t a,
+            impl::uintmax_t b,
             bool carry)
             noexcept
         {
-            using U = std::uintmax_t;
+            using U = impl::uintmax_t;
             const U ab = a + b;
             const U result = a + b + carry;
             constexpr U max = std::numeric_limits<U>::max();
@@ -180,12 +182,12 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<std::uintmax_t, bool>
-        add(std::uintmax_t a,
-            std::uintmax_t b)
+        std::pair<impl::uintmax_t, bool>
+        add(impl::uintmax_t a,
+            impl::uintmax_t b)
             noexcept
         {
-            using U = std::uintmax_t;
+            using U = impl::uintmax_t;
             const U result = a + b;
             constexpr U max = std::numeric_limits<U>::max();
             const bool ovf = (a > max - b);
@@ -193,7 +195,7 @@ namespace fxd::impl {
         }
 
 
-
+        // simply use a larger integer
         template<std::signed_integral S>
         requires (has_int<type_width<S> + 1>)
         constexpr inline
@@ -214,6 +216,7 @@ namespace fxd::impl {
         }
 
 
+        // simply use a larger integer
         template<std::signed_integral S>
         requires (has_int<type_width<S> + 1>)
         constexpr inline
@@ -234,13 +237,13 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<std::intmax_t, bool>
-        add(std::intmax_t a,
-            std::intmax_t b,
+        std::pair<impl::intmax_t, bool>
+        add(impl::intmax_t a,
+            impl::intmax_t b,
             bool carry)
             noexcept
         {
-            using S = std::intmax_t;
+            using S = impl::intmax_t;
             using U = std::make_unsigned_t<S>;
             constexpr S max = std::numeric_limits<S>::max();
             constexpr S min = std::numeric_limits<S>::min();
@@ -258,12 +261,12 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<std::intmax_t, bool>
-        add(std::intmax_t a,
-            std::intmax_t b)
+        std::pair<impl::intmax_t, bool>
+        add(impl::intmax_t a,
+            impl::intmax_t b)
             noexcept
         {
-            using S = std::intmax_t;
+            using S = impl::intmax_t;
             using U = std::make_unsigned_t<S>;
             constexpr S max = std::numeric_limits<S>::max();
             constexpr S min = std::numeric_limits<S>::min();
@@ -334,6 +337,7 @@ namespace fxd::impl {
     add(I a,
         I b,
         bool carry_in = false)
+        noexcept
     {
         return a + b + carry_in;
     }

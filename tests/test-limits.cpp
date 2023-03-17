@@ -37,7 +37,7 @@ TEMPLATE_LIST_TEST_CASE("limits",
     using LimFxd = std::numeric_limits<Fxd>;
     using LimFlt = std::numeric_limits<Flt>;
 
-    CHECK(std::is_same_v<typename Fxd::float_type, Flt>);
+    CHECK(std::is_same_v<typename LimFxd::float_type, Flt>);
     CHECK(LimFxd::is_specialized);
     CHECK(LimFxd::radix == LimFlt::radix);
     CHECK(LimFxd::digits == LimFlt::digits);
@@ -65,11 +65,14 @@ TEMPLATE_LIST_TEST_CASE("limits",
 }
 
 
+template<fxd::fixed_point Fxd>
+using float_for = typename std::numeric_limits<Fxd>::float_type;
+
 TEST_CASE("limits-float_type")
 {
-    CHECK(std::is_same_v<typename fxd:: fixed<1, 25>::float_type, double>);
-    CHECK(std::is_same_v<typename fxd::ufixed<1, 24>::float_type, double>);
+    CHECK(std::is_same_v<float_for<fxd:: fixed<1, 25>>, double>);
+    CHECK(std::is_same_v<float_for<fxd::ufixed<1, 24>>, double>);
 
-    CHECK(std::is_same_v<typename fxd:: fixed<1, 54>::float_type, long double>);
-    CHECK(std::is_same_v<typename fxd::ufixed<0, 54>::float_type, long double>);
+    CHECK(std::is_same_v<float_for<fxd:: fixed<1, 54>>, long double>);
+    CHECK(std::is_same_v<float_for<fxd::ufixed<0, 54>>, long double>);
 }

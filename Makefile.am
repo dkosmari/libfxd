@@ -11,6 +11,7 @@ SUBDIRS = \
 	include/fxd \
 	tests
 
-.PHONY: doc
+.PHONY: doc bench
+
 doc:
 	cd doc && $(MAKE) $(AM_MAKEFLAGS) clean html
