@@ -10,21 +10,21 @@ nobase_fxd_HEADERS = \
 	fixed.hpp \
 	fxd.hpp \
 	hash.hpp \
-	impl/add.hpp \
-	impl/bias.hpp \
-	impl/div.hpp \
-	impl/error.hpp \
-	impl/expected.hpp \
-	impl/mul.hpp \
-	impl/opacify.hpp \
-	impl/safe-div.hpp \
-	impl/safe-includes.hpp \
-	impl/safe-mul.hpp \
-	impl/safe.hpp \
-	impl/shift.hpp \
-	impl/sub.hpp \
-	impl/tuple.hpp \
-	impl/types.hpp \
+	detail/add.hpp \
+	detail/bias.hpp \
+	detail/div.hpp \
+	detail/error.hpp \
+	detail/expected.hpp \
+	detail/mul.hpp \
+	detail/opacify.hpp \
+	detail/safe-div.hpp \
+	detail/safe-includes.hpp \
+	detail/safe-mul.hpp \
+	detail/safe.hpp \
+	detail/shift.hpp \
+	detail/sub.hpp \
+	detail/tuple.hpp \
+	detail/types.hpp \
 	limits.hpp \
 	math.hpp \
 	numbers.hpp \

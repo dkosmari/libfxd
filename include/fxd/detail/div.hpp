@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_DIV_HPP
-#define LIBFXD_IMPL_DIV_HPP
+#ifndef LIBFXD_DETAIL_DIV_HPP
+#define LIBFXD_DETAIL_DIV_HPP
 
 #include <algorithm>
 #include <bit>
@@ -20,7 +20,7 @@
 #include "shift.hpp"
 
 
-namespace fxd::impl {
+namespace fxd::detail {
 
 
     template<std::integral I>
@@ -301,7 +301,7 @@ namespace fxd::impl {
     }
 
 
-} // namespace fxd::impl
+} // namespace fxd::detail
 
 
 #endif

@@ -12,7 +12,7 @@
 #include <concepts>
 #include <limits>
 
-#include "impl/types.hpp"
+#include "detail/types.hpp"
 
 /// This is the namespace where the entire library is defined.
 namespace fxd {
@@ -33,7 +33,7 @@ namespace fxd {
      */
     template<int Int,
              int Frac,
-             typename Raw = impl::select_int_t<Int + Frac>
+             typename Raw = detail::select_int_t<Int + Frac>
              >
     struct fixed {
 
@@ -53,7 +53,7 @@ namespace fxd {
 
         /// How many bits are used for storage (can be larger than `bits`).
         static constexpr int raw_bits =
-            impl::type_width<raw_type>;
+            detail::type_width<raw_type>;
 
 
         static_assert(raw_bits >= bits);
@@ -116,7 +116,7 @@ namespace fxd {
     /// Alias for creating `unsigned fxd::fixed`.
     template<int Int,
              int Frac>
-    using ufixed = fixed<Int, Frac, impl::select_uint_t<Int + Frac>>;
+    using ufixed = fixed<Int, Frac, detail::select_uint_t<Int + Frac>>;
 
 
 }

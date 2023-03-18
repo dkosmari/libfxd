@@ -14,7 +14,7 @@
 #include "constructors.hpp"
 #include "fixed.hpp"
 
-#include "impl/types.hpp"
+#include "detail/types.hpp"
 
 
 #define LIBFXD_LOG10_2(x)      ((x) * 643L / 2136)
@@ -108,7 +108,7 @@ namespace std {
         static constexpr int min_bit = - Frac;
 
         /// Extension: lossless conversion to a floating-point type.
-        using float_type = fxd::impl::select_float_t<digits>;
+        using float_type = fxd::detail::select_float_t<digits>;
 
 
         /// Smallest positive value; same semantics as floating-point.

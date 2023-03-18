@@ -15,8 +15,8 @@
 
 #include "fixed.hpp"
 
-#include "impl/bias.hpp"
-#include "impl/shift.hpp"
+#include "detail/bias.hpp"
+#include "detail/shift.hpp"
 
 
 namespace fxd {
@@ -40,16 +40,16 @@ namespace fxd {
             // Shifting right.
             // Bias negative values.
             if (i < 0)
-                i += impl::make_bias_for(-frac_bits, i);
+                i += detail::make_bias_for(-frac_bits, i);
 
-            raw_value = impl::shr_real(i, -frac_bits);
+            raw_value = detail::shr_real(i, -frac_bits);
 
         } else {
 
             // Shifting left.
             // Use max bits to minimize spurious overflows.
-            using IWide = impl::max_int_for<raw_type>;
-            raw_value = impl::shl_real<IWide>(i, frac_bits);
+            using IWide = detail::max_int_for<raw_type>;
+            raw_value = detail::shl_real<IWide>(i, frac_bits);
 
         }
 

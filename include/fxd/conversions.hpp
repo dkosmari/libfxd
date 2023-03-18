@@ -14,9 +14,9 @@
 #include <type_traits>
 
 #include "concepts.hpp"
-#include "impl/bias.hpp"
-#include "impl/opacify.hpp"
-#include "impl/shift.hpp"
+#include "detail/bias.hpp"
+#include "detail/opacify.hpp"
+#include "detail/shift.hpp"
 
 
 namespace fxd {
@@ -48,14 +48,14 @@ namespace fxd {
         if constexpr (Fxd::frac_bits >= 0) {
 
             if (raw < 0)
-                raw += impl::make_bias_for(Fxd::frac_bits, raw);
-            return impl::shr_real(raw, Fxd::frac_bits);
+                raw += detail::make_bias_for(Fxd::frac_bits, raw);
+            return detail::shr_real(raw, Fxd::frac_bits);
 
         } else {
 
             // Allow left-shifting to happen on a wider type.
-            using RawWide = impl::max_int_for<Raw>;
-            return impl::shl_real<RawWide>(raw, -Fxd::frac_bits);
+            using RawWide = detail::max_int_for<Raw>;
+            return detail::shl_real<RawWide>(raw, -Fxd::frac_bits);
 
         }
     }
@@ -63,14 +63,14 @@ namespace fxd {
 
     /// Convert to the "natural integer" for this fixed-point type.
     template<fixed_point Fxd>
-    requires impl::has_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    requires detail::has_int_for<Fxd::int_bits, typename Fxd::raw_type>
     [[nodiscard]]
     constexpr
-    impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
     to_int(Fxd f)
         noexcept
     {
-        using I = impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>;
+        using I = detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>;
         return to_int<I>(f);
     }
 
@@ -106,7 +106,7 @@ namespace fxd {
         const Flt fraw = static_cast<Flt>(r);
 #else
         // This version kills optimizations to ensure correct code.
-        const Flt fraw = static_cast<Flt>(impl::opacify(r));
+        const Flt fraw = static_cast<Flt>(detail::opacify(r));
 #endif
 
         return std::ldexp(fraw, -Fxd::frac_bits);

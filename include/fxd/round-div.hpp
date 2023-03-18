@@ -14,9 +14,9 @@
 
 #include "concepts.hpp"
 
-#include "impl/bias.hpp"
-#include "impl/div.hpp"
-#include "impl/shift.hpp"
+#include "detail/bias.hpp"
+#include "detail/div.hpp"
+#include "detail/shift.hpp"
 
 
 namespace fxd {
@@ -32,7 +32,7 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            const auto r = impl::div<Fxd::frac_bits>(a.raw_value,
+            const auto r = detail::div<Fxd::frac_bits>(a.raw_value,
                                                      b.raw_value);
             if (!r)
                 std::raise(SIGFPE);
@@ -44,9 +44,9 @@ namespace fxd {
 
             // Right-shifting a negative number would round it down, not to zero.
             if (c < 0 && offset < 0)
-                c += impl::make_bias_for(-offset, c);
+                c += detail::make_bias_for(-offset, c);
 
-            const auto d = impl::shl(c, offset);
+            const auto d = detail::shl(c, offset);
 
             return Fxd::from_raw(d);
         }
@@ -65,7 +65,7 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            const auto r = impl::div<Fxd::frac_bits>(a.raw_value,
+            const auto r = detail::div<Fxd::frac_bits>(a.raw_value,
                                                      b.raw_value);
             if (!r)
                 std::raise(SIGFPE);
@@ -85,9 +85,9 @@ namespace fxd {
 
             // Right-shifting will always round down.
             if (offset < 0)
-                c += impl::make_bias_for(-offset, c);
+                c += detail::make_bias_for(-offset, c);
 
-            const auto d = impl::shl(c, offset);
+            const auto d = detail::shl(c, offset);
 
             return Fxd::from_raw(d);
         }
@@ -106,7 +106,7 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            const auto r = impl::div<Fxd::frac_bits>(a.raw_value,
+            const auto r = detail::div<Fxd::frac_bits>(a.raw_value,
                                                      b.raw_value);
             if (!r)
                 std::raise(SIGFPE);
@@ -124,7 +124,7 @@ namespace fxd {
 
             // Right-shifting always rounds down, so we don't need to bias it.
 
-            const auto d = impl::shl(c, offset);
+            const auto d = detail::shl(c, offset);
 
             return Fxd::from_raw(d);
         }

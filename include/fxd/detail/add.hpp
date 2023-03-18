@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_ADD_HPP
-#define LIBFXD_IMPL_ADD_HPP
+#ifndef LIBFXD_DETAIL_ADD_HPP
+#define LIBFXD_DETAIL_ADD_HPP
 
 #include <concepts>
 #include <limits>
@@ -17,7 +17,7 @@
 #include "tuple.hpp"
 
 
-namespace fxd::impl {
+namespace fxd::detail {
 
 
     namespace overflow {
@@ -166,13 +166,13 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<impl::uintmax_t, bool>
-        add(impl::uintmax_t a,
-            impl::uintmax_t b,
+        std::pair<detail::uintmax_t, bool>
+        add(detail::uintmax_t a,
+            detail::uintmax_t b,
             bool carry)
             noexcept
         {
-            using U = impl::uintmax_t;
+            using U = detail::uintmax_t;
             const U ab = a + b;
             const U result = a + b + carry;
             constexpr U max = std::numeric_limits<U>::max();
@@ -182,12 +182,12 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<impl::uintmax_t, bool>
-        add(impl::uintmax_t a,
-            impl::uintmax_t b)
+        std::pair<detail::uintmax_t, bool>
+        add(detail::uintmax_t a,
+            detail::uintmax_t b)
             noexcept
         {
-            using U = impl::uintmax_t;
+            using U = detail::uintmax_t;
             const U result = a + b;
             constexpr U max = std::numeric_limits<U>::max();
             const bool ovf = (a > max - b);
@@ -237,13 +237,13 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<impl::intmax_t, bool>
-        add(impl::intmax_t a,
-            impl::intmax_t b,
+        std::pair<detail::intmax_t, bool>
+        add(detail::intmax_t a,
+            detail::intmax_t b,
             bool carry)
             noexcept
         {
-            using S = impl::intmax_t;
+            using S = detail::intmax_t;
             using U = std::make_unsigned_t<S>;
             constexpr S max = std::numeric_limits<S>::max();
             constexpr S min = std::numeric_limits<S>::min();
@@ -261,12 +261,12 @@ namespace fxd::impl {
 
 
         constexpr inline
-        std::pair<impl::intmax_t, bool>
-        add(impl::intmax_t a,
-            impl::intmax_t b)
+        std::pair<detail::intmax_t, bool>
+        add(detail::intmax_t a,
+            detail::intmax_t b)
             noexcept
         {
-            using S = impl::intmax_t;
+            using S = detail::intmax_t;
             using U = std::make_unsigned_t<S>;
             constexpr S max = std::numeric_limits<S>::max();
             constexpr S min = std::numeric_limits<S>::min();
@@ -289,13 +289,13 @@ namespace fxd::impl {
             bool carry_in = false)
             noexcept
         {
-            const auto [head_sum, head_ovf] = add(impl::first(a),
-                                                  impl::first(b),
+            const auto [head_sum, head_ovf] = add(detail::first(a),
+                                                  detail::first(b),
                                                   carry_in);
 
             if constexpr (std::tuple_size_v<Tup> > 1) {
-                const auto [tail_sum, tail_ovf] = add(impl::tail(a),
-                                                      impl::tail(b),
+                const auto [tail_sum, tail_ovf] = add(detail::tail(a),
+                                                      detail::tail(b),
                                                       head_ovf);
                 return {
                     std::tuple_cat(std::tuple{head_sum}, tail_sum),
@@ -318,13 +318,13 @@ namespace fxd::impl {
         bool carry_in = false)
         noexcept
     {
-        auto [sum, ovf] = overflow::add(impl::first(a),
-                                        impl::first(b),
+        auto [sum, ovf] = overflow::add(detail::first(a),
+                                        detail::first(b),
                                         carry_in);
         if constexpr (std::tuple_size_v<Tup> > 1)
             return std::tuple_cat(std::tuple{sum},
-                                  add(impl::tail(a),
-                                      impl::tail(b),
+                                  add(detail::tail(a),
+                                      detail::tail(b),
                                       ovf));
         else
             return { sum };
@@ -344,7 +344,7 @@ namespace fxd::impl {
 
 
 
-} // namespace fxd::impl
+} // namespace fxd::detail
 
 
 #endif

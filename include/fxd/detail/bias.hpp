@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_BIAS_HPP
-#define LIBFXD_IMPL_BIAS_HPP
+#ifndef LIBFXD_DETAIL_BIAS_HPP
+#define LIBFXD_DETAIL_BIAS_HPP
 
 #include <concepts>
 #include <cstddef>
@@ -16,7 +16,7 @@
 #include "types.hpp"
 
 
-namespace fxd::impl {
+namespace fxd::detail {
 
 
     template<std::integral I>
@@ -96,7 +96,7 @@ namespace fxd::impl {
     }
 
 
-} // namespace fxd::impl
+} // namespace fxd::detail
 
 
 #endif

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_TUPLE_HPP
-#define LIBFXD_IMPL_TUPLE_HPP
+#ifndef LIBFXD_DETAIL_TUPLE_HPP
+#define LIBFXD_DETAIL_TUPLE_HPP
 
 #include <concepts>
 #include <tuple>
@@ -15,7 +15,7 @@
 #include "types.hpp"
 
 
-namespace fxd::impl {
+namespace fxd::detail {
 
 
     // add a tuple specialization
@@ -152,7 +152,7 @@ namespace fxd::impl {
     }
 
 
-} // namespace fxd::impl
+} // namespace fxd::detail
 
 
 #endif

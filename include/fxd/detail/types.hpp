@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_TYPES_HPP
-#define LIBFXD_IMPL_TYPES_HPP
+#ifndef LIBFXD_DETAIL_TYPES_HPP
+#define LIBFXD_DETAIL_TYPES_HPP
 
 #include <concepts>
 #include <cstdint>
@@ -28,7 +28,7 @@
 // TODO: detect __float128 and include a numeric_limits specialization for it.
 
 
-namespace fxd::impl {
+namespace fxd::detail {
 
 
 

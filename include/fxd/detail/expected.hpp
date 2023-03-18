@@ -5,8 +5,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_EXPECTED_HPP
-#define LIBFXD_IMPL_EXPECTED_HPP
+#ifndef LIBFXD_DETAIL_EXPECTED_HPP
+#define LIBFXD_DETAIL_EXPECTED_HPP
+
+#include <version>
+
+#ifdef __cpp_lib_expected
+
+#include <expected>
+
+namespace fxd::detail {
+
+    using std::expected;
+    using std::unexpected;
+
+}
+
+#else
 
 #include <exception>
 #include <type_traits>
@@ -18,7 +33,7 @@
  */
 
 
-namespace fxd::impl {
+namespace fxd::detail {
 
 
     template<typename E>
@@ -393,7 +408,8 @@ namespace fxd::impl {
 
     };
 
-} // namespace fxd::impl
+} // namespace fxd::detail
 
+#endif
 
 #endif

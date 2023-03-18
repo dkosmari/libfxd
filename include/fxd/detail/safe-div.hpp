@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_INCLUDING_IMPL_SAFE_HPP
+#ifndef LIBFXD_INCLUDING_DETAIL_SAFE_HPP
 #error "Do not include this header directly. Either include 'saturate.hpp' or 'except.hpp'."
 #endif
 
@@ -18,7 +18,7 @@ namespace zero {
     div(Fxd a,
         Fxd b)
     {
-        const auto r = impl::div<Fxd::frac_bits, true>(a.raw_value,
+        const auto r = detail::div<Fxd::frac_bits, true>(a.raw_value,
                                                        b.raw_value);
 
         if (!r)
@@ -29,14 +29,14 @@ namespace zero {
         const int offset = expo + Fxd::frac_bits;
 
         if (c < 0 && offset < 0)
-            c += impl::make_bias_for(-offset, c);
+            c += detail::make_bias_for(-offset, c);
 
-        const auto [d, ovf] = impl::overflow::shl(c, offset);
+        const auto [d, ovf] = detail::overflow::shl(c, offset);
 
         if (offset > 0 && ovf)
             return handler<Fxd>(c < 0
-                                ? impl::error::underflow
-                                : impl::error::overflow);
+                                ? detail::error::underflow
+                                : detail::error::overflow);
 
         return from_raw<Fxd>(d);
     }
@@ -52,7 +52,7 @@ namespace up {
     div(Fxd a,
         Fxd b)
     {
-        const auto r = impl::div<Fxd::frac_bits, true>(a.raw_value,
+        const auto r = detail::div<Fxd::frac_bits, true>(a.raw_value,
                                                        b.raw_value);
         if (!r)
             return handler<Fxd>(r.error());
@@ -69,24 +69,24 @@ namespace up {
         // When a/b is positive, it may have been rounded down.
         if (!neg && rem) {
             if (c == std::numeric_limits<decltype(c)>::max())
-                return handler<Fxd>(impl::error::overflow);
+                return handler<Fxd>(detail::error::overflow);
             ++c;
         }
 
         // Right-shifting will always round down.
         if (offset < 0) {
-            const auto bias = impl::make_bias_for(-offset, c);
-            const auto [biased_c, ovf] = impl::overflow::add(c, bias);
+            const auto bias = detail::make_bias_for(-offset, c);
+            const auto [biased_c, ovf] = detail::overflow::add(c, bias);
             if (ovf)
-                return handler<Fxd>(impl::error::overflow);
+                return handler<Fxd>(detail::error::overflow);
             c = biased_c;
         }
 
-        const auto [d, ovf] = impl::overflow::shl(c, offset);
+        const auto [d, ovf] = detail::overflow::shl(c, offset);
         if (offset > 0 && ovf)
             return handler<Fxd>(neg
-                                ? impl::error::underflow
-                                : impl::error::overflow);
+                                ? detail::error::underflow
+                                : detail::error::overflow);
 
         return from_raw<Fxd>(d);
     }
@@ -103,7 +103,7 @@ namespace down {
     div(Fxd a,
         Fxd b)
     {
-        const auto r = impl::div<Fxd::frac_bits, true>(a.raw_value,
+        const auto r = detail::div<Fxd::frac_bits, true>(a.raw_value,
                                                        b.raw_value);
         if (!r)
             return handler<Fxd>(r.error());
@@ -118,18 +118,18 @@ namespace down {
         // When a/b is negative, it may have been rounded up.
         if (neg && rem) {
             if (c == std::numeric_limits<decltype(c)>::min())
-                return handler<Fxd>(impl::error::underflow);
+                return handler<Fxd>(detail::error::underflow);
             --c;
         }
 
 
         // Right-shifting always rounds down, so we don't need to bias it.
 
-        const auto [d, ovf] = impl::overflow::shl(c, offset);
+        const auto [d, ovf] = detail::overflow::shl(c, offset);
         if (offset > 0 && ovf)
             return handler<Fxd>(neg
-                                ? impl::error::underflow
-                                : impl::error::overflow);
+                                ? detail::error::underflow
+                                : detail::error::overflow);
 
         return from_raw<Fxd>(d);
     }

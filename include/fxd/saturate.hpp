@@ -12,8 +12,8 @@
 
 #include "concepts.hpp"
 
-#include "impl/error.hpp"
-#include "impl/safe-includes.hpp"
+#include "detail/error.hpp"
+#include "detail/safe-includes.hpp"
 
 
 /// Clamp on overflow.
@@ -32,15 +32,15 @@ namespace fxd::saturate {
     template<fxd::fixed_point Fxd>
     [[nodiscard]]
     Fxd
-    handler(impl::error e)
+    handler(detail::error e)
         noexcept
     {
         switch (e) {
-            case impl::error::underflow:
+            case detail::error::underflow:
                 return std::numeric_limits<Fxd>::lowest();
-            case impl::error::overflow:
+            case detail::error::overflow:
                 return std::numeric_limits<Fxd>::max();
-            case impl::error::not_a_number:
+            case detail::error::not_a_number:
                 std::raise(SIGFPE);
         }
         return 0;
@@ -57,25 +57,25 @@ namespace fxd::saturate {
     template<std::integral I>
     [[nodiscard]]
     I
-    handler(impl::error e)
+    handler(detail::error e)
     {
         switch (e) {
-            case impl::error::underflow:
+            case detail::error::underflow:
                 return std::numeric_limits<I>::min();
-            case impl::error::overflow:
+            case detail::error::overflow:
                 return std::numeric_limits<I>::max();
-            case impl::error::not_a_number:
+            case detail::error::not_a_number:
                 std::raise(SIGFPE);
         }
         return 0;
     }
 
 
-#define LIBFXD_INCLUDING_IMPL_SAFE_HPP
+#define LIBFXD_INCLUDING_DETAIL_SAFE_HPP
 #define LIBFXD_HERE saturate
-#include "impl/safe.hpp"
+#include "detail/safe.hpp"
 #undef LIBFXD_HERE
-#undef LIBFXD_INCLUDING_IMPL_SAFE_HPP
+#undef LIBFXD_INCLUDING_DETAIL_SAFE_HPP
 
 
 #ifdef LIBFXD_DOXYGEN_DOCUMENTATION
@@ -108,14 +108,14 @@ namespace fxd::saturate {
 
     /// Convenience overload.
     template<int Int, int Frac,
-             typename I = impl::select_int_t<Int + Frac>,
+             typename I = detail::select_int_t<Int + Frac>,
              std::convertible_to<fixed<Int, Frac, I>> Src>
     constexpr fixed<Int, Frac, I> make_fixed(Src src);
 
     /// Convenience overload (unsigned version).
     template<int Int,
              int Frac,
-             typename U = impl::select_uint_t<Int + Frac>,
+             typename U = detail::select_uint_t<Int + Frac>,
              std::convertible_to<fixed<Int, Frac, U>> Src>
     constexpr fixed<Int, Frac, U> make_ufixed(Src src);
 
@@ -129,13 +129,13 @@ namespace fxd::saturate {
 
     /// Convenience overload.
     template<int Int, int Frac,
-             typename Raw = impl::select_int_t<Int + Frac>,
+             typename Raw = detail::select_int_t<Int + Frac>,
              fixed_point Src>
     constexpr fixed<Int, Frac, Raw> fixed_cast(Src src);
 
     /// Convenience overload (unsigned version).
     template<int Int, int Frac,
-             typename Raw = impl::select_uint_t<Int + Frac>,
+             typename Raw = detail::select_uint_t<Int + Frac>,
              fixed_point Src>
     constexpr fixed<Int, Frac, Raw> ufixed_cast(Src src);
 
@@ -145,7 +145,7 @@ namespace fxd::saturate {
 
     /// Convert to the natural integer type, clamp on overflow.
     template<fixed_point Fxd>
-    constexpr impl::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    constexpr detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
     to_int(Fxd f);
 
     /// Assignment, clamp on overflow.

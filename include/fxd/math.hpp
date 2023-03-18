@@ -24,8 +24,8 @@
 #include "round-div.hpp"
 #include "round-mul.hpp"
 
-#include "impl/add.hpp"
-#include "impl/shift.hpp"
+#include "detail/add.hpp"
+#include "detail/shift.hpp"
 
 
 namespace fxd {
@@ -105,7 +105,7 @@ namespace fxd {
             if (exp >= 0)
                 return Fxd::from_raw(x.raw_value << exp);
 
-            auto [y, ovf] = impl::overflow::shr_real(x.raw_value, -exp);
+            auto [y, ovf] = detail::overflow::shr_real(x.raw_value, -exp);
             if (y < 0 && ovf)
                 ++y;
             return Fxd::from_raw(y);
@@ -124,7 +124,7 @@ namespace fxd {
               int exp)
             noexcept
         {
-            return Fxd::from_raw(impl::shl(x.raw_value, exp));
+            return Fxd::from_raw(detail::shl(x.raw_value, exp));
         }
     }
 
@@ -141,7 +141,7 @@ namespace fxd {
             if (exp >= 0)
                 return Fxd::from_raw(x.raw_value << exp);
 
-            auto [y, ovf] = impl::overflow::shr_real(x.raw_value, -exp);
+            auto [y, ovf] = detail::overflow::shr_real(x.raw_value, -exp);
             if (ovf)
                 ++y;
             return Fxd::from_raw(y);

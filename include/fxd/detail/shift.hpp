@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_SHIFT_HPP
-#define LIBFXD_IMPL_SHIFT_HPP
+#ifndef LIBFXD_DETAIL_SHIFT_HPP
+#define LIBFXD_DETAIL_SHIFT_HPP
 
 #include <concepts>
 #include <limits>
@@ -16,7 +16,7 @@
 #include "tuple.hpp"
 
 
-namespace fxd::impl {
+namespace fxd::detail {
 
 
     template<std::integral I>
@@ -223,8 +223,8 @@ namespace fxd::impl {
                  unsigned b)
             noexcept
         {
-            const T result = impl::shl_real(a, b);
-            const bool ovf = a != impl::shr_real(result, b);
+            const T result = detail::shl_real(a, b);
+            const bool ovf = a != detail::shr_real(result, b);
             return { result, ovf };
         }
 
@@ -236,8 +236,8 @@ namespace fxd::impl {
                  unsigned b)
             noexcept
         {
-            const T result = impl::shr_real(a, b);
-            const bool ovf = a != impl::shl_real(result, b);
+            const T result = detail::shr_real(a, b);
+            const bool ovf = a != detail::shl_real(result, b);
             return { result, ovf };
         }
 
@@ -269,7 +269,7 @@ namespace fxd::impl {
     } // namespace overflow
 
 
-} // namespace fxd::impl
+} // namespace fxd::detail
 
 
 #endif

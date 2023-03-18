@@ -10,9 +10,9 @@
 
 #include "concepts.hpp"
 
-#include "impl/add.hpp"
-#include "impl/mul.hpp"
-#include "impl/shift.hpp"
+#include "detail/add.hpp"
+#include "detail/mul.hpp"
+#include "detail/shift.hpp"
 
 
 namespace fxd {
@@ -27,34 +27,34 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            constexpr int w = impl::type_width<typename Fxd::raw_type>;
+            constexpr int w = detail::type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = impl::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto c = detail::mul<Fxd::bits>(a.raw_value, b.raw_value);
 
             if constexpr (Fxd::frac_bits <= 0) {
 
                 // no lower bits will be lost, no rounding is needed
-                const auto d = impl::shl(c, offset);
-                return Fxd::from_raw(impl::last(d));
+                const auto d = detail::shl(c, offset);
+                return Fxd::from_raw(detail::last(d));
 
             } else {
 
                 // will lose lower bits
-                if (impl::is_negative(c)) {
+                if (detail::is_negative(c)) {
 
                     // negative numbers need a bias to zero to round up
-                    const auto bias = impl::make_bias_for(Fxd::frac_bits, c);
-                    const auto biased_c = impl::add(c, bias);
-                    const auto d = impl::shl(biased_c, offset);
-                    return Fxd::from_raw(impl::last(d));
+                    const auto bias = detail::make_bias_for(Fxd::frac_bits, c);
+                    const auto biased_c = detail::add(c, bias);
+                    const auto d = detail::shl(biased_c, offset);
+                    return Fxd::from_raw(detail::last(d));
 
                 } else {
 
-                    const auto d = impl::shl(c, offset);
-                    return Fxd::from_raw(impl::last(d));
+                    const auto d = detail::shl(c, offset);
+                    return Fxd::from_raw(detail::last(d));
 
                 }
 
@@ -76,25 +76,25 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            constexpr int w = impl::type_width<typename Fxd::raw_type>;
+            constexpr int w = detail::type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = impl::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto c = detail::mul<Fxd::bits>(a.raw_value, b.raw_value);
 
             if constexpr (Fxd::frac_bits <= 0) {
 
-                const auto d = impl::shl(c, offset);
-                return Fxd::from_raw(impl::last(d));
+                const auto d = detail::shl(c, offset);
+                return Fxd::from_raw(detail::last(d));
 
             } else {
 
-                const auto bias = impl::make_bias_for(Fxd::frac_bits, c);
-                const auto biased_c = impl::add(c, bias);
-                const auto d = impl::shl(biased_c, offset);
+                const auto bias = detail::make_bias_for(Fxd::frac_bits, c);
+                const auto biased_c = detail::add(c, bias);
+                const auto d = detail::shl(biased_c, offset);
 
-                return Fxd::from_raw(impl::last(d));
+                return Fxd::from_raw(detail::last(d));
 
             }
 
@@ -114,16 +114,16 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            constexpr int w = impl::type_width<typename Fxd::raw_type>;
+            constexpr int w = detail::type_width<typename Fxd::raw_type>;
 
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = impl::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto c = detail::mul<Fxd::bits>(a.raw_value, b.raw_value);
 
-            const auto d = impl::shl(c, offset);
+            const auto d = detail::shl(c, offset);
 
-            return Fxd::from_raw(impl::last(d));
+            return Fxd::from_raw(detail::last(d));
         }
 
     } // namespace down

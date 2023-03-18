@@ -12,8 +12,8 @@
 
 #include "concepts.hpp"
 
-#include "impl/bias.hpp"
-#include "impl/shift.hpp"
+#include "detail/bias.hpp"
+#include "detail/shift.hpp"
 
 
 namespace fxd {
@@ -37,17 +37,17 @@ namespace fxd {
 
             // shifting right
             if (sraw < 0)
-                sraw += impl::make_bias_for(-diff, sraw);
+                sraw += detail::make_bias_for(-diff, sraw);
 
-            auto draw = impl::shr_real(sraw, -diff);
+            auto draw = detail::shr_real(sraw, -diff);
             return Dst::from_raw(draw);
 
         } else {
 
             // shifting left
             // use more bits
-            using SrcWide = impl::max_int_for<SrcRaw>;
-            auto draw = impl::shl_real<SrcWide>(sraw, diff);
+            using SrcWide = detail::max_int_for<SrcRaw>;
+            auto draw = detail::shl_real<SrcWide>(sraw, diff);
             return Dst::from_raw(draw);
 
         }
@@ -57,7 +57,7 @@ namespace fxd {
     /// Convert a fixed point to a different type of fixed point.
     template<int Int,
              int Frac,
-             typename Raw = impl::select_int_t<Int + Frac>,
+             typename Raw = detail::select_int_t<Int + Frac>,
              fixed_point Src>
     [[nodiscard]]
     constexpr
@@ -72,7 +72,7 @@ namespace fxd {
     /// Convert a fixed point to a different type of fixed point (unsigned version.)
     template<int Int,
              int Frac,
-             typename Raw = impl::select_uint_t<Int + Frac>,
+             typename Raw = detail::select_uint_t<Int + Frac>,
              fixed_point Src>
     [[nodiscard]]
     constexpr

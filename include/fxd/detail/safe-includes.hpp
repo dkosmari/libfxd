@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_IMPL_SAFE_INCLUDES_HPP
-#define LIBFXD_IMPL_SAFE_INCLUDES_HPP
+#ifndef LIBFXD_DETAIL_SAFE_INCLUDES_HPP
+#define LIBFXD_DETAIL_SAFE_INCLUDES_HPP
 
 #include <cmath>
 #include <compare>

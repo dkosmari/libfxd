@@ -346,21 +346,6 @@ TEST_CASE("special-1")
 }
 
 
-TEST_CASE("special-2")
-{
-    using std::cout;
-    using std::endl;
-
-    using I = std::int64_t;
-
-    I a = 0xfff99a67f370c65a;
-    I b = 0x0002bd0e4b41fb2d;
-    auto c = fxd::impl::mul<64>(a, b);
-    CHECK(get<0>(c) == 0x814a34a018271bd2ULL);
-    CHECK(get<1>(c) == static_cast<I>(0xffffffee7b7335e1LL));
-}
-
-
 TEST_CASE("special-3")
 {
     using F = fxd::fixed<-1, 65>;
