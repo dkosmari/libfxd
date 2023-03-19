@@ -14,11 +14,11 @@
 #include <limits>
 
 #include "../concepts.hpp"
+#include "../error.hpp"
 #include "../limits.hpp"
 
 #include "add.hpp"
 #include "bias.hpp"
-#include "error.hpp"
 #include "expected.hpp"
 #include "shift.hpp"
 #include "sub.hpp"

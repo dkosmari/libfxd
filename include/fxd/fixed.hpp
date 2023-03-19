@@ -71,8 +71,8 @@ namespace fxd {
         /// Defaulted constructor.
         constexpr fixed() noexcept = default;
 
-        /// Defaulted copy constructor.
-        constexpr fixed(const fixed&) noexcept = default;
+        // Defaulted copy constructor.
+        // constexpr fixed(const fixed&) noexcept = default;
 
         /// Conversion from integer.
         template<std::integral I>
@@ -89,8 +89,8 @@ namespace fxd {
         static constexpr fixed from_raw(raw_type val) noexcept;
 
 
-        /// Defaulted copy assignment.
-        constexpr fixed& operator =(const fixed&) noexcept = default;
+        // Defaulted copy assignment.
+        // constexpr fixed& operator =(const fixed&) noexcept = default;
 
 
         // conversion

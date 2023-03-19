@@ -27,43 +27,43 @@ namespace std::numbers {
     inline LIBFXD_CONSTEXPR                                             \
     Fxd c<Fxd> = Fxd{std::numbers:: c <typename std::numeric_limits<Fxd>::float_type>}
 
-    /// Fixed-point constant for @f$e@f$. @hideinitializer
+    /// Fixed-point constant for @f$ e @f$. @hideinitializer
     LIBFXD_NUMBER(e_v);
 
-    /// Fixed-point constant for @f$\gamma@f$. @hideinitializer
+    /// Fixed-point constant for @f$ \gamma @f$. @hideinitializer
     LIBFXD_NUMBER(egamma_v);
 
-    /// Fixed-point constant for @f$1 \over \pi@f$ @hideinitializer
+    /// Fixed-point constant for @f$ 1 \over \pi @f$ @hideinitializer
     LIBFXD_NUMBER(inv_pi_v);
 
-    /// Fixed-point constant for @f$1 \over \sqrt 3@f$ @hideinitializer
+    /// Fixed-point constant for @f$ 1 \over \sqrt 3 @f$ @hideinitializer
     LIBFXD_NUMBER(inv_sqrt3_v);
 
-    /// Fixed-point constant for @f$1 \over \sqrt \pi@f$ @hideinitializer
+    /// Fixed-point constant for @f$ 1 \over \sqrt \pi @f$ @hideinitializer
     LIBFXD_NUMBER(inv_sqrtpi_v);
 
-    /// Fixed-point constant for @f$\ln 10@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \ln 10 @f$ @hideinitializer
     LIBFXD_NUMBER(ln10_v);
 
-    /// Fixed-point constant for @f$\ln 2@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \ln 2 @f$ @hideinitializer
     LIBFXD_NUMBER(ln2_v);
 
-    /// Fixed-point constant for @f$\log _ {10} e@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \log _ {10} e @f$ @hideinitializer
     LIBFXD_NUMBER(log10e_v);
 
-    /// Fixed-point constant for @f$\log _ 2 e@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \log _ 2 e @f$ @hideinitializer
     LIBFXD_NUMBER(log2e_v);
 
-    /// Fixed-point constant for @f$\phi@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \phi @f$ @hideinitializer
     LIBFXD_NUMBER(phi_v);
 
-    /// Fixed-point constant for @f$\pi@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \pi @f$ @hideinitializer
     LIBFXD_NUMBER(pi_v);
 
-    /// Fixed-point constant for @f$\sqrt 2@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \sqrt 2 @f$ @hideinitializer
     LIBFXD_NUMBER(sqrt2_v);
 
-    /// Fixed-point constant for @f$\sqrt 3@f$ @hideinitializer
+    /// Fixed-point constant for @f$ \sqrt 3 @f$ @hideinitializer
     LIBFXD_NUMBER(sqrt3_v);
 
 

@@ -1,23 +1,22 @@
 libfxd - a fixed-point library for C++
 ======================================
 
-
-This is a C++20 headers-only library that implements fixed-point types as a templated
+libfxd is a C++20 headers-only library that implements fixed-point types as a templated
 class. It's licensed under the Apache Public License 2.0 (see the file `COPYING.APL`).
 
 
-Installation:
--------------
+Installation
+------------
 
 Since it's a headers-only library, no compilation is necessary; the compiler just needs to
-locate the headers using the `-I /path/to/libfxd/include` argument, or similar.
+locate the headers using an option like `-I /path/to/libfxd/include`.
 
 To install the headers, use the standard Automake procedure:
 
-    ./configure
+    ./configure --prefix=/usr
     make
-    make check # optional
     sudo make install
+
 
 See the `INSTALL` file and/or run `./configure --help` for more details.
 
@@ -25,111 +24,35 @@ If the source code was checked out from the repository, you may need to first ru
 `bootstrap` script to create the `configure` script.
 
 
-Usage:
-------
+Usage
+-----
 
 Sample program:
 
-    #include <iostream>
+~~~.cpp
+#include <iostream>
 
-    #include <fxd/fxd.hpp>
+#include <fxd/fxd.hpp>
 
-    int main()
-    {
-        using F = fxd::fixed<20, 12>;
+int main()
+{
+    using F = fxd::fixed<20, 12>;
 
-        F a = 5;
-        F b = 2.5;
-        F c;
+    F a = 5;
+    F b = 2.5;
+    F c;
 
-        std::cout << "Enter a value: ";
-        std::cin >> c;
+    std::cout << "Enter a value: ";
+    std::cin >> c;
 
-        F d = (a + b + c) / 3;
+    F d = (a + b + c) / 3;
 
-        std::cout << "Average: " << d << std::endl;
-        std::cout << "which has raw value: " << d.raw_value << std::endl;
-    }
+    std::cout << "Average: " << d << std::endl;
+    std::cout << "which has raw value: " << d.raw_value << std::endl;
+}
+~~~
 
-The type `fxd::fixed<I, F, [T]>` is the fixed-point type; the parameters `I` and `F`
-indicate how many integral and fractional bits it has; the parameter `T` is optional, it
-indicates the underlying integer that will hold the value; it can be accessed through the
-`.raw_value` member. Note: this member is a bit-field, so you may not take its address or
-its size. See the `<fxd/fixed.hpp>` header for details.
+Documentation is available in the `doc` directory in .md text files (using Markdown
+syntax.) If Doxygen is available, it will be automatically built inside `doc/html`.
 
-There's also the `fxd::ufixed<I, F, [T]>` alias, that only holds unsigned values (in an
-unsigned integer.)
-
-The integral and fractional bits parameters `I` and `F` can be negative, but their sum
-must be positive (and never exceed the maximum size of an integer.) Examples:
-
-    fxd::fixed<32, 0>   // just a regular 32-bit integer
-    fxd::fixed<33, -1>  // still 32-bit, but only stores even integers
-    fxd::ufixed<1, 31>  // only stores values in the interval [0, 2)
-    fxd::ufixed<0, 32>  // only stores values in the interval [0, 1)
-    fxd::ufixed<-1, 33> // only stores values in the interval [0, 0.5)
-    fxd::fixed<1, 31>   // only stores values in the interval [-1, 1)
-    fxd::fixed<0, 32>   // only stores values in the interval [-0.5, 0.5)
-
-
-Details:
---------
-
-All arithmetic types (integers and floating-point) can be implicitly converted to
-fixed-point. Converting from fixed-point must be explicit.
-
-Conversions from/to floating-point are succeptible to the FPU's current rounding mode. For
-consistency, you should set the rounding mode to `FE_TOWARDZERO` while converting to/from
-floating-point. The non-member function `to_float(...)` is available, to always convert a
-fixed-point to a floating-point large enough to hold all of its bits (so no rounding will
-ever happen.)
-
-Conversion from one fixed-point format to another is done explicitly with the functions:
-
-  -  `fixed_cast<I, F, [T]>(Src)`
-  - `ufixed_cast<I, F, [T]>(Src)`
-  -  `fixed_cast<Dst>(Src)`
-  - `ufixed_cast<Dst>(Src)`
-
-A fixed-point value can be constructed from its intended raw representation, using the
-static method `fxd::fixed<...>::from_raw(...)`.
-
-Note that all properties of integer overflows also apply to `fxd::fixed<>`. Both signed
-integers and signed `fxd::fixed<>` cause undefined behavior on overflow (unless a compiler
-option is used to change that.) Unsigned integers and `fxd::ufixed<>` just wrap around
-with no UB.
-
-The namespaces `fxd::saturate` and `fxd::except` contain named functions (`add()`,
-`sub()`, `mul()`, `div()`, etc) that perform range-checked operations; they clamp the
-results, or throw `std::overflow_error`/`std::underflow_error`, respectively, if the
-result would be outside the valid range.
-
-Controlled rounding for multiplication and division can be found in the
-`fxd::zero`, `fxd::up` and `fxd::down` namespaces.
-
-Concepts are provided:
-
-  - `fxd::fixed_point`
-  - `fxd::signed_fixed_point`
-  - `fxd::unsigned_fixed_point`
-
-Bit operations (`<<`, `>>`, `&`, `|`, `^`) are not allowed, but they can be used directly
-on the `.raw_value` member.
-
-
-Standard Library Integration:
------------------------------
-
-Specializations in the `std` namespace are provided for:
-
-  - `numeric_limits<>`
-  - `hash<>`
-  - `numbers::e_v<>`, `numbers::pi_v<>`, `numbers::sqrt2_v<>`, etc.
-  - `common_type<>` (every arithmetic type is converted to a fixed-point)
-
-Other standard-like elements are provided in the namespace `fxd`, because the standard
-disallow specializations/overloads in `std`:
-
-  - `fxd::uniform_real_distribution<>`
-  - `fxd::abs()`, `fxd::fdim()`, `fxd::nextafter()`, `fxd::sqrt()`
-  
+Examples can be found in the `examples` directory.

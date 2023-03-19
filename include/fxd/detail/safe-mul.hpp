@@ -22,6 +22,89 @@
 
 namespace fxd::detail::safe {
 
+
+    namespace down {
+
+        template<fixed_point Fxd>
+        [[nodiscard]]
+        constexpr
+        expected<Fxd, error>
+        mul(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            constexpr int w = type_width<typename Fxd::raw_type>;
+
+            // offset used for shifting left
+            constexpr int offset = w - Fxd::frac_bits;
+
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto raw_c = raw::mul<Fxd::bits>(raw_a, raw_b);
+
+            const auto [raw_d, ovf] = overflow::shl(raw_c, offset);
+            if (offset > 0 && ovf)
+                return unexpected{is_negative(raw_c) ? error::underflow : error::overflow};
+
+            return safe::from_raw<Fxd>(high(raw_d));
+        }
+
+    } // namespace down
+
+
+    // Range-checked rounding up.
+    namespace up {
+
+        template<fixed_point Fxd>
+        [[nodiscard]]
+        constexpr
+        expected<Fxd, error>
+        mul(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            constexpr int w = type_width<typename Fxd::raw_type>;
+
+            // offset used for shifting left
+            constexpr int offset = w - Fxd::frac_bits;
+
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto raw_c = raw::mul<Fxd::bits>(raw_a, raw_b);
+            const bool neg_c = is_negative(raw_c);
+
+            if constexpr (Fxd::frac_bits <= 0) {
+
+                // offset >= w
+
+                const auto [raw_d, ovf] = overflow::shl_real(raw_c, offset);
+                if (ovf)
+                    return unexpected{neg_c ? error::underflow : error::overflow};
+
+                return safe::from_raw<Fxd>(high(raw_d));
+
+            } else {
+
+                // offset < w
+
+                const auto bias = make_bias_for(Fxd::frac_bits, raw_c);
+                const auto [biased_raw_c, ovf] = overflow::add(raw_c, bias);
+                if (ovf)
+                    return unexpected{error::overflow};
+
+                const auto [raw_d, ovf2] = overflow::shl(biased_raw_c, offset);
+                if (offset > 0 && ovf2)
+                    return unexpected{neg_c ? error::underflow : error::overflow};
+
+                return safe::from_raw<Fxd>(high(raw_d));
+            }
+
+        }
+
+
+    } // namespace up
+
+
     inline
     namespace zero {
 
@@ -91,89 +174,6 @@ namespace fxd::detail::safe {
 
 
     } // namespace zero
-
-
-    // Range-checked rounding up.
-    namespace up {
-
-        template<fixed_point Fxd>
-        [[nodiscard]]
-        constexpr
-        expected<Fxd, error>
-        mul(Fxd a,
-            Fxd b)
-            noexcept
-        {
-            constexpr int w = type_width<typename Fxd::raw_type>;
-
-            // offset used for shifting left
-            constexpr int offset = w - Fxd::frac_bits;
-
-            const auto raw_a = a.raw_value;
-            const auto raw_b = b.raw_value;
-            const auto raw_c = raw::mul<Fxd::bits>(raw_a, raw_b);
-            const bool neg_c = is_negative(raw_c);
-
-            if constexpr (Fxd::frac_bits <= 0) {
-
-                // offset >= w
-
-                const auto [raw_d, ovf] = overflow::shl_real(raw_c, offset);
-                if (ovf)
-                    return unexpected{neg_c ? error::underflow : error::overflow};
-
-                return safe::from_raw<Fxd>(high(raw_d));
-
-            } else {
-
-                // offset < w
-
-                const auto bias = make_bias_for(Fxd::frac_bits, raw_c);
-                const auto [biased_raw_c, ovf] = overflow::add(raw_c, bias);
-                if (ovf)
-                    return unexpected{error::overflow};
-
-                const auto [raw_d, ovf2] = overflow::shl(biased_raw_c, offset);
-                if (offset > 0 && ovf2)
-                    return unexpected{neg_c ? error::underflow : error::overflow};
-
-                return safe::from_raw<Fxd>(high(raw_d));
-            }
-
-        }
-
-
-    } // namespace up
-
-
-
-    namespace down {
-
-        template<fixed_point Fxd>
-        [[nodiscard]]
-        constexpr
-        expected<Fxd, error>
-        mul(Fxd a,
-            Fxd b)
-            noexcept
-        {
-            constexpr int w = type_width<typename Fxd::raw_type>;
-
-            // offset used for shifting left
-            constexpr int offset = w - Fxd::frac_bits;
-
-            const auto raw_a = a.raw_value;
-            const auto raw_b = b.raw_value;
-            const auto raw_c = raw::mul<Fxd::bits>(raw_a, raw_b);
-
-            const auto [raw_d, ovf] = overflow::shl(raw_c, offset);
-            if (offset > 0 && ovf)
-                return unexpected{is_negative(raw_c) ? error::underflow : error::overflow};
-
-            return safe::from_raw<Fxd>(high(raw_d));
-        }
-
-    } // namespace down
 
 
 } // namespace fxd::detail::safe

@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_DETAIL_ERROR_HPP
-#define LIBFXD_DETAIL_ERROR_HPP
+#ifndef LIBFXD_ERROR_HPP
+#define LIBFXD_ERROR_HPP
 
-namespace fxd::detail {
+namespace fxd {
 
+    /// Error values reported by `fxd::expect` function.
     enum class error {
         underflow,
         overflow,

@@ -6,25 +6,25 @@ nobase_fxd_HEADERS = \
 	concepts.hpp \
 	constructors.hpp \
 	conversions.hpp \
-	except.hpp \
-	fixed.hpp \
-	fxd.hpp \
-	hash.hpp \
 	detail/add.hpp \
 	detail/bias.hpp \
-	detail/error.hpp \
 	detail/expected.hpp \
 	detail/opacify.hpp \
 	detail/raw-div.hpp \
 	detail/raw-mul.hpp \
 	detail/safe-div.hpp \
-	detail/safe-includes.hpp \
 	detail/safe-mul.hpp \
 	detail/safe.hpp \
 	detail/shift.hpp \
 	detail/sub.hpp \
 	detail/tuple.hpp \
 	detail/types.hpp \
+	error.hpp \
+	except.hpp \
+	expect.hpp \
+	fixed.hpp \
+	fxd.hpp \
+	hash.hpp \
 	limits.hpp \
 	math.hpp \
 	numbers.hpp \

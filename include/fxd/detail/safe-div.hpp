@@ -14,16 +14,17 @@
 
 #include "bias.hpp"
 #include "raw-div.hpp"
-#include "error.hpp"
 #include "expected.hpp"
 #include "shift.hpp"
 #include "types.hpp"
 
+#include "../error.hpp"
+
 
 namespace fxd::detail::safe {
 
-    inline
-    namespace zero {
+
+    namespace down {
 
         template<fixed_point Fxd>
         [[nodiscard]]
@@ -36,26 +37,34 @@ namespace fxd::detail::safe {
             const auto raw_a = a.raw_value;
             const auto raw_b = b.raw_value;
             const auto r = raw::div<Fxd::frac_bits, true>(raw_a, raw_b);
-
             if (!r)
                 return unexpected{r.error()};
 
             auto [raw_c, expo, rem] = *r;
 
+            const bool neg = (raw_a < 0) != (raw_b < 0);
+
+            // offset used for shifting left
             const int offset = expo + Fxd::frac_bits;
 
-            if (raw_c < 0 && offset < 0)
-                raw_c += make_bias_for(-offset, raw_c);
+            // When a/b is negative, it may have been rounded up.
+            if (neg && rem) {
+                if (raw_c == std::numeric_limits<decltype(raw_c)>::min())
+                    return unexpected{error::underflow};
+                --raw_c;
+            }
+
+
+            // Right-shifting always rounds down, so we don't need to bias it.
 
             const auto [raw_d, ovf] = overflow::shl(raw_c, offset);
-
             if (offset > 0 && ovf)
-                return unexpected{raw_c < 0 ? error::underflow : error::overflow};
+                return unexpected{neg ? error::underflow : error::overflow};
 
             return safe::from_raw<Fxd>(raw_d);
         }
 
-    } // namespace zero
+    } // namespace down
 
 
     namespace up {
@@ -110,8 +119,8 @@ namespace fxd::detail::safe {
     } // namespace up
 
 
-
-    namespace down {
+    inline
+    namespace zero {
 
         template<fixed_point Fxd>
         [[nodiscard]]
@@ -124,34 +133,26 @@ namespace fxd::detail::safe {
             const auto raw_a = a.raw_value;
             const auto raw_b = b.raw_value;
             const auto r = raw::div<Fxd::frac_bits, true>(raw_a, raw_b);
+
             if (!r)
                 return unexpected{r.error()};
 
             auto [raw_c, expo, rem] = *r;
 
-            const bool neg = (raw_a < 0) != (raw_b < 0);
-
-            // offset used for shifting left
             const int offset = expo + Fxd::frac_bits;
 
-            // When a/b is negative, it may have been rounded up.
-            if (neg && rem) {
-                if (raw_c == std::numeric_limits<decltype(raw_c)>::min())
-                    return unexpected{error::underflow};
-                --raw_c;
-            }
-
-
-            // Right-shifting always rounds down, so we don't need to bias it.
+            if (raw_c < 0 && offset < 0)
+                raw_c += make_bias_for(-offset, raw_c);
 
             const auto [raw_d, ovf] = overflow::shl(raw_c, offset);
+
             if (offset > 0 && ovf)
-                return unexpected{neg ? error::underflow : error::overflow};
+                return unexpected{raw_c < 0 ? error::underflow : error::overflow};
 
             return safe::from_raw<Fxd>(raw_d);
         }
 
-    } // namespace down
+    } // namespace zero
 
 
 } // namespace fxd::detail::safe

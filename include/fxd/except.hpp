@@ -13,8 +13,8 @@
 #include <stdexcept>
 
 #include "concepts.hpp"
+#include "error.hpp"
 
-#include "detail/error.hpp"
 #include "detail/safe.hpp"
 #include "detail/safe-div.hpp"
 #include "detail/safe-mul.hpp"
@@ -24,42 +24,38 @@
 namespace fxd::except {
 
 
-    namespace detail {
-
-        /**
-         * @brief Error handler that throws exceptions on error.
-         *
-         * All functions in `fxd::except` use this as an error handler.
-         * Possible exceptions are:
-         * @li `std::underflow_error` on underflows;
-         * @li `std::overflow_error` on overflows;
-         * @li `std::invalid_argument` when `NaN` would be generated;
-         */
-        [[noreturn]]
-        inline
-        void
-        except(fxd::detail::error e)
-        {
-            switch (e) {
-                case fxd::detail::error::underflow:
-                    throw std::underflow_error{"underflow"};
-                case fxd::detail::error::overflow:
-                    throw std::overflow_error{"overflow"};
-                case fxd::detail::error::not_a_number:
-                    throw std::invalid_argument{"not a number"};
-                default:
-                    throw std::logic_error{"unknown error"};
-            }
+    /**
+     * @brief Error handler that throws exceptions on error.
+     *
+     * All functions in `fxd::except` use this as an error handler.
+     * Possible exceptions are:
+     * @li `std::underflow_error` on underflows;
+     * @li `std::overflow_error` on overflows;
+     * @li `std::invalid_argument` when `NaN` would be generated;
+     */
+    [[noreturn]]
+    inline
+    void
+    except(error e)
+    {
+        switch (e) {
+            case error::underflow:
+                throw std::underflow_error{"underflow"};
+            case error::overflow:
+                throw std::overflow_error{"overflow"};
+            case error::not_a_number:
+                throw std::invalid_argument{"not a number"};
+            default:
+                throw std::logic_error{"unknown error"};
         }
-
-    } // namespace detail
+    }
 
 
 #define WRAP(expr)                              \
     do {                                        \
-        auto result = fxd::detail::safe::expr;  \
+        auto result = detail::safe::expr;       \
         if (!result)                            \
-            detail::except(result.error());     \
+            except(result.error());             \
         return *result;                         \
     } while (false)
 
@@ -91,20 +87,9 @@ namespace fxd::except {
     }
 
 
-    /// Construct from numerical value, throw on overflow (unsigned version).
-    template<unsigned_fixed_point Dst,
-             std::convertible_to<Dst> Src>
-    constexpr
-    Dst
-    make_ufixed(Src src)
-    {
-        WRAP(make_fixed<Dst>(src));
-    }
-
-
     /// Convenience overload.
     template<int Int, int Frac,
-             typename Raw = fxd::detail::select_int_t<Int + Frac>,
+             typename Raw = detail::select_int_t<Int + Frac>,
              std::convertible_to<fixed<Int, Frac, Raw>> Src>
     constexpr
     fixed<Int, Frac, Raw>
@@ -116,9 +101,8 @@ namespace fxd::except {
 
 
     /// Convenience overload (unsigned version).
-    template<int Int,
-             int Frac,
-             typename Raw = fxd::detail::select_uint_t<Int + Frac>,
+    template<int Int, int Frac,
+             typename Raw = detail::select_uint_t<Int + Frac>,
              std::convertible_to<fixed<Int, Frac, Raw>> Src>
     constexpr
     fixed<Int, Frac, Raw>
@@ -140,20 +124,9 @@ namespace fxd::except {
     }
 
 
-    /// Convert between `fxd::fixed` types, throw on overflow (unsigned version).
-    template<unsigned_fixed_point Dst,
-             fixed_point Src>
-    constexpr
-    Dst
-    ufixed_cast(Src src)
-    {
-        WRAP(fixed_cast<Dst>(src));
-    }
-
-
     /// Convenience overload.
     template<int Int, int Frac,
-             typename Raw = fxd::detail::select_int_t<Int + Frac>,
+             typename Raw = detail::select_int_t<Int + Frac>,
              fixed_point Src>
     constexpr
     fixed<Int, Frac, Raw>
@@ -166,7 +139,7 @@ namespace fxd::except {
 
     /// Convenience overload (unsigned version).
     template<int Int, int Frac,
-             typename Raw = fxd::detail::select_uint_t<Int + Frac>,
+             typename Raw = detail::select_uint_t<Int + Frac>,
              fixed_point Src>
     constexpr
     fixed<Int, Frac, Raw>
@@ -190,10 +163,10 @@ namespace fxd::except {
     /// Convert to the natural integer type, throw on overflow.
     template<fixed_point Fxd>
     constexpr
-    fxd::detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
     to_int(Fxd f)
     {
-        using I = fxd::detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>;
+        using I = detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>;
         return except::to_int<I>(f);
     }
 
@@ -216,9 +189,9 @@ namespace fxd::except {
     Fxd&
     pre_inc(Fxd& f)
     {
-        auto result = fxd::detail::safe::incremented(f);
+        auto result = detail::safe::incremented(f);
         if (!result)
-            detail::except(result.error());
+            except(result.error());
         return f = *result;
     }
 
@@ -230,7 +203,7 @@ namespace fxd::except {
     post_inc(Fxd& f)
     {
         Fxd old_f = f;
-        pre_inc(f);
+        except::pre_inc(f);
         return old_f;
     }
 
@@ -241,9 +214,9 @@ namespace fxd::except {
     Fxd&
     pre_dec(Fxd& f)
     {
-        auto result = fxd::detail::safe::decremented(f);
+        auto result = detail::safe::decremented(f);
         if (!result)
-            detail::except(result.error());
+            except(result.error());
         return f = *result;
     }
 
@@ -255,7 +228,7 @@ namespace fxd::except {
     post_dec(Fxd& f)
     {
         Fxd old_f = f;
-        pre_dec(f);
+        except::pre_dec(f);
         return old_f;
     }
 
@@ -292,32 +265,31 @@ namespace fxd::except {
     }
 
 
-    /// Round to zero, and throw on overflow.
-    inline
-    namespace zero {
+    /// Round down, and throw on overflow.
+    namespace down {
 
-        /// Divide rounding to zero, throw on overflow.
+        /// Divide rounding down, throw on overflow.
         template<fixed_point Fxd>
         constexpr
         Fxd
         div(Fxd a,
             Fxd b)
         {
-            WRAP(zero::div(a, b));
+            WRAP(down::div(a, b));
         }
 
 
-        /// Multiply rounding to zero, throw on overflow.
+        /// Multiply rounding down, throw on overflow.
         template<fixed_point Fxd>
         constexpr
         Fxd
         mul(Fxd a,
             Fxd b)
         {
-            WRAP(zero::mul(a, b));
+            WRAP(down::mul(a, b));
         }
 
-    } // namespace zero
+    } // namespace down
 
 
     /// Round up, and throw on overflow.
@@ -347,32 +319,32 @@ namespace fxd::except {
     } // namespace up
 
 
-    /// Round down, and throw on overflow.
-    namespace down {
+    /// Round to zero, and throw on overflow.
+    inline
+    namespace zero {
 
-        /// Divide rounding down, throw on overflow.
+        /// Divide rounding to zero, throw on overflow.
         template<fixed_point Fxd>
         constexpr
         Fxd
         div(Fxd a,
             Fxd b)
         {
-            WRAP(down::div(a, b));
+            WRAP(zero::div(a, b));
         }
 
 
-        /// Multiply rounding down, throw on overflow.
+        /// Multiply rounding to zero, throw on overflow.
         template<fixed_point Fxd>
         constexpr
         Fxd
         mul(Fxd a,
             Fxd b)
         {
-            WRAP(down::mul(a, b));
+            WRAP(zero::mul(a, b));
         }
 
-    } // namespace down
-
+    } // namespace zero
 
 
     /// Same as `fxd::abs()`, throw on overflow.
