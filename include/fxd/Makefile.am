@@ -12,11 +12,11 @@ nobase_fxd_HEADERS = \
 	hash.hpp \
 	detail/add.hpp \
 	detail/bias.hpp \
-	detail/div.hpp \
 	detail/error.hpp \
 	detail/expected.hpp \
-	detail/mul.hpp \
 	detail/opacify.hpp \
+	detail/raw-div.hpp \
+	detail/raw-mul.hpp \
 	detail/safe-div.hpp \
 	detail/safe-includes.hpp \
 	detail/safe-mul.hpp \

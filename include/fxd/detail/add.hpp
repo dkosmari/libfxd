@@ -289,8 +289,8 @@ namespace fxd::detail {
             bool carry_in = false)
             noexcept
         {
-            const auto [head_sum, head_ovf] = add(detail::first(a),
-                                                  detail::first(b),
+            const auto [head_sum, head_ovf] = add(detail::low(a),
+                                                  detail::low(b),
                                                   carry_in);
 
             if constexpr (std::tuple_size_v<Tup> > 1) {
@@ -318,8 +318,8 @@ namespace fxd::detail {
         bool carry_in = false)
         noexcept
     {
-        auto [sum, ovf] = overflow::add(detail::first(a),
-                                        detail::first(b),
+        auto [sum, ovf] = overflow::add(detail::low(a),
+                                        detail::low(b),
                                         carry_in);
         if constexpr (std::tuple_size_v<Tup> > 1)
             return std::tuple_cat(std::tuple{sum},

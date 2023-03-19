@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_DETAIL_MUL_HPP
-#define LIBFXD_DETAIL_MUL_HPP
+#ifndef LIBFXD_DETAIL_RAW_MUL_HPP
+#define LIBFXD_DETAIL_RAW_MUL_HPP
 
 #include <concepts>
 #include <tuple>
@@ -17,7 +17,7 @@
 #include "add.hpp"
 
 
-namespace fxd::detail {
+namespace fxd::detail::raw {
 
 
     template<int bits,
@@ -115,7 +115,7 @@ namespace fxd::detail {
     }
 
 
-}
+} // namespace fxd::detail::raw
 
 
 #endif

@@ -13,72 +13,55 @@
 #include "concepts.hpp"
 
 #include "detail/error.hpp"
-#include "detail/safe-includes.hpp"
-
+#include "detail/safe.hpp"
+#include "detail/safe-div.hpp"
+#include "detail/safe-mul.hpp"
 
 /// Clamp on overflow.
 namespace fxd::saturate {
 
 
-    /**
-     * @brief Error handler that clamps the value on error.
-     *
-     * All functions in `fxd::saturate` that return `fxd::fixed` use this to handle
-     * errors. The returned value will always be clamped between
-     * `std::numeric_limits<Fxd>::lowest()` and `std::numeric_limits<Fxd>::max()` when it
-     * makes sense.  The operation `0/0` will not return a value, it will raise the
-     * `SIGFPE` signal.
-     */
-    template<fxd::fixed_point Fxd>
-    [[nodiscard]]
-    Fxd
-    handler(detail::error e)
-        noexcept
-    {
-        switch (e) {
-            case detail::error::underflow:
-                return std::numeric_limits<Fxd>::lowest();
-            case detail::error::overflow:
-                return std::numeric_limits<Fxd>::max();
-            case detail::error::not_a_number:
-                std::raise(SIGFPE);
+    namespace detail {
+
+        /**
+         * @brief Error handler that clamps the value on error.
+         *
+         * The returned value will always be clamped between
+         * `std::numeric_limits<T>::lowest()` and `std::numeric_limits<T>::max()` when it
+         * makes sense.  The operation `0/0` will not return a value, it will raise the
+         * `SIGFPE` signal.
+         */
+        template<typename T>
+        [[nodiscard]]
+        constexpr
+        T
+        saturate(fxd::detail::error e)
+            noexcept
+        {
+            switch (e) {
+                case fxd::detail::error::underflow:
+                    return std::numeric_limits<T>::lowest();
+                case fxd::detail::error::overflow:
+                    return std::numeric_limits<T>::max();
+                case fxd::detail::error::not_a_number:
+                    std::raise(SIGFPE);
+            }
+            return 0;
         }
-        return 0;
-    }
 
-    /**
-     * @brief Error handler that clamps the value on error.
-     *
-     * All functions in `fxd::saturate` that return integers use this to handle errors.
-     * The returned value will always be clamped between `std::numeric_limits<I>::min()`
-     * and `std::numeric_limits<I>::max()` when it makes sense, or raise `SIGFPE`
-     * otherwise.
-     */
-    template<std::integral I>
-    [[nodiscard]]
-    I
-    handler(detail::error e)
-    {
-        switch (e) {
-            case detail::error::underflow:
-                return std::numeric_limits<I>::min();
-            case detail::error::overflow:
-                return std::numeric_limits<I>::max();
-            case detail::error::not_a_number:
-                std::raise(SIGFPE);
-        }
-        return 0;
-    }
+    } // namespace detail
 
 
-#define LIBFXD_INCLUDING_DETAIL_SAFE_HPP
-#define LIBFXD_HERE saturate
-#include "detail/safe.hpp"
-#undef LIBFXD_HERE
-#undef LIBFXD_INCLUDING_DETAIL_SAFE_HPP
 
+#define WRAP(expr)                                              \
+    do {                                                        \
+        auto result = fxd::detail::safe::expr;                  \
+        using Ret = typename decltype(result)::value_type;      \
+        if (!result)                                            \
+            return detail::saturate<Ret>(result.error());       \
+        return *result;                                         \
+    } while (false)
 
-#ifdef LIBFXD_DOXYGEN_DOCUMENTATION
 
     /**
      * @brief Construct from raw value, clamp on overflow.
@@ -86,125 +69,320 @@ namespace fxd::saturate {
      * Overflow happens if the represented value does not convert back to the argument's
      * value.
      */
-    template<fixed_point Fxd, std::integral I>
-    constexpr Fxd from_raw(I val);
+    template<fixed_point Fxd,
+             std::integral I>
+    [[nodiscard]]
+    constexpr
+    Fxd
+    from_raw(I val)
+        noexcept
+    {
+        WRAP(from_raw<Fxd>(val));
+    }
 
-    /// Construct from identical fixed-point type.
-    template<fixed_point Fxd>
-    constexpr Fxd make_fixed(Fxd src) noexcept;
 
-    /// Construct from integer, clamp on overflow.
-    template<fixed_point Fxd, std::integral I>
-    requires (Fxd::frac_bits < 0)
-    constexpr Fxd make_fixed(I val);
+    /// Construct from numerical value, clamp on overflow.
+    template<fixed_point Dst,
+             std::convertible_to<Dst> Src>
+    [[nodiscard]]
+    constexpr
+    Dst
+    make_fixed(Src src)
+        noexcept
+    {
+        WRAP(make_fixed<Dst>(src));
+    }
 
-    /// Construct from floating-point, clamp on overflow.
-    template<fixed_point Fxd, std::floating_point Flt>
-    Fxd make_fixed(Flt val);
 
-    /// Construct ufixed, clamp on overflow.
-    template<fxd::unsigned_fixed_point Fxd, std::convertible_to<Fxd> Src>
-    Fxd make_ufixed(Src src);
+    /// Construct from numerical value, clamp on overflow (unsigned version).
+    template<unsigned_fixed_point Dst,
+             std::convertible_to<Dst> Src>
+    [[nodiscard]]
+    constexpr
+    Dst
+    make_ufixed(Src src)
+        noexcept
+    {
+        WRAP(make_fixed<Dst>(src));
+    }
+
+
+    /// Convenience overload
+    template<int Int, int Frac,
+             typename Raw = fxd::detail::select_int_t<Int + Frac>,
+             std::convertible_to<fixed<Int, Frac, Raw>> Src>
+    [[nodiscard]]
+    constexpr
+    fixed<Int, Frac, Raw>
+    make_fixed(Src src)
+        noexcept
+    {
+        using Dst = fixed<Int, Frac, Raw>;
+        return saturate::make_fixed<Dst>(src);
+    }
+
+
+    /// Convenience overload (unsigned version).
+    template<int Int, int Frac,
+             typename Raw = fxd::detail::select_uint_t<Int + Frac>,
+             std::convertible_to<fixed<Int, Frac, Raw>> Src>
+    [[nodiscard]]
+    constexpr
+    fixed<Int, Frac, Raw>
+    make_ufixed(Src src)
+        noexcept
+    {
+        using Dst = fixed<Int, Frac, Raw>;
+        return saturate::make_ufixed<Dst>(src);
+    }
+
+
+    /// Convert between `fxd::fixed` types, clamp on overflow.
+    template<fixed_point Dst,
+             fixed_point Src>
+    [[nodiscard]]
+    constexpr
+    Dst
+    fixed_cast(Src src)
+        noexcept
+    {
+        WRAP(fixed_cast<Dst>(src));
+    }
+
+
+    /// Convert between `fxd::fixed` types, clamp on overflow (unsigned version).
+    template<unsigned_fixed_point Dst,
+             fixed_point Src>
+    [[nodiscard]]
+    constexpr
+    Dst
+    ufixed_cast(Src src)
+        noexcept
+    {
+        WRAP(fixed_cast<Dst>(src));
+    }
+
 
     /// Convenience overload.
     template<int Int, int Frac,
-             typename I = detail::select_int_t<Int + Frac>,
-             std::convertible_to<fixed<Int, Frac, I>> Src>
-    constexpr fixed<Int, Frac, I> make_fixed(Src src);
-
-    /// Convenience overload (unsigned version).
-    template<int Int,
-             int Frac,
-             typename U = detail::select_uint_t<Int + Frac>,
-             std::convertible_to<fixed<Int, Frac, U>> Src>
-    constexpr fixed<Int, Frac, U> make_ufixed(Src src);
-
-    /// Convert between fxd::fixed types, clamp on overflow.
-    template<fixed_point Dst, fixed_point Src>
-    constexpr Dst fixed_cast(Src src);
-
-    /// Convert between fxd::fixed types, clamp on overflow.
-    template<unsigned_fixed_point Dst, fixed_point Src>
-    constexpr Dst ufixed_cast(Src src);
-
-    /// Convenience overload.
-    template<int Int, int Frac,
-             typename Raw = detail::select_int_t<Int + Frac>,
+             typename Raw = fxd::detail::select_int_t<Int + Frac>,
              fixed_point Src>
-    constexpr fixed<Int, Frac, Raw> fixed_cast(Src src);
+    [[nodiscard]]
+    constexpr
+    fixed<Int, Frac, Raw>
+    fixed_cast(Src src)
+        noexcept
+    {
+        using Dst = fixed<Int, Frac, Raw>;
+        return saturate::fixed_cast<Dst>(src);
+    }
+
 
     /// Convenience overload (unsigned version).
     template<int Int, int Frac,
-             typename Raw = detail::select_uint_t<Int + Frac>,
+             typename Raw = fxd::detail::select_uint_t<Int + Frac>,
              fixed_point Src>
-    constexpr fixed<Int, Frac, Raw> ufixed_cast(Src src);
+    [[nodiscard]]
+    constexpr
+    fixed<Int, Frac, Raw>
+    ufixed_cast(Src src)
+        noexcept
+    {
+        using Dst = fixed<Int, Frac, Raw>;
+        return saturate::ufixed_cast<Dst>(src);
+    }
+
 
     /// Convert to integer, clamp on overflow.
-    template<std::integral I, fixed_point Fxd>
-    I to_int(Fxd f);
+    template<std::integral I,
+             fixed_point Fxd>
+    [[nodiscard]]
+    constexpr
+    I
+    to_int(Fxd f)
+        noexcept
+    {
+        WRAP(to_int<I>(f));
+    }
+
 
     /// Convert to the natural integer type, clamp on overflow.
     template<fixed_point Fxd>
-    constexpr detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
-    to_int(Fxd f);
+    [[nodiscard]]
+    constexpr
+    fxd::detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>
+    to_int(Fxd f)
+    {
+        using I = fxd::detail::select_int_for<Fxd::int_bits, typename Fxd::raw_type>;
+        return saturate::to_int<I>(f);
+    }
+
 
     /// Assignment, clamp on overflow.
-    template<fixed_point Fxd, std::convertible_to<Fxd> Src>
-    constexpr Fxd& assign(Fxd& dst, Src src);
+    template<fixed_point Dst,
+             std::convertible_to<Dst> Src>
+    constexpr
+    Dst&
+    assign(Dst& dst,
+           Src src)
+        noexcept
+    {
+        return dst = saturate::make_fixed<Dst>(src);
+    }
 
-    /// Pre-increment, clamp on overflow.
-    template<fixed_point Fxd>
-    constexpr Fxd& inc(Fxd& f);
 
-    /// Post-increment, clamp on overflow.
+    /// Pre-increment (`++f`), clamp on overflow.
     template<fixed_point Fxd>
-    constexpr Fxd post_inc(Fxd& f);
+    constexpr
+    Fxd&
+    pre_inc(Fxd& f)
+        noexcept
+    {
+        auto result = fxd::detail::safe::incremented(f);
+        if (!result)
+            return f = detail::saturate<Fxd>(result.error());
+        return f = *result;
+    }
 
-    /// Pre-decrement, clamp on overflow.
-    template<fixed_point Fxd>
-    constexpr Fxd& dec(Fxd& f);
 
-    /// Post-decrement, clamp on overflow.
+    /// Post-increment (`f++`), clamp on overflow.
     template<fixed_point Fxd>
-    constexpr Fxd post_dec(Fxd& f);
+    constexpr
+    Fxd
+    post_inc(Fxd& f)
+        noexcept
+    {
+        Fxd old_f = f;
+        pre_inc(f);
+        return old_f;
+    }
+
+
+    /// Pre-decrement (`--f`), clamp on overflow.
+    template<fixed_point Fxd>
+    constexpr
+    Fxd&
+    pre_dec(Fxd& f)
+        noexcept
+    {
+        auto result = fxd::detail::safe::decremented(f);
+        if (!result)
+            return f = detail::saturate<Fxd>(result.error());
+        return f = *result;
+    }
+
+
+    /// Post-decrement (`f--`), clamp on overflow.
+    template<fixed_point Fxd>
+    constexpr
+    Fxd
+    post_dec(Fxd& f)
+        noexcept
+    {
+        Fxd old_f = f;
+        pre_dec(f);
+        return old_f;
+    }
+
 
     /// Negate, clamp on overflow.
     template<fixed_point Fxd>
-    constexpr Fxd negate(Fxd f);
+    [[nodiscard]]
+    constexpr
+    Fxd
+    negate(Fxd f)
+        noexcept
+    {
+        WRAP(negate(f));
+    }
+
 
     /// Add, clamp on overflow.
     template<fixed_point Fxd>
-    constexpr Fxd add(Fxd a, Fxd b);
+    [[nodiscard]]
+    constexpr
+    Fxd
+    add(Fxd a,
+        Fxd b)
+        noexcept
+    {
+        WRAP(add(a, b));
+    }
+
 
     /// Subtract, clamp on overflow.
     template<fixed_point Fxd>
-    constexpr Fxd sub(Fxd a, Fxd b);
+    [[nodiscard]]
+    constexpr
+    Fxd
+    sub(Fxd a,
+        Fxd b)
+        noexcept
+    {
+        WRAP(sub(a, b));
+    }
+
 
     /// Round to zero, and clamp on overflow.
+    inline
     namespace zero {
 
         /// Divide rounding to zero, clamp on overflow.
         template<fixed_point Fxd>
-        constexpr Fxd div(Fxd a, Fxd b);
+        [[nodiscard]]
+        constexpr
+        Fxd
+        div(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            WRAP(zero::div(a, b));
+        }
 
         /// Multiply rounding to zero, clamp on overflow.
         template<fixed_point Fxd>
-        constexpr Fxd mul(Fxd a, Fxd b);
+        [[nodiscard]]
+        constexpr
+        Fxd
+        mul(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            WRAP(zero::mul(a, b));
+        }
 
-    }
+    } // namespace zero
+
 
     /// Round up, and clamp on overflow.
     namespace up {
 
         /// Divide rounding up, clamp on overflow.
         template<fixed_point Fxd>
-        constexpr Fxd div(Fxd a, Fxd b);
+        [[nodiscard]]
+        constexpr
+        Fxd
+        div(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            WRAP(up::div(a, b));
+        }
+
 
         /// Multiply rounding up, clamp on overflow.
         template<fixed_point Fxd>
-        constexpr Fxd mul(Fxd a, Fxd b);
+        [[nodiscard]]
+        constexpr
+        Fxd
+        mul(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            WRAP(up::mul(a, b));
+        }
 
-    }
+    } // namespace up
 
 
     /// Round down, and clamp on overflow.
@@ -212,30 +390,46 @@ namespace fxd::saturate {
 
         /// Divide rounding down, clamp on overflow.
         template<fixed_point Fxd>
-        constexpr Fxd div(Fxd a, Fxd b);
+        [[nodiscard]]
+        constexpr
+        Fxd
+        div(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            WRAP(down::div(a, b));
+        }
+
 
         /// Multiply rounding down, clamp on overflow.
         template<fixed_point Fxd>
-        constexpr Fxd mul(Fxd a, Fxd b);
+        [[nodiscard]]
+        constexpr
+        Fxd
+        mul(Fxd a,
+            Fxd b)
+            noexcept
+        {
+            WRAP(down::mul(a, b));
+        }
 
-    }
+    } // namespace down
 
 
 
     /// Same as `fxd::abs()`, clamp on overflow.
     template<fixed_point Fxd>
-    constexpr Fxd abs(Fxd f);
+    [[nodiscard]]
+    constexpr
+    Fxd
+    abs(Fxd f)
+        noexcept
+    {
+        WRAP(abs(f));
+    }
 
-    /// Same as `fxd::fdim()`, clamp on overflow.
-    template<fixed_point Fxd>
-    constexpr Fxd fdim(Fxd a, Fxd b);
 
-    /// Same as `fxd::nextafter()`, clamp on overflow.
-    template<fixed_point Fxd>
-    constexpr Fxd nextafter(Fxd from, Fxd to);
-
-
-#endif // LIBFXD_DOXYGEN_DOCUMENTATION
+#undef WRAP
 
 
 } // namespace fxd::saturate

@@ -56,11 +56,10 @@ namespace fxd::detail {
         ((sizeof(I) == sizeof(first_element_t<Tuple<I...>>)) && ...);
 
 
-
     template<tuple_like Tup>
     constexpr
     first_element_t<Tup>
-    first(const Tup& t)
+    low(const Tup& t)
         noexcept
     {
         return get<0>(t);
@@ -71,7 +70,7 @@ namespace fxd::detail {
     template<std::integral I>
     constexpr
     std::make_unsigned_t<half_width_t<I>>
-    first(I i)
+    low(I i)
         noexcept
     {
         using U = std::make_unsigned_t<half_width_t<I>>;
@@ -82,7 +81,7 @@ namespace fxd::detail {
     template<tuple_like Tup>
     constexpr
     last_element_t<Tup>
-    last(const Tup& t)
+    high(const Tup& t)
         noexcept
     {
         return get<std::tuple_size_v<Tup> - 1>(t);
@@ -93,7 +92,7 @@ namespace fxd::detail {
     template<std::integral I>
     constexpr
     half_width_t<I>
-    last(I i)
+    high(I i)
         noexcept
     {
         using N = half_width_t<I>;
@@ -138,7 +137,7 @@ namespace fxd::detail {
     is_negative(const Tup& t)
         noexcept
     {
-        return last(t) < 0;
+        return high(t) < 0;
     }
 
 

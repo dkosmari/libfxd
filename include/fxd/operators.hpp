@@ -19,10 +19,6 @@
 #include "round-mul.hpp"
 #include "traits.hpp"
 
-#include "detail/div.hpp"
-#include "detail/mul.hpp"
-#include "detail/shift.hpp"
-
 
 
 /*

@@ -291,23 +291,23 @@ TEST_CASE("inc")
     using SFxd = fxd::fixed<8, 24>;
 
     SFxd a = 126;
-    CHECK_NOTHROW(fxd::except::inc(a));
+    CHECK_NOTHROW(fxd::except::pre_inc(a));
     CHECK(a == 127);
-    CHECK_THROWS_AS(fxd::except::inc(a), overflow_error);
+    CHECK_THROWS_AS(fxd::except::pre_inc(a), overflow_error);
     CHECK(a == 127);
 
     using UFxd = fxd::ufixed<8, 24>;
     UFxd b = 254;
-    CHECK_NOTHROW(fxd::except::inc(b));
+    CHECK_NOTHROW(fxd::except::pre_inc(b));
     CHECK(b == 255);
-    CHECK_THROWS_AS(fxd::except::inc(b), overflow_error);
+    CHECK_THROWS_AS(fxd::except::pre_inc(b), overflow_error);
     CHECK(b == 255);
 
     using UFxd2 = fxd::ufixed<8, 1>;
     UFxd2 c = 254;
-    CHECK_NOTHROW(fxd::except::inc(c));
+    CHECK_NOTHROW(fxd::except::pre_inc(c));
     CHECK(c == 255);
-    CHECK_THROWS_AS(fxd::except::inc(c), overflow_error);
+    CHECK_THROWS_AS(fxd::except::pre_inc(c), overflow_error);
     CHECK(c == 255);
 }
 
@@ -343,16 +343,16 @@ TEST_CASE("dec")
     using SFxd = fxd::fixed<8, 24>;
 
     SFxd a = -127;
-    CHECK_NOTHROW(fxd::except::dec(a));
+    CHECK_NOTHROW(fxd::except::pre_dec(a));
     CHECK(a == -128);
-    CHECK_THROWS_AS(fxd::except::dec(a), underflow_error);
+    CHECK_THROWS_AS(fxd::except::pre_dec(a), underflow_error);
     CHECK(a == -128);
 
     using UFxd = fxd::ufixed<8, 24>;
     UFxd b = 1;
-    CHECK_NOTHROW(fxd::except::dec(b));
+    CHECK_NOTHROW(fxd::except::pre_dec(b));
     CHECK(b == 0);
-    CHECK_THROWS_AS(fxd::except::dec(b), underflow_error);
+    CHECK_THROWS_AS(fxd::except::pre_dec(b), underflow_error);
     CHECK(b == 0);
 }
 
@@ -404,32 +404,4 @@ TEST_CASE("abs")
 
     Fxd c = std::numeric_limits<Fxd>::lowest();
     CHECK_THROWS_AS(fxd::except::abs(c), overflow_error);
-}
-
-
-TEST_CASE("fdim")
-{
-    using Fxd = fxd::fixed<8, 24>;
-
-    Fxd a = 5;
-    Fxd b = 3;
-    CHECK(fxd::except::fdim(a, b) == 2);
-    CHECK(fxd::except::fdim(b, a) == 0);
-
-    Fxd c = std::numeric_limits<Fxd>::max();
-    Fxd d = -1;
-    CHECK_THROWS_AS(fxd::except::fdim(c, d), overflow_error);
-}
-
-
-TEST_CASE("nextafter")
-{
-    using Fxd = fxd::fixed<8, 24>;
-
-    Fxd eps = std::numeric_limits<Fxd>::epsilon();
-    Fxd a = 5;
-    Fxd b = 6;
-    CHECK(fxd::except::nextafter(a, b) == a + eps);
-    CHECK(fxd::except::nextafter(b, a) == b - eps);
-    CHECK(fxd::except::nextafter(a, a) == a);
 }

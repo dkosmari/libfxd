@@ -5,22 +5,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef LIBFXD_DETAIL_DIV_HPP
-#define LIBFXD_DETAIL_DIV_HPP
+#ifndef LIBFXD_DETAIL_RAW_DIV_HPP
+#define LIBFXD_DETAIL_RAW_DIV_HPP
 
 #include <algorithm>
 #include <bit>
 #include <concepts>
 #include <type_traits>
 
-#include "types.hpp"
-
 #include "error.hpp"
 #include "expected.hpp"
 #include "shift.hpp"
+#include "types.hpp"
 
 
-namespace fxd::detail {
+namespace fxd::detail::raw {
 
 
     template<std::integral I>
@@ -301,7 +300,7 @@ namespace fxd::detail {
     }
 
 
-} // namespace fxd::detail
+} // namespace fxd::detail::raw
 
 
 #endif

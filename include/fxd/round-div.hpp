@@ -15,7 +15,7 @@
 #include "concepts.hpp"
 
 #include "detail/bias.hpp"
-#include "detail/div.hpp"
+#include "detail/raw-div.hpp"
 #include "detail/shift.hpp"
 
 
@@ -32,8 +32,9 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            const auto r = detail::div<Fxd::frac_bits>(a.raw_value,
-                                                     b.raw_value);
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto r = detail::raw::div<Fxd::frac_bits>(raw_a, raw_b);
             if (!r)
                 std::raise(SIGFPE);
 
@@ -65,8 +66,9 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            const auto r = detail::div<Fxd::frac_bits>(a.raw_value,
-                                                     b.raw_value);
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto r = detail::raw::div<Fxd::frac_bits>(raw_a, raw_b);
             if (!r)
                 std::raise(SIGFPE);
 
@@ -106,8 +108,9 @@ namespace fxd {
             Fxd b)
             noexcept
         {
-            const auto r = detail::div<Fxd::frac_bits>(a.raw_value,
-                                                     b.raw_value);
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto r = detail::raw::div<Fxd::frac_bits>(raw_a, raw_b);
             if (!r)
                 std::raise(SIGFPE);
 

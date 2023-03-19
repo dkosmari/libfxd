@@ -11,7 +11,7 @@
 #include "concepts.hpp"
 
 #include "detail/add.hpp"
-#include "detail/mul.hpp"
+#include "detail/raw-mul.hpp"
 #include "detail/shift.hpp"
 
 
@@ -32,13 +32,15 @@ namespace fxd {
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = detail::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto c = detail::raw::mul<Fxd::bits>(raw_a, raw_b);
 
             if constexpr (Fxd::frac_bits <= 0) {
 
                 // no lower bits will be lost, no rounding is needed
                 const auto d = detail::shl(c, offset);
-                return Fxd::from_raw(detail::last(d));
+                return Fxd::from_raw(detail::high(d));
 
             } else {
 
@@ -49,12 +51,12 @@ namespace fxd {
                     const auto bias = detail::make_bias_for(Fxd::frac_bits, c);
                     const auto biased_c = detail::add(c, bias);
                     const auto d = detail::shl(biased_c, offset);
-                    return Fxd::from_raw(detail::last(d));
+                    return Fxd::from_raw(detail::high(d));
 
                 } else {
 
                     const auto d = detail::shl(c, offset);
-                    return Fxd::from_raw(detail::last(d));
+                    return Fxd::from_raw(detail::high(d));
 
                 }
 
@@ -81,12 +83,14 @@ namespace fxd {
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = detail::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto c = detail::raw::mul<Fxd::bits>(raw_a, raw_b);
 
             if constexpr (Fxd::frac_bits <= 0) {
 
                 const auto d = detail::shl(c, offset);
-                return Fxd::from_raw(detail::last(d));
+                return Fxd::from_raw(detail::high(d));
 
             } else {
 
@@ -94,7 +98,7 @@ namespace fxd {
                 const auto biased_c = detail::add(c, bias);
                 const auto d = detail::shl(biased_c, offset);
 
-                return Fxd::from_raw(detail::last(d));
+                return Fxd::from_raw(detail::high(d));
 
             }
 
@@ -119,11 +123,13 @@ namespace fxd {
             // offset used for shifting left
             constexpr int offset = w - Fxd::frac_bits;
 
-            const auto c = detail::mul<Fxd::bits>(a.raw_value, b.raw_value);
+            const auto raw_a = a.raw_value;
+            const auto raw_b = b.raw_value;
+            const auto c = detail::raw::mul<Fxd::bits>(raw_a, raw_b);
 
             const auto d = detail::shl(c, offset);
 
-            return Fxd::from_raw(detail::last(d));
+            return Fxd::from_raw(detail::high(d));
         }
 
     } // namespace down
