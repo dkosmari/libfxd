@@ -31,11 +31,8 @@ AX_APPEND_COMPILE_FLAGS([-std=c++20], [CXX])
 
 # Checks for library functions.
 
-
-AC_CHECK_PROGS([DOXYGEN],
-               [doxygen],
-               [MISSING_DOXYGEN=yes])
-AM_CONDITIONAL([USE_DOXYGEN], [test "x${MISSING_DOXYGEN}" != "xyes"])
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+AM_CONDITIONAL([USE_DOXYGEN], [test -n "${DOXYGEN}"])
 
 
 PKG_CHECK_MODULES([BENCHMARK], [benchmark],
