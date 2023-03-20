@@ -38,8 +38,11 @@ AC_CHECK_PROGS([DOXYGEN],
 AM_CONDITIONAL([USE_DOXYGEN], [test "x${MISSING_DOXYGEN}" != "xyes"])
 
 
-PKG_CHECK_MODULES([BENCHMARK], [benchmark >= 1.7.1],
-                  [BENCHMARK_LIBS="${BENCHMARK_LIBS} -lbenchmark_main"])
+PKG_CHECK_MODULES([BENCHMARK], [benchmark],
+                  [BENCHMARK_LIBS="${BENCHMARK_LIBS} -lbenchmark_main"],
+                  [MISSING_BENCHMARK=yes])
+AM_CONDITIONAL([USE_BENCHMARK], [test "x${MISSING_BENCHMARK}" != "xyes"])
+
 
 # --enable-coverage option
 AC_ARG_ENABLE([coverage],
