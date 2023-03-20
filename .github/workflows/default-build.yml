@@ -32,11 +32,12 @@ jobs:
     - name: bootstrap
       run: ./bootstrap
 
-    - name: Insert ccache into PATH
-      run: export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-
     - name: configure
-      run: ./configure
+      run: |
+        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+        ./configure
 
     - name: make distcheck
-      run: make distcheck
+      run: |
+        echo $PATH
+        make distcheck
