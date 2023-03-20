@@ -32,10 +32,14 @@ jobs:
     - name: bootstrap
       run: ./bootstrap
 
+    - name: Setup PATH
+      run: echo "PATH=/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
+
     - name: configure
-      run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        ./configure
+      run: ./configure
+      
+    - name: make check
+      run: make check
 
     - name: make distcheck
       run: |
