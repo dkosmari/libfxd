@@ -103,18 +103,25 @@ int main()
     mat_fxd fxa(10, 20);
     mat_fxd fxb(20, 30);
 
+    // fill matrices with random data
+
     for (auto& elem : fxa.data)
         elem = dist(eng);
 
     for (auto& elem : fxb.data)
         elem = dist(eng);
 
+    // make floating-point copies
+
     mat_flt fla = fxa;
     mat_flt flb = fxb;
 
+    // calculate the products
 
     auto fxc = fxa * fxb;
     auto flc = fla * flb;
+
+    // add up the differences for each element
 
     double error = 0;
     for (unsigned i = 0; i < fxc.rows; ++i)
