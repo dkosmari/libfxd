@@ -1,4 +1,4 @@
-name: Automake distcheck
+name: distcheck
 
 on:
   push:
@@ -15,6 +15,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    
+    - name: Install Doxygen
+      run: sudo apt-get install doxygen -y
+      shell: bash
+      
+    - name: Install libbenchmark-dev
+      run: sudo apt-get install libbenchmark-dev -y
+      shell: bash
+
+    - name: Setup ccache action
+      uses: hendrikmuhs/ccache-action@v1.2.8
+
     - uses: actions/checkout@v3
 
     - name: bootstrap
