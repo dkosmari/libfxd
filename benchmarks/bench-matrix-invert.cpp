@@ -210,3 +210,6 @@ BENCHMARK(test_inv<fxd::fixed<12, 20>>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_inv<fxd::fixed<16, 16>>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_inv<fxd::fixed<20, 44>>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_inv<fxd::fixed<32, 32>>)->Unit(benchmark::kMillisecond);
+
+
+BENCHMARK_MAIN();

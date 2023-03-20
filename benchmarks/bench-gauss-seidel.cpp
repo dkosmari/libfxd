@@ -126,3 +126,6 @@ BENCHMARK(test_solve_gs<double>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_solve_gs<__float80>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_solve_gs<fxd::fixed<16, 16>>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_solve_gs<fxd::fixed<32, 32>>)->Unit(benchmark::kMillisecond);
+
+
+BENCHMARK_MAIN();

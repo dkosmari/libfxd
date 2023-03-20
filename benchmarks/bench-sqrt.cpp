@@ -82,3 +82,6 @@ BENCHMARK(test_sqrt_bin<ufixed<16, 48>>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_sqrt_bin<ufixed<32, 32>>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_sqrt_bin<ufixed<48, 16>>)->Unit(benchmark::kMillisecond);
 BENCHMARK(test_sqrt_bin<ufixed<64, 0>>)->Unit(benchmark::kMillisecond);
+
+
+BENCHMARK_MAIN();

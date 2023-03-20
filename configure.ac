@@ -36,7 +36,7 @@ AM_CONDITIONAL([USE_DOXYGEN], [test -n "${DOXYGEN}"])
 
 
 PKG_CHECK_MODULES([BENCHMARK], [benchmark],
-                  [BENCHMARK_LIBS="${BENCHMARK_LIBS} -lbenchmark_main"],
+                  [BENCHMARK_LIBS="${BENCHMARK_LIBS}"],
                   [MISSING_BENCHMARK=yes])
 AM_CONDITIONAL([USE_BENCHMARK], [test "x${MISSING_BENCHMARK}" != "xyes"])
 
