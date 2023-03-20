@@ -313,8 +313,8 @@ TEST_CASE("make5", "[u25.0]")
     const float a = 0x01fffffep0f;
     {
         CAPTURE(a);
-        CAPTURE(std::numeric_limits<Fxd>::max());
         CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
+        CHECK(exc::make_fixed<Fxd>(a) < std::numeric_limits<Fxd>::max());
     }
 
     const float b = std::nextafter(a, 2 * a);

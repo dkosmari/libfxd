@@ -14,8 +14,9 @@
 #include <type_traits>
 
 #include "concepts.hpp"
+
 #include "detail/bias.hpp"
-#include "detail/opacify.hpp"
+#include "detail/int_to_float.hpp"
 #include "detail/shift.hpp"
 
 
@@ -96,19 +97,8 @@ namespace fxd {
     to_float(Fxd f)
         noexcept
     {
-#if defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__)
-#pragma STDC FENV_ACCESS ON
-#endif
-
         const auto r = f.raw_value;
-#if 0
-        // Note: all compilers fail to respect rounding mode, so this isn't safe.
-        const Flt fraw = static_cast<Flt>(r);
-#else
-        // This version kills optimizations to ensure correct code.
-        const Flt fraw = static_cast<Flt>(detail::opacify(r));
-#endif
-
+        const Flt fraw = detail::int_to_float<Flt>(r);
         return std::ldexp(fraw, -Fxd::frac_bits);
     }
 

@@ -1,10 +1,12 @@
 # doc/Makefile.am
 
 EXTRA_DIST = \
-	Doxyfile.in \
-	custom.css \
-	doxygen-awesome.css \
 	COPYING.MIT \
+	custom.css \
+	design.md \
+	Doxyfile.in \
+	doxygen-awesome-sidebar-only.css \
+	doxygen-awesome.css \
 	mainpage.md
 
 

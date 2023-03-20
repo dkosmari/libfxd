@@ -16,6 +16,7 @@
 #include "fixed.hpp"
 
 #include "detail/bias.hpp"
+#include "detail/opacify.hpp"
 #include "detail/shift.hpp"
 
 
@@ -59,6 +60,7 @@ namespace fxd {
     /**
      * Note: This is subject to the current floating-point rounding mode.
      */
+    // TODO: don't use the rounding mode anymore; create a detail::float_to_int() function.
     template<int Int,
              int Frac,
              typename Raw>
@@ -71,7 +73,7 @@ namespace fxd {
         if (std::is_constant_evaluated())
             raw_value = static_cast<raw_type>(scaled_f);
         else
-            raw_value = static_cast<raw_type>(std::nearbyint(scaled_f));
+            raw_value = static_cast<raw_type>(std::nearbyint(detail::opacify(scaled_f)));
     }
 
 

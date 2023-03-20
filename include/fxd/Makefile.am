@@ -9,6 +9,7 @@ nobase_fxd_HEADERS = \
 	detail/add.hpp \
 	detail/bias.hpp \
 	detail/expected.hpp \
+	detail/int_to_float.hpp \
 	detail/opacify.hpp \
 	detail/raw-div.hpp \
 	detail/raw-mul.hpp \

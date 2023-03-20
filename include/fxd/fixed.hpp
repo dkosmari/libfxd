@@ -72,7 +72,7 @@ namespace fxd {
         constexpr fixed() noexcept = default;
 
         // Defaulted copy constructor.
-        // constexpr fixed(const fixed&) noexcept = default;
+        constexpr fixed(const fixed&) noexcept = default;
 
         /// Conversion from integer.
         template<std::integral I>
@@ -90,7 +90,7 @@ namespace fxd {
 
 
         // Defaulted copy assignment.
-        // constexpr fixed& operator =(const fixed&) noexcept = default;
+        constexpr fixed& operator =(const fixed&) noexcept = default;
 
 
         // conversion

@@ -2,7 +2,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = \
 	bootstrap \
-	COPYING.APL
+	COPYING.APL \
+	README.md
 
 SUBDIRS = \
 	benchmarks \
