@@ -29,7 +29,7 @@ Usage
 
 Sample program:
 
-~~~.cpp
+```cpp
 #include <iostream>
 
 #include <fxd/fxd.hpp>
@@ -50,7 +50,7 @@ int main()
     std::cout << "Average: " << d << std::endl;
     std::cout << "which has raw value: " << d.raw_value << std::endl;
 }
-~~~
+```
 
 Documentation is available in the `doc` directory in .md text files (using Markdown
 syntax.) If Doxygen is available, it will be automatically built inside `doc/html`.
