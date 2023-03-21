@@ -30,13 +30,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: bootstrap
+      - name: Bootstraping
         run: ./bootstrap
 
       - name: Configuring
         run: ./configure
 
-      - name: Doxygen Action
+      - name: Running Doxygen
         uses: mattnotmitt/doxygen-action@edge
         with:
           working-directory: doc
