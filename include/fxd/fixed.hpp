@@ -72,7 +72,7 @@ namespace fxd {
         constexpr fixed() noexcept = default;
 
         // Defaulted copy constructor.
-        constexpr fixed(const fixed&) noexcept = default;
+        // constexpr fixed(const fixed&) noexcept = default;
 
         /// Conversion from integer.
         template<std::integral I>
@@ -83,6 +83,13 @@ namespace fxd {
         constexpr fixed(Flt f) noexcept;
 
 
+        /// Conversion from another fixed-point
+        template<int Int2, int Frac2, typename Raw2>
+        requires (detail::is_safe_conversion_v<Int2, Frac2, Raw2,
+                                               Int, Frac, Raw>)
+        constexpr fixed(const fixed<Int2, Frac2, Raw2>& other) noexcept;
+
+
         // named constructors
 
         /// Constructs a `fixed` from any raw bit representation (no conversion.)
@@ -90,7 +97,7 @@ namespace fxd {
 
 
         // Defaulted copy assignment.
-        constexpr fixed& operator =(const fixed&) noexcept = default;
+        //constexpr fixed& operator =(const fixed&) noexcept = default;
 
 
         // conversion
@@ -109,6 +116,11 @@ namespace fxd {
         explicit constexpr
         operator F() const noexcept;
 
+        /// Conversion to another fixed-point.
+        template<int Int2, int Frac2, typename Raw2>
+        explicit
+        constexpr
+        operator fixed<Int2, Frac2, Raw2>() const noexcept;
 
     };
 

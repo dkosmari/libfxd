@@ -18,13 +18,16 @@ namespace fxd {
 
     /// @cond
     template<typename T>
-    struct is_fixed_point : std::false_type {};
+    struct is_fixed_point :
+        std::false_type
+    {};
     /// @endcond
 
     /// Test if a type is `fxd::fixed`.
     template<int Int, int Frac, typename Raw>
     struct is_fixed_point<fixed<Int, Frac, Raw>> :
-        std::true_type {};
+        std::true_type
+    {};
 
     /// Helper template variable for `fxd::is_fixed_point`
     template<typename T>
@@ -64,7 +67,7 @@ namespace fxd {
     bool is_unsigned_fixed_point_v = is_unsigned_fixed_point<T>::value;
 
 
-    /// Obtains the unsigned version of a `fxd::fixed`.
+    /// Obtain the unsigned version of a `fxd::fixed`.
     template<typename T>
     requires (is_fixed_point_v<T>)
     struct make_unsigned {
@@ -76,6 +79,7 @@ namespace fxd {
     /// Helper alias for `fxd::make_unsigned`.
     template<typename T>
     using make_unsigned_t = typename make_unsigned<T>::type;
+
 
 }
 
@@ -92,7 +96,22 @@ namespace std {
     };
 
 
-    /// Specialization: `fxd::fixed` + @e anything = `fxd::fixed`
+    /// Specialization: both are `fxd::fixed`, and either can be safely converted to the other.
+    template<typename Fxd1,
+             typename Fxd2>
+    requires (fxd::is_fixed_point_v<Fxd1> && fxd::is_fixed_point_v<Fxd2>
+              &&
+              (is_convertible_v<Fxd1, Fxd2> || is_convertible_v<Fxd2, Fxd1>))
+    struct common_type<Fxd1, Fxd2> {
+        using type = conditional_t<
+            is_convertible_v<Fxd2, Fxd1>,
+            Fxd1,
+            Fxd2
+            >;
+    };
+
+
+    /// Specialization: `fxd::fixed` + @e arithmetic = `fxd::fixed`
     template<typename Fxd,
              typename Other>
     requires (fxd::is_fixed_point_v<Fxd> && is_arithmetic_v<Other>)
@@ -103,7 +122,7 @@ namespace std {
     };
 
 
-    /// Specialization: @e anything + `fxd::fixed` = `fxd::fixed`
+    /// Specialization: @e arithmetic + `fxd::fixed` = `fxd::fixed`
     template<typename Other,
              typename Fxd>
     requires (is_arithmetic_v<Other> && fxd::is_fixed_point_v<Fxd>)

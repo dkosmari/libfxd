@@ -244,18 +244,20 @@ namespace fxd {
 
 
     /// Multiply: `fxd::fixed` * `fxd::fixed`
-    template<fixed_point Fxd>
+    template<fixed_point A,
+             fixed_point B>
     constexpr
-    Fxd
-    operator *(Fxd a,
-               Fxd b)
+    std::common_type_t<A, B>
+    operator *(A a,
+               B b)
         noexcept
     {
-        return zero::mul(a, b);
+        using Fxd = std::common_type_t<A, B>;
+        return zero::mul<Fxd>(a, b);
     }
 
 
-    /// Multiply: `fxd::fixed` * @e `std::integral`
+    /// Multiply: `fxd::fixed` * @e integer
     template<fixed_point Fxd,
              std::integral I>
     constexpr
@@ -268,7 +270,7 @@ namespace fxd {
     }
 
 
-    /// Multiply: @e `std::integral` * `fxd::fixed`
+    /// Multiply: @e integer * `fxd::fixed`
     template<std::integral I,
              fixed_point Fxd>
     constexpr
@@ -280,36 +282,50 @@ namespace fxd {
     }
 
 
-    /// Multiply: first convert the other argument to `fxd::fixed`.
-    template<typename A,
-             typename B>
-    requires ((fixed_point<A> || fixed_point<B>)
-              &&
-              !(std::integral<A> || std::integral<B>))
+    /// Multiply: `fxd::fixed` * <em>floating-point</em>
+    template<fixed_point Fxd,
+             std::floating_point Flt>
     constexpr
-    std::common_type_t<A, B>
-    operator *(A a,
-               B b)
+    Fxd
+    operator *(Fxd a,
+               Flt b)
         noexcept
     {
-        using Fxd = std::common_type_t<A, B>;
+        // TODO: optimize fixed * float
         return zero::mul<Fxd>(a, b);
     }
 
 
-    /// Divide: `fxd::fixed` / `fxd::fixed`
-    template<fixed_point Fxd>
+    /// Multiply: <em>floating-point</em> * `fxd::fixed`
+    template<std::floating_point Flt,
+             fixed_point Fxd>
     constexpr
     Fxd
-    operator /(Fxd a,
+    operator *(Flt a,
                Fxd b)
         noexcept
     {
-        return zero::div(a, b);
+        // TODO: optimize float * fixed
+        return zero::mul<Fxd>(a, b);
     }
 
 
-    /// Divide: `fxd::fixed` / `std::integral`
+
+    /// Divide: `fxd::fixed` / `fxd::fixed`
+    template<fixed_point A,
+             fixed_point B>
+    constexpr
+    std::common_type_t<A, B>
+    operator /(A a,
+               B b)
+        noexcept
+    {
+        using Fxd = std::common_type_t<A, B>;
+        return zero::div<Fxd>(a, b);
+    }
+
+
+    /// Divide: `fxd::fixed` / @e integer
     template<fixed_point Fxd,
              std::integral I>
     constexpr
@@ -322,26 +338,38 @@ namespace fxd {
     }
 
 
-    /// Divide: `fxd::fixed` / `!std::integral`
+    /// Divide: @e integer / `fxd::fixed`
+    template<std::integral I,
+             fixed_point Fxd>
+    constexpr
+    Fxd
+    operator /(I a,
+               Fxd b)
+        noexcept
+    {
+        return Fxd{a} / b;
+    }
+
+
+    /// Divide: `fxd::fixed` / <em>floating-point</em>
     template<fixed_point Fxd,
-             std::convertible_to<Fxd> T>
-    requires (!std::integral<T>)
+             std::floating_point Flt>
     constexpr
     Fxd
     operator /(Fxd a,
-               T b)
+               Flt b)
         noexcept
     {
         return zero::div<Fxd>(a, b);
     }
 
 
-    /// Divide: convert first argument to `fxd::fixed`.
-    template<fixed_point Fxd,
-             std::convertible_to<Fxd> T>
+    /// Divide: <em>floating-point</em> / `fxd::fixed`.
+    template<std::floating_point Flt,
+             fixed_point Fxd>
     constexpr
     Fxd
-    operator /(T a,
+    operator /(Flt a,
                Fxd b)
         noexcept
     {

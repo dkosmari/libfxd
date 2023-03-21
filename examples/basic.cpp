@@ -17,4 +17,8 @@ int main()
 
     std::cout << "Average: " << d << std::endl;
     std::cout << "which has raw value: " << d.raw_value << std::endl;
+
+    using F2 = fxd::fixed<10, 10>;
+    auto x = a < F2{5};
+    std::cout << x << std::endl;
 }

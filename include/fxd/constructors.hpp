@@ -77,6 +77,20 @@ namespace fxd {
     }
 
 
+
+
+    template<int Int, int Frac, typename Raw>
+    template<int Int2, int Frac2, typename Raw2>
+    requires (detail::is_safe_conversion_v<Int2, Frac2, Raw2,
+                                           Int, Frac, Raw>)
+    constexpr
+    fixed<Int, Frac, Raw>::fixed(const fixed<Int2, Frac2, Raw2>& other)
+        noexcept :
+        raw_value{fixed_cast<fixed<Int, Frac, Raw>>(other).raw_value}
+    {}
+
+
+
     /**
      * All excess bits of `val` will be truncated. Use this when you know the exact
      * bit representation needed for the `fixed` object.

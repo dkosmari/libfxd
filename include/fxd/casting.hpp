@@ -29,28 +29,31 @@ namespace fxd {
         noexcept
     {
         using SrcRaw = typename Src::raw_type;
-        SrcRaw sraw = src.raw_value;
+        using DstRaw = typename Dst::raw_type;
+
+        SrcRaw src_raw = src.raw_value;
+        DstRaw dst_raw;
 
         constexpr int diff = Dst::frac_bits - Src::frac_bits;
 
         if constexpr (diff < 0) {
 
             // shifting right
-            if (sraw < 0)
-                sraw += detail::make_bias_for(-diff, sraw);
+            if (src_raw < 0) // if negative, add a bias so it rounds up
+                src_raw += detail::make_bias_for(-diff, src_raw);
 
-            auto draw = detail::shr_real(sraw, -diff);
-            return Dst::from_raw(draw);
+            // note: we shift using SrcRaw type, to not lose high bits early
+            dst_raw = detail::shr_real(src_raw, -diff);
 
         } else {
 
-            // shifting left
-            // use more bits
-            using SrcWide = detail::max_int_for<SrcRaw>;
-            auto draw = detail::shl_real<SrcWide>(sraw, diff);
-            return Dst::from_raw(draw);
+            // shifting left, no rounding happens
+            // note: we shift using DstRaw type, in case it has more bits than SrcRaw
+            dst_raw = detail::shl_real<DstRaw>(src_raw, diff);
 
         }
+
+        return Dst::from_raw(dst_raw);
     }
 
 
@@ -82,6 +85,10 @@ namespace fxd {
     {
         return fixed_cast<fixed<Int, Frac, Raw>>(src);
     }
+
+
+
+    // TODO: add rounding versions
 
 
 }

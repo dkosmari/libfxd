@@ -69,12 +69,18 @@ namespace Catch {
                 r += "_ufix<";
             else
                 r += "_fix<";
-            return r
+            std::string result = r
                 + std::to_string(Fxd::int_bits)
                 + ","
                 + std::to_string(Fxd::frac_bits)
-                + ">  [ "
-                + StringMaker<typename Fxd::raw_type>::convert(value.raw_value) + " ]";
+                + ">  [ ";
+            if constexpr (sizeof(typename Fxd::raw_type) == 1) {
+                result += StringMaker<int>::convert(value.raw_value);
+            } else {
+                result += StringMaker<typename Fxd::raw_type>::convert(value.raw_value);
+            }
+            result += " ]";
+            return result;
         }
     };
 
@@ -98,6 +104,21 @@ namespace Catch {
         {
             using Seq = std::index_sequence_for<T...>;
             return "[ " + conv_helper(tup, Seq{}) + " ]";
+        }
+    };
+
+
+    template<>
+    struct StringMaker<std::strong_ordering> {
+        static
+        std::string
+        convert(const std::strong_ordering& value)
+        {
+            if (value < 0)
+                return "<";
+            if (value > 0)
+                return ">";
+            return "==";
         }
     };
 

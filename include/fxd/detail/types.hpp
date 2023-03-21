@@ -222,7 +222,46 @@ namespace fxd::detail {
     using select_float_t = typename select_float<bits>::type;
 
 
-}
+
+
+    // Traits to detect when fixded -> fixed conversion safe
+    template<int SrcInt, int SrcFrac, typename SrcRaw,
+             int DstInt, int DstFrac, typename DstRaw>
+    struct is_safe_conversion : std::false_type {};
+
+    // signed -> signed
+    template<int SrcInt, int SrcFrac, std::signed_integral SrcRaw,
+             int DstInt, int DstFrac, std::signed_integral DstRaw>
+    struct is_safe_conversion<SrcInt, SrcFrac, SrcRaw,
+                              DstInt, DstFrac, DstRaw> :
+        std::bool_constant<(DstInt >= SrcInt) && (DstFrac >= SrcFrac)>
+    {};
+
+    // unsigned -> unsigned
+    template<int SrcInt, int SrcFrac, std::unsigned_integral SrcRaw,
+             int DstInt, int DstFrac, std::unsigned_integral DstRaw>
+    struct is_safe_conversion<SrcInt, SrcFrac, SrcRaw,
+                              DstInt, DstFrac, DstRaw> :
+        std::bool_constant<(DstInt >= SrcInt) && (DstFrac >= SrcFrac)>
+    {};
+
+    // unsigned -> signed
+    template<int SrcInt, int SrcFrac, std::unsigned_integral SrcRaw,
+             int DstInt, int DstFrac, std::signed_integral DstRaw>
+    struct is_safe_conversion<SrcInt, SrcFrac, SrcRaw,
+                              DstInt, DstFrac, DstRaw> :
+        std::bool_constant<(DstInt > SrcInt) && (DstFrac >= SrcFrac)>
+    {};
+
+    template<int SrcInt, int SrcFrac, typename SrcRaw,
+             int DstInt, int DstFrac, typename DstRaw>
+    inline constexpr bool is_safe_conversion_v =
+        is_safe_conversion<SrcInt, SrcFrac, SrcRaw,
+                           DstInt, DstFrac, DstRaw>::value;
+
+
+
+} // namespace fxd::detail
 
 
 #endif

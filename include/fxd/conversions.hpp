@@ -14,6 +14,7 @@
 #include <type_traits>
 
 #include "concepts.hpp"
+#include "casting.hpp"
 
 #include "detail/bias.hpp"
 #include "detail/int_to_float.hpp"
@@ -105,6 +106,7 @@ namespace fxd {
 
     /// Converts a fixed-point to its natural floating-point type (with no losses/rounding).
     template<fixed_point Fxd>
+    [[nodiscard]]
     constexpr
     typename std::numeric_limits<Fxd>::float_type
     to_float(Fxd f)
@@ -118,6 +120,7 @@ namespace fxd {
              int Frac,
              typename Raw>
     template<std::floating_point F>
+    [[nodiscard]]
     constexpr
     fixed<Int, Frac, Raw>::operator F()
         const noexcept
@@ -125,6 +128,16 @@ namespace fxd {
         return to_float<F>(*this);
     }
 
+
+    template<int Int, int Frac, typename Raw>
+    template<int Int2, int Frac2, typename Raw2>
+    [[nodiscard]]
+    constexpr
+    fixed<Int, Frac, Raw>::operator fixed<Int2, Frac2, Raw2>()
+        const noexcept
+    {
+        return fixed_cast<fixed<Int2, Frac2, Raw2>>(*this);
+    }
 
 }
 

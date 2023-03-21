@@ -31,13 +31,15 @@ The only difference is that `Raw` defaults to the smallest \b unsigned integer w
 
 Some examples:
 
-  - `fxd::fixed<32, 0>` behaves like `std::int32_t`
+  - `fxd::fixed<32, 0>` behaves like `std::int32_t`.
+  - `fxd::fixed<10, 0>` a 10-bit integer.
   - `fxd::fixed<33, -1>` only stores even integers.
-  - `fxd::ufixed<1, 31>` only stores values in the interval \f$ [0, 2) \f$
-  - `fxd::ufixed<0, 32>` only stores values in the interval \f$ [0, 1) \f$
-  - `fxd::ufixed<-1, 33>` only stores values in the interval \f$ [0, 0.5) \f$
-  - `fxd::fixed<1, 31>` only stores values in the interval \f$ [-1, 1) \f$
-  - `fxd::fixed<0, 32>` only stores values in the interval \f$ [-0.5, 0.5) \f$
+  - `fxd::ufixed<1, 31>` only stores values in the interval \f$ [0, 2) \f$.
+  - `fxd::ufixed<0, 32>` only stores values in the interval \f$ [0, 1) \f$.
+  - `fxd::ufixed<-1, 33>` only stores values in the interval \f$ [0, 0.5) \f$.
+  - `fxd::fixed<1, 31>` only stores values in the interval \f$ [-1, 1) \f$.
+  - `fxd::fixed<0, 32>` only stores values in the interval \f$ [-0.5, 0.5) \f$.
+
 
 Note how the intervals are all half-open.
 
@@ -82,22 +84,27 @@ they can still be used directly on the `.raw_value` member.
 Extended Integers
 -----------------
 
-The compiler must accept the "raw type" for a bit-field. That excludes user-defined
-types. This restriction might be lifted in the future, by allowing a custom type trait to
-wrap the bit-field.
+The compiler must use the "raw type" as the underlying type for a bit-field. That excludes
+user-defined types.
 
-Furthermore, the library makes heavy usage of standard concepts, type traits and
+The library also makes heavy usage of standard concepts, type traits and
 `std::numeric_limits`. To convince the standard library to accept types like `__int128` as
 integral types, we often need special compiler options, like `-std=gnu++20`; otherwise,
 the `std::integral` concept will not match such extended types, and `std::numeric_limits`
 might not have a specialization for such a type.
+
+Internally, the library still tries to use 128-bit arithmetic when it's available, even if
+the standard library does not recognize `__int128` as an integral type. When no 128-bit
+integers are not available, portable routines are used instead, with lower
+performance.
 
 
 Rounding Modes
 --------------
 
 The rounding mode is not part of the type. Instead, it's specified on a per-operation
-basis.
+basis, by specifying a rounding namespace. Available rounding namespaces are `fxd::down`,
+`fxd::up` and `fxd::zero`.
 
 For instance: to evaluate the expression \f$ x^2 - y^2 \f$ rounded down, we can write:
 
@@ -110,7 +117,14 @@ Had the rounding been part of the type, this would require obnoxious typecasts.
 TODO: show runtime rounding mode
 
 The default rounding mode is round-to-zero, the same defined by current C and C++
-standards for integers.
+standards for integers. The `fxd::zero` namespace is defined inline, so these 3
+expressions are all equivalent:
+
+~~~{.cpp}
+auto a = fxd::zero::mul(x, x);
+auto b = fxd::mul(x, x);
+auto c = x * x;
+~~~
 
 
 Boundary / Overflow Checking
@@ -159,36 +173,48 @@ functions, such as `__builtin_add_overflow()`. Custom arbitrary boundaries are n
 Conversions and Mixed Operations
 --------------------------------
 
-Integers and floating-point values can be implicitly converted to `std::fixed`. But once
-we have a fixed-point value, it will not be automatically converted to anything else, not
-even to a different fixed-point type.
+Integers and floating-point values can be implicitly converted to `std::fixed`. The
+reverse direction requires explicit conversion.
 
-This is done because a fixed-point type imposes invariants. We can control the rounding,
-check for overflows. There's expectations about where the point is located, how many
-precision bits are used in the operations. These would be harder to manage if the
-fixed-point type was allowed to be implicitly "promoted" to a floating-point, for
-instance.
+Fixed-point types can be implicitly converted to another if the destination type is not
+smaller (in both integral and fractional bits); this guarantees no bits can be lost during
+implicit conversions. Converting from unsigned to signed requires one extra integral bit,
+since the highest bit is the sign bit.
 
-Converting to an integer can be done with the `fxd::to_int<I>(...)` function, or a
-`static_cast<I>(...)`, where `I` is the destination integer type. When `I` is not
-specified to `fxd::to_int(...)`, it will default to the smallest integer with
-`Int` bits.
+Converting to an integer type `I` can be done with `static_cast<I>(...)`. There's also a
+convenience function, `fxd::to_int<I>(...)` that performs the same cast. This function
+also exists in rounding namespaces (`fxd::down::to_int<I>(...)`,
+`fxd::up::to_int<I>(...)`, etc). When `I` is omitted, it defaults to the smallest integer
+that can hold all of the integral bits; in other words, no overflow can occur.
 
-Converting to a floating-point type can be done with the `fxd::to_float<F>(...)` function,
-or a `static_cast<F>(...)`, where `F` is the destination floating-point type. When `F` is
-not specified to `fxd::to_float(...)`, it will default to the smallest floating-point type
-that fully represents all of the fixed-point bits. This default type is available at
-`std::numeric_limits<fxd::fixed<...>>::float_type`.
+Converting to a floating-point type `F` can be done with `static_cast<F>(...)`. Similarly,
+there's also a `fxd::to_float<F>(...)` (also present in rounding namespaces.) When `F` is
+omitted, it defaults to the smallest floating-point type that can represent all of the
+bits of the `fxd::fixed` type; in other words, there's no loss of data in this conversion.
 
-Converting to a different fixed-point type is done through the `fxd::fixed_cast<...>(...)`
-function.
+Explicit conversion to a fixed-point type `Fxd` is done with
+`static_cast<Fxd>(...)`. There's also a named function, `fxd::fixed_cast<Fxd>(...)` (also
+present in rounding namespaces.)
 
 There are two exceptions to this rule:
 
-  - Multiplication and division can be mixed with integers and floating-point.
+  - Multiplication and division can be mixed with integers and floating-point, without
+    an implicit conversion to `fxd::fixed`.
+
   - Comparisons (`==`, `!=`, `<=>`) can be mixed with integers, floating-point and
-    different fixed-point. This avoids the need for helper `std::cmp_*()` just to ensure
-    correctness.
+    different fixed-point.
+
+The comparison operators (`==`, `<=>`) are always safe:
+
+  - It's safe to compare signed and unsigned fixed-point types.
+
+  - It's safe to compare fixed-point with any integer type.
+
+  - It's safe to compare fixed-point with any floating-point type. The fixed-point value
+    is converted to its natural floating-point type, and a floating-point comparison is
+    used. The return type of `<=>` in this case is `std::partial_ordering`.
+
+This decision was made to not require "safe" comparison functions like `std::cmp_*`.
 
 
 Intermediate Precision
@@ -208,8 +234,9 @@ calc_average_ex(const std::vector<F>& values)
     using FF = fxd::fixed<48, 16>;
     FF total = 0;
     for (auto v : values)
-        total += fixed_cast<FF>(v);
-    return fixed_cast<F>(total / values.size());
+        total += v;
+    // to go back to a smaller type, an explicit cast is needed.
+    return static_cast<F>(total / values.size());
 }
 ~~~
 
@@ -219,10 +246,10 @@ Standard Library Integration
 
 Specializations in the `std` namespace are provided for:
 
-  - `numeric_limits<>`
-  - `hash<>`
-  - `numbers::e_v<>`, `numbers::pi_v<>`, `numbers::sqrt2_v<>`, etc.
-  - `common_type<>` (every arithmetic type is converted to a fixed-point)
+  - `std::numeric_limits<>`
+  - `std::hash<>`
+  - `std::numbers::e_v<>`, `std::numbers::pi_v<>`, `std::numbers::sqrt2_v<>`, etc.
+  - `std::common_type<>` (every arithmetic type is converted to a fixed-point)
 
 Other standard-like elements are provided in the namespace `fxd`, because the standard
 disallows specializations/overloads in `std`:
