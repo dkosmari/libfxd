@@ -26,24 +26,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    
-      #- name: Update APT repo
-      #  uses: arkane-systems/apt-repo-update@v1.1
-    
-      - name: Install Doxygen
-        run: sudo apt-get install doxygen -y
-        shell: bash
-        
+
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: bootstrap
         run: ./bootstrap
 
-      - name: Build docs
-        run: |
-          ./configure
-          make doc
+      - name: Configuring
+        run: ./configure
+
+      - name: Doxygen Action
+        uses: mattnotmitt/doxygen-action@edge
+        with:
+          working-directory: doc
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
