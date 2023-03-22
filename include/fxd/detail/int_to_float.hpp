@@ -8,11 +8,10 @@
 #ifndef LIBFXD_DETAIL_INT_TO_FLOAT_HPP
 #define LIBFXD_DETAIL_INT_TO_FLOAT_HPP
 
-#include <limits>
+#include <bit> // bit_width()
 #include <concepts>
-#include <bit>
-#include <type_traits>
-#include <cmath>
+#include <limits>
+#include <type_traits> // make_unsigned_t
 
 
 namespace fxd::detail {
@@ -29,7 +28,9 @@ namespace fxd::detail {
         if constexpr (std::numeric_limits<Flt>::digits
                       >=
                       std::numeric_limits<U>::digits) {
+
             return static_cast<Flt>(u);
+
         } else {
 
             const int uw = std::bit_width(u);

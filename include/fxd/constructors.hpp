@@ -57,10 +57,7 @@ namespace fxd {
     }
 
 
-    /**
-     * Note: This is subject to the current floating-point rounding mode.
-     */
-    // TODO: don't use the rounding mode anymore; create a detail::float_to_int() function.
+
     template<int Int,
              int Frac,
              typename Raw>
@@ -70,12 +67,8 @@ namespace fxd {
         noexcept
     {
         const auto scaled_f = std::ldexp(f, frac_bits);
-        if (std::is_constant_evaluated())
-            raw_value = static_cast<raw_type>(scaled_f);
-        else
-            raw_value = static_cast<raw_type>(std::nearbyint(detail::opacify(scaled_f)));
+        raw_value = static_cast<raw_type>(scaled_f);
     }
-
 
 
 

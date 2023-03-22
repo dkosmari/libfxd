@@ -11,7 +11,6 @@
 
 #include "printer.hpp"
 #include "rng.hpp"
-#include "rounder.hpp"
 #include "setup.hpp"
 
 #if defined(__clang__) && __clang_major__ >= 12 && !defined(__FAST_MATH__)
@@ -207,12 +206,9 @@ TEST_CASE("make2", "[u8.4]")
 
 TEST_CASE("make3", "[s1.31]")
 {
-    round_down guard;
-
     using Fxd = fxd::fixed<1, 31>; // range is [-1, 1)
     using Flt = typename std::numeric_limits<Fxd>::float_type;
     namespace exc = fxd::except;
-    using std::nextafter;
     using over = std::overflow_error;
     using under = std::underflow_error;
 
@@ -231,7 +227,7 @@ TEST_CASE("make3", "[s1.31]")
     CHECK_NOTHROW(exc::make_fixed<Fxd>(-1.0L));
 
     {
-        const Flt a = nextafter(1.0f, 0.0f);
+        const Flt a = std::nextafter(1.0f, 0.0f);
         CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
         const long double b = a;
         CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
@@ -239,17 +235,17 @@ TEST_CASE("make3", "[s1.31]")
         // ensure the extra mantissa bits are not being discarded
         long double c = to_float(std::numeric_limits<Fxd>::max());
         CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
-        c = nextafter(c, 2.0L);
+        c = std::nextafter(c, 2.0L);
         CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), over);
 
         c = to_float(std::numeric_limits<Fxd>::lowest());
         CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
-        c = nextafter(c, -2.0L);
+        c = std::nextafter(c, -2.0L);
         CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), under);
     }
 
     {
-        const long double a = nextafter(-1.0L, -2.0L);
+        const long double a = std::nextafter(-1.0L, -2.0L);
         CHECK_THROWS_AS(exc::make_fixed<Fxd>(a), under);
     }
 
@@ -259,12 +255,9 @@ TEST_CASE("make3", "[s1.31]")
 
 TEST_CASE("make4", "[u1.31]")
 {
-    round_down guard;
-
     using Fxd = fxd::ufixed<1, 31>; // range is [0, 2)
     using Flt = typename std::numeric_limits<Fxd>::float_type;
     namespace exc = fxd::except;
-    using std::nextafter;
     using over = std::overflow_error;
     using under = std::underflow_error;
 
@@ -283,7 +276,7 @@ TEST_CASE("make4", "[u1.31]")
     CHECK_THROWS_AS(exc::make_fixed<Fxd>(-1.0L), under);
 
     {
-        const Flt a = nextafter(2.0f, 0.0f);
+        const Flt a = std::nextafter(2.0f, 0.0f);
         CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
         const long double b = a;
         CHECK_NOTHROW(exc::make_fixed<Fxd>(b));
@@ -291,12 +284,12 @@ TEST_CASE("make4", "[u1.31]")
         // ensure the extra mantissa bits are not being discarded
         long double c = to_float(std::numeric_limits<Fxd>::max());
         CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
-        c = nextafter(c, 2.0L);
+        c = std::nextafter(c, 2.0L);
         CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), over);
 
         c = to_float(std::numeric_limits<Fxd>::lowest());
         CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
-        c = nextafter(c, -2.0L);
+        c = std::nextafter(c, -2.0L);
         CHECK_THROWS_AS(exc::make_fixed<Fxd>(c), under);
     }
 
@@ -305,8 +298,6 @@ TEST_CASE("make4", "[u1.31]")
 
 TEST_CASE("make5", "[u25.0]")
 {
-    round_down guard;
-
     using Fxd = fxd::ufixed<25, 0>;
     namespace exc = fxd::except;
 
@@ -332,11 +323,8 @@ TEST_CASE("make5", "[u25.0]")
 
 TEST_CASE("make6", "[s26.0]")
 {
-    round_down guard;
-
     using Fxd = fxd::fixed<26, 0>;
     namespace exc = fxd::except;
-    using std::nextafter;
 
     const float a = 0x01fffffep0f;
     {
@@ -345,7 +333,7 @@ TEST_CASE("make6", "[s26.0]")
         CHECK_NOTHROW(exc::make_fixed<Fxd>(a));
     }
 
-    const float b = nextafter(a, 2 * a);
+    const float b = std::nextafter(a, 2 * a);
     {
         CAPTURE(b);
         CAPTURE(std::numeric_limits<Fxd>::max());
@@ -359,7 +347,7 @@ TEST_CASE("make6", "[s26.0]")
         CHECK_NOTHROW(exc::make_fixed<Fxd>(c));
     }
 
-    const float d = nextafter(c, 2 * c);
+    const float d = std::nextafter(c, 2 * c);
     {
         CAPTURE(d);
         CAPTURE(std::numeric_limits<Fxd>::lowest());

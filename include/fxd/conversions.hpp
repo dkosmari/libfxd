@@ -90,7 +90,7 @@ namespace fxd {
     }
 
 
-    /// Convert a fixed-point to a floating-point type.
+    /// Convert a fixed-point to a floating-point type, rounds to zero.
     template<std::floating_point Flt,
              fixed_point Fxd>
     constexpr

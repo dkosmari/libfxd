@@ -1,6 +1,6 @@
 #include <cstdlib>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include <fxd/fxd.hpp>
 
@@ -8,7 +8,7 @@
 
 #include "printer.hpp"
 #include "rng.hpp"
-#include "rounder.hpp"
+#include "rounding.hpp"
 #include "setup.hpp"
 #include "test-types.hpp"
 
@@ -200,9 +200,8 @@ TEMPLATE_LIST_TEST_CASE("random-zero",
 
         auto fa = to_float(a);
         auto fb = to_float(b);
-        auto fc = fa * fb;
-        CAPTURE(fa);
-        CAPTURE(fb);
+
+        auto fc = rounding::zero::mul(fa, fb, Fxd::frac_bits);
         CAPTURE(fc);
 
         if (fc < flo) {
@@ -214,6 +213,7 @@ TEMPLATE_LIST_TEST_CASE("random-zero",
         } else {
             Fxd c = a * b;
             REQUIRE(c == Fxd{fc});
+            REQUIRE(c == fc);
             REQUIRE(c == sc);
             REQUIRE_NOTHROW(fxd::except::mul(a, b));
         }
@@ -241,8 +241,6 @@ TEMPLATE_LIST_TEST_CASE("random-up",
 
     RNG<Fxd> rng;
 
-    round_up guard;
-
     for (int i = 0; i < max_iterations; ++i) {
 
         Fxd a = rng.get();
@@ -254,7 +252,8 @@ TEMPLATE_LIST_TEST_CASE("random-up",
 
         auto fa = to_float(a);
         auto fb = to_float(b);
-        auto fc = fa * fb;
+
+        auto fc = rounding::up::mul(fa, fb, Fxd::frac_bits);
         CAPTURE(fc);
 
         if (fc < flo) {
@@ -266,6 +265,7 @@ TEMPLATE_LIST_TEST_CASE("random-up",
         } else {
             Fxd c = fxd::up::mul(a, b);
             REQUIRE(c == Fxd{fc});
+            REQUIRE(c == fc);
             REQUIRE(c == sc);
             REQUIRE_NOTHROW(fxd::except::up::mul(a, b));
         }
@@ -292,20 +292,20 @@ TEMPLATE_LIST_TEST_CASE("random-down",
 
     RNG<Fxd> rng;
 
-    round_down guard;
-
     for (int i = 0; i < max_iterations; ++i) {
 
         Fxd a = rng.get();
         Fxd b = rng.get();
         CAPTURE(a);
         CAPTURE(b);
+
         Fxd sc = fxd::saturate::down::mul(a, b);
         CAPTURE(sc);
 
         auto fa = to_float(a);
         auto fb = to_float(b);
-        auto fc = fa * fb;
+
+        auto fc = rounding::down::mul(fa, fb, Fxd::frac_bits);
         CAPTURE(fc);
 
         if (fc < flo) {
@@ -317,6 +317,7 @@ TEMPLATE_LIST_TEST_CASE("random-down",
         } else {
             Fxd c = fxd::down::mul(a, b);
             REQUIRE(c == Fxd{fc});
+            REQUIRE(c == fc);
             REQUIRE(c == sc);
             REQUIRE_NOTHROW(c == fxd::except::down::mul(a, b));
         }
@@ -353,7 +354,7 @@ TEST_CASE("special-3")
     F a = F::from_raw(0x679d16dc561eef4d); // 0.202370371243032804
     F b = F::from_raw(0xabafbb5b0dac6969); // -0.164674897322732484
     F c = a * b;
-    long double d = to_float(a) * to_float(b);
+    long double d = rounding::zero::mul(to_float(a), to_float(b), F::frac_bits);
     CHECK(c == F{d});
 }
 
@@ -376,21 +377,27 @@ TEST_CASE("special-5", "[up]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    round_up guard;
-
     Fxd a = Fxd::from_raw(2832);
     Fxd b = Fxd::from_raw(14248059);
     Fxd c = fxd::up::mul(a, b);
-    auto fa = to_float(a);
-    auto fb = to_float(b);
-    auto fc = fa * fb;
+    float fa = to_float(a);
+    float fb = to_float(b);
+    CHECK(a == fa);
+    CHECK(a == Fxd{fa});
+    CHECK(b == fb);
+    CHECK(b == Fxd{fb});
+
+    float fc = rounding::up::mul(fa, fb, Fxd::frac_bits);
+
     CAPTURE(a);
     CAPTURE(fa);
     CAPTURE(b);
     CAPTURE(fb);
     CAPTURE(c);
     CAPTURE(fc);
+
     CHECK(c == Fxd{fc});
+    CHECK(c == fc);
 }
 
 
@@ -398,14 +405,12 @@ TEST_CASE("special-6", "[up]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    round_up guard;
-
     Fxd a = Fxd::from_raw(8775);
     Fxd b = Fxd::from_raw(88974);
     Fxd c = fxd::up::mul(a, b);
     auto fa = to_float(a);
     auto fb = to_float(b);
-    auto fc = fa * fb;
+    auto fc = rounding::up::mul(fa, fb, Fxd::frac_bits);
     CAPTURE(a);
     CAPTURE(fa);
     CAPTURE(b);
@@ -413,6 +418,7 @@ TEST_CASE("special-6", "[up]")
     CAPTURE(c);
     CAPTURE(fc);
     CHECK(c == Fxd{fc});
+    CHECK(c == fc);
 }
 
 
@@ -420,14 +426,12 @@ TEST_CASE("special-7", "[down]")
 {
     using Fxd = fxd::fixed<13, 12>;
 
-    round_down guard;
-
     Fxd a = Fxd::from_raw(-1014032);
     Fxd b = Fxd::from_raw(-4055);
     Fxd c = fxd::down::mul(a, b);
     auto fa = to_float(a);
     auto fb = to_float(b);
-    auto fc = fa * fb;
+    auto fc = rounding::down::mul(fa, fb, Fxd::frac_bits);
     CAPTURE(a);
     CAPTURE(fa);
     CAPTURE(b);
@@ -435,6 +439,7 @@ TEST_CASE("special-7", "[down]")
     CAPTURE(c);
     CAPTURE(fc);
     CHECK(c == Fxd{fc});
+    CHECK(c == fc);
 }
 
 
