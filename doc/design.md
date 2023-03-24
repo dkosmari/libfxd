@@ -220,8 +220,9 @@ This decision was made to not require "safe" comparison functions like `std::cmp
 Intermediate Precision
 ----------------------
 
-No attempt is made to use more bits during computations. This makes operations more
-predictable. When appropriate, we can manually change the fixed-point type to a wider one:
+No attempt is made to preserve extra bits, even though the internal computation might
+require more bits. This makes operations more predictable. When appropriate, we can
+manually change the fixed-point type to a wider one:
 
 ~~~{.cpp}
 using F = fxd::fixed<16, 16>;
