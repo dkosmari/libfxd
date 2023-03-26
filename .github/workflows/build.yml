@@ -1,4 +1,4 @@
-name: distcheck
+name: build
 
 on:
   push:
@@ -19,8 +19,6 @@ jobs:
     - uses: awalsh128/cache-apt-pkgs-action@latest
       with:
         packages: doxygen libbenchmark-dev
-      
-#      run: sudo apt-get install -y doxygen libbenchmark-dev
 
     - uses: actions/checkout@v3
 
