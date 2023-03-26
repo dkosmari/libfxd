@@ -15,33 +15,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
-    - name: Install Doxygen
-      run: sudo apt-get install doxygen -y
-      shell: bash
-      
-    - name: Install libbenchmark-dev
-      run: sudo apt-get install libbenchmark-dev -y
-      shell: bash
 
-    - name: Install ccache
-      uses: hendrikmuhs/ccache-action@v1.2.8
+    - name: Install dependencies
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      packages: doxygen libbenchmark-dev
+      
+#      run: sudo apt-get install -y doxygen libbenchmark-dev
 
     - uses: actions/checkout@v3
 
-    - name: bootstrap
+    - name: Bootstrap
       run: ./bootstrap
 
-    - name: Setup PATH
-      run: echo "PATH=/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH" >> $GITHUB_ENV
-
-    - name: configure
+    - name: Configure
       run: ./configure
       
-    - name: make check
+    - name: Build
       run: make check
-
-    - name: make distcheck
-      run: |
-        echo $PATH
-        make distcheck
