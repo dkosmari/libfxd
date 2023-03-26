@@ -3,30 +3,35 @@ name: build
 on:
   push:
     branches: [ "main" ]
-  
+
   pull_request:
     branches: [ "main" ]
-  
+
   workflow_dispatch:
 
+
 jobs:
+
   build:
 
     runs-on: ubuntu-latest
 
     steps:
 
-    - uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: doxygen libbenchmark-dev
+      - name: Dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libbenchmark-dev
+          version: build
 
-    - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Bootstrap
-      run: ./bootstrap
+      - name: Bootstrap
+        run: ./bootstrap
 
-    - name: Configure
-      run: ./configure
-      
-    - name: Build
-      run: make check
+      - name: Configure
+        run: ./configure
+
+      - name: Build
+        run: make check
