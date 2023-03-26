@@ -16,9 +16,9 @@ jobs:
 
     steps:
 
-    - name: Install dependencies
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      packages: doxygen libbenchmark-dev
+    - uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: doxygen libbenchmark-dev
       
 #      run: sudo apt-get install -y doxygen libbenchmark-dev
 
